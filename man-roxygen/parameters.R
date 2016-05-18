@@ -1,0 +1,23 @@
+## - RDFormula:
+##   - formula
+##   - data
+##   - subset
+##   - cutoff=0
+##   - sigma2
+##   - na.action
+## - RDBW
+##   - hp, hm
+## - RDoptBW
+##   - opt.criterion
+##   - bw.equal=TRUE
+##   - beta=0.8
+##   - alpha
+## - RDse
+##   - se.method
+##   - J
+## - RDclass
+##   - M
+##   - sclass="H"
+## - Kern
+##   - kern
+##   - order
