@@ -11,6 +11,7 @@ License: GPL-3
 Encoding: UTF-8
 LazyData: true
 Imports:
-    stats
+    stats,
+    lpKern
 RoxygenNote: 5.0.1
 URL: https://github.com/kolesarm/honestRD
