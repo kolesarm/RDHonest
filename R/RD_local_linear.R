@@ -41,7 +41,7 @@
 #' @export
 RDHonest <- function(formula, data, subset, cutoff=0, M, kern="triangular",
                      sigma2, na.action, opt.criterion, bw.equal=TRUE, hp, hm=hp,
-                     se.method, alpha=0.05, beta=0.8, J=3, sclass="H",
+                     se.method="nn", alpha=0.05, beta=0.8, J=3, sclass="H",
                      order=1) {
 
     ## construct model frame
@@ -58,8 +58,6 @@ RDHonest <- function(formula, data, subset, cutoff=0, M, kern="triangular",
                         bw.equal=bw.equal, alpha=alpha, beta=beta,
                         se.method=se.method, J=J,
                         sclass=sclass, order=order)
-
-    class(ret) <- "RDResults"
     ret$call <- cl
     ret$na.action <- attr(mf, "na.action")
 
@@ -179,12 +177,10 @@ RDHonest.fit <- function(d, M, kern="triangular", hp, hm=hp, opt.criterion,
             bias <- -(M/2)*(CarefulOptim(bp, c(0, hp), k=5)$objective +
                             CarefulOptim(bm, c(0, hm), k=5)$objective)
         }
-        if (length(sd)!= 1) stop("Multiple sd's not yet implemented")
 
         lower <- r1$estimate - bias - qnorm(1-alpha)*sd
         upper <- r1$estimate + bias + qnorm(1-alpha)*sd
-
-        hl <- CVb(bias/sd, alpha)*sd
+        hl <- CVb(bias/sd, alpha)$cv*sd
     }
 
     ## Finally, calculate coverage of naive CIs
@@ -219,8 +215,8 @@ RDOptBW.fit <- function(d, M, kern="triangular", opt.criterion,
         X <- c(d$Xm, d$Xp)
         h1 <- 1.84*stats::sd(X)/sum(length(X))^(1/5)
         r1 <- RDLPreg(d=d, hp=h1, kern=kern, order=1, se.method="nn")
-        d$sigma2p <- mean(r1$sigma2p)*d$Xp
-        d$sigma2m <- mean(r1$sigma2m)*d$Xm
+        d$sigma2p <- rep(mean(r1$sigma2p), length(d$Xp))
+        d$sigma2m <- rep(mean(r1$sigma2m), length(d$Xm))
     }
 
     ## Objective function for optimizing bandwidth
@@ -230,10 +226,13 @@ RDOptBW.fit <- function(d, M, kern="triangular", opt.criterion,
                           sclass=sclass, order=order)
         if (opt.criterion=="OCI") {
             2*r$maxbias+r$sd*(qnorm(1-alpha)+qnorm(beta))
-        } else if (opt.criterion=="Estimation") {
+        } else if (opt.criterion=="MSE") {
             r$maxbias^2+r$sd^2
         } else if (opt.criterion=="FLCI") {
             r$hl
+        } else {
+            stop(sprintf("optimality criterion %s not yet implemented",
+                         opt.criterion))
         }
     }
 
@@ -249,21 +248,52 @@ RDOptBW.fit <- function(d, M, kern="triangular", opt.criterion,
                                         tol=tol)$minimum)
     }
 
-    list(hp=hp, hm=hm)
+    structure(list(hp=hp, hm=hm), class="RDResults")
 }
 
 
+#' @export
+print.RDBW <- function(x, digits = getOption("digits"), ...) {
+    cat("Call:\n", deparse(x$call), "\n\n", sep = "")
+    cat("Bandiwdth below cutoff: ", format(x$hm, digits=digits))
+    cat("\nBandiwdth above cutoff: ", format(x$hp, digits=digits))
+    if (x$hm==x$hp) {
+        cat(" (Bandwidth are the same)\n\n")
+    } else {
+        cat(" (Bandwidth are different)\n\n")
+    }
+    invisible(x)
+}
 
 
+#' @export
+print.RDResults <- function(x, digits = getOption("digits"), ...) {
+    if (!is.null(r$call))
+        cat("Call:\n", deparse(x$call), "\n\n", sep = "")
 
+    cat("Inference by se.method:\n")
+    r <- as.data.frame(x[c("estimate", "maxbias", "sd",
+                           "lower", "upper", "hl")])
+    names(r)[1:3] <- c("Estimate", "Maximum Bias", "Std. Error")
+    r$name <- rownames(r)
+    print.data.frame(as.data.frame(r[, 1:3]), digits=digits)
+    cat("\nConfidence intervals:\n")
+    fmt <- function(x) format(x, digits=digits, width=digits+1)
 
+    for (j in seq_len(nrow(r)))
+        cat(format(r[j, 7], width=5), " (", fmt(r[j, 1]-r[j, 6]),
+            ", ", fmt(r[j, 1]+r[j, 6]), "), (", fmt(r[j, 4]),
+            ", Inf), (-Inf, ", fmt(r[j, 5]), ")\n", sep="")
 
-## #' TODO
-## #' @export
-## print.RDBW <- function(rdbw) {
-##     print(rdbw)
-## }
+    cat("\nBandiwdth below cutoff: ", format(x$hm, digits=digits))
+    cat("\nBandiwdth above cutoff: ", format(x$hp, digits=digits))
+    if (x$hm==x$hp) {
+        cat(" (Bandwidth are the same)\n")
+    } else {
+        cat(" (Bandwidth are different)\n")
+    }
+    cat("Number of effective observations:",
+        format(x$eff.obs, digits=digits), "\n")
 
-## print.RDResults <- function(rd) {
-##     print(rd)
-## }
+    invisible(x)
+}

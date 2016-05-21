@@ -7,8 +7,7 @@
 #' @param B Maximum bias, vector of non-negative numbers.
 #' @param alpha Determines CI level, \code{1-alpha}. Needs to be between 0 and
 #' 1. Can be a vector of values.
-#' @return If both \code{B} and \code{alpha} are scalars, returns a scalar
-#' critical value. Otheriwse returns a dataframe with the following columns:
+#' @return Data frame with the following columns:
 #' \describe{
 #' \item{bias}{Value of bias as specfied by \code{bs}}
 #' \item{alpha}{Value of \eqn{\alpha} as specified by \code{alpha}}
@@ -28,8 +27,6 @@ CVb <- function(B, alpha=0.05) {
                        c(1e-10, B - 2*qnorm(alpha / 2)),
                        tol=tol)$root
     }
-
-    if (length(B)==1 & length(alpha)==1) return(cv(B, alpha))
 
     d <- data.frame(expand.grid(bias=B, alpha=alpha), cv=NA)
     d$cv <- sapply(1:nrow(d), function(j) cv(d$bias[j], d$alpha[j]))
