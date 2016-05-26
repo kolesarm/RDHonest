@@ -6,14 +6,18 @@
 #'
 #' @param B Maximum bias, vector of non-negative numbers.
 #' @param alpha Determines CI level, \code{1-alpha}. Needs to be between 0 and
-#' 1. Can be a vector of values.
+#'     1. Can be a vector of values.
 #' @return Data frame with the following columns:
+#'
 #' \describe{
+#'
 #' \item{bias}{Value of bias as specfied by \code{bs}}
+#'
 #' \item{alpha}{Value of \eqn{\alpha} as specified by \code{alpha}}
+#'
 #' \item{cv}{Critical value}
-#' \item{TeXDescription}{LaTeX-friendly description of current row}
-#' }
+#'
+#' \item{TeXDescription}{LaTeX-friendly description of current row}}
 #' @examples
 #' # 90% critical value:
 #' CVb(B = 1, alpha = 0.1)

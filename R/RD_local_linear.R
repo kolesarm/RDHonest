@@ -65,8 +65,6 @@ RDHonest <- function(formula, data, subset, cutoff=0, M, kern="triangular",
 }
 
 
-
-
 #' Optimal Bandwidth Selection in Regression Discontinuity
 #'
 #' Estimate bandwidth for sharp RD based on local polynomial regression that
@@ -128,6 +126,7 @@ RDOptBW <- function(formula, data, subset, cutoff=0, M, kern="triangular",
     ret
 }
 
+
 #' Basic computing engine called by \code{\link{RDHonest}} to compute honest
 #' confidence intervals
 #' @param d object of class \code{"RDData"}
@@ -167,7 +166,7 @@ RDHonest.fit <- function(d, M, kern="triangular", hp, hm=hp, opt.criterion,
     } else {
         sd <- r1$se[se.method]
         if(sclass=="T")  {
-            bias <- M/2*(sum(abs(wp*d$Xp^2)) + sum(abs(wm*d$Xm^2)))
+            bias <- M/2 * (sum(abs(wp*d$Xp^2)) + sum(abs(wm*d$Xm^2)))
         } else if (sclass=="H" & order==1) {
             bias <- -M/2 * (sum(wp*d$Xp^2) + sum(wm*d$Xm^2))
         } else if (sclass=="H" & order==2) {
@@ -176,6 +175,9 @@ RDHonest.fit <- function(d, M, kern="triangular", hp, hm=hp, opt.criterion,
             bm <- function(b) -2*sum(wm*(pmax(abs(d$Xm)-b, 0)^2))
             bias <- -(M/2)*(CarefulOptim(bp, c(0, hp), k=5)$objective +
                             CarefulOptim(bm, c(0, hm), k=5)$objective)
+        } else {
+            stop("Don't know how to compute bias for
+                  specified sclass and order.")
         }
 
         lower <- r1$estimate - bias - qnorm(1-alpha)*sd
@@ -250,6 +252,74 @@ RDOptBW.fit <- function(d, M, kern="triangular", opt.criterion,
 
     structure(list(hp=hp, hm=hm), class="RDResults")
 }
+
+#' Imbens and Kalyanaraman bandwidth
+#'
+#' Calculate bandwidth for sharp RD based on local linear regression using
+#' method by Imbens and Kalyanaraman (2012, ReStud)
+#' @param d object of class \code{"RDData"}
+#' @template Kern
+#' @param verbose Print details of calculation?
+#' @return IK bandwidth
+#' @importFrom stats coef lm
+#' @export
+IKBW.fit <- function(d, kern="triangular", order=1, verbose=FALSE) {
+    if (order!=1)
+        stop("Only works for local linear regression.")
+
+    X <- c(d$Xm, d$Xp)
+    Nm <- length(d$Xm)
+    Np <- length(d$Xp)
+    N <- Nm+Np
+
+    ## STEP 0: Kernel constant
+    if (is.character(kern)) {
+        s <- lpKern::kernC[with(lpKern::kernC,
+                                order==1 & boundary==TRUE & kernel==kern, ), ]
+    } else if (is.function(kern)) {
+        ke <- lpKern::EqKern(kern, boundary=TRUE, order=1)
+        s <- list(mu2=lpKern::KernMoment(ke, moment=2, boundary=TRUE, "raw"),
+                  nu0=lpKern::KernMoment(ke, moment=0, boundary=TRUE, "raw2"))
+    }
+    const <- (s$nu0/s$mu2^2)^(1/5)
+
+    ## STEP 1: Estimate f(0), sigma^2_(0) and sigma^2_+(0)
+    h1 <- 1.84*stats::sd(X)/N^(1/5)  ## Silverman pilot bandwidth for uniform kernel
+    f0 <- sum(X >= -h1 & X<= h1) / (2*N*h1)
+    varm <- stats::var(d$Ym[d$Xm >= -h1]) # Equation (12) in IK
+    varp <- stats::var(d$Yp[d$Xp <= h1])
+
+    ## STEP 2: Estimate second derivatives m_{+}^(2) and m_{-}^(2)
+
+    ## Estimate third derivative using 3rd order polynomial: Equation (14)
+    m3 <- 6*coef(lm(I(c(d$Ym, d$Yp)) ~ I(X>=0) + X + I(X^2) + I(X^3)))[5]
+
+    ## Left and right bandwidths, Equation (15) and page 956.
+    ## Optimal constant based on one-sided uniform Kernel, 7200^(1/7),
+    h2m <- 7200^(1/7) * (varm/(f0*m3^2))^(1/7) * Nm^(-1/7)
+    h2p <- 7200^(1/7) * (varp/(f0*m3^2))^(1/7) * Np^(-1/7)
+
+    ## estimate second derivatives by local quadratic
+    m2m <- 2*coef(lm(d$Ym ~ d$Xm + I(d$Xm^2), subset=(d$Xm >= -h2m)))[3]
+    m2p <- 2*coef(lm(d$Yp ~ d$Xp + I(d$Xp^2), subset=(d$Xp <= h2p)))[3]
+
+    ## STEP 3: Calculate regularization terms, Equation (16)
+    rm <- 2160*varm / (sum(d$Xm >= -h2m) * h2m^4)
+    rp <- 2160*varp / (sum(d$Xp <= h2p) * h2p^4)
+
+    if(verbose)
+        cat("\n h1: ", h1, "\n N_{-}, N_{+}: ", Nm, Np, "\n f(0): ", f0,
+            "\n sigma^2_{+}(0): ", sqrt(varp),
+            "^2\n sigma^2_{+}(0):", sqrt(varm), "^2",
+            "\n m3: ", m3, "\n h_{2, +}:", h2p, "h_{2, -}:", h2m,
+            "\n m^{(2)}_{+}: ", m2p, "m^{(2)}_{-}: ", m2m,
+            "\n r_{+}:", rp, "\n r_{-}:", rm, "\n\n")
+
+    ## Final bandwidth: Equation (17)
+    unname(const * ((varp+varm) / (f0*N * ((m2p-m2m)^2+rm+rp)))^(1/5))
+}
+
+
 
 
 #' @export
