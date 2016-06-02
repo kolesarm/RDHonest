@@ -16,11 +16,12 @@
 LPReg <- function(X, Y, h, K, order=1, se.method=NULL, sigma2, J=3) {
     R <- outer(X, 0:order, "^")
     W <- K(X/h)
+    Gamma <- crossprod(R, W*R)
 
-    if (sum(W>0)<=order | h==0)
+    if (sum(W>0)<=order | h==0 | det(Gamma)==0)
         return(list(theta=0, sigma2=NA, var=NA, w=function(u) 0, eff.obs=0))
 
-    Gamma <- crossprod(R, W*R)
+
     beta <- drop(solve(Gamma, crossprod(R, W*Y)))
     hsigma2 <- drop(Y - R %*% beta)^2     # squared residuals
 

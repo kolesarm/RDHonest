@@ -338,7 +338,7 @@ print.RDBW <- function(x, digits = getOption("digits"), ...) {
 
 #' @export
 print.RDResults <- function(x, digits = getOption("digits"), ...) {
-    if (!is.null(r$call))
+    if (!is.null(x$call))
         cat("Call:\n", deparse(x$call), "\n\n", sep = "")
 
     cat("Inference by se.method:\n")

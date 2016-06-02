@@ -1,3 +1,4 @@
 ^man-roxygen/*$
 .gitignore
 ^data-raw/*$
+readme.md
