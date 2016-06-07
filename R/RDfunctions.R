@@ -97,7 +97,7 @@ RDLPreg <- function(d, hp, kern="triangular", order=1, hm=hp, se.method="nn",
         d$Xm <- s$x
     }
     K <- if (!is.function(kern)) {
-             lpKern::EqKern(kern, boundary=FALSE, order=0)
+             EqKern(kern, boundary=FALSE, order=0)
          } else {
              kern
          }
@@ -109,10 +109,18 @@ RDLPreg <- function(d, hp, kern="triangular", order=1, hm=hp, se.method="nn",
     d$Xp <- d$Xp[Wp>0]
     d$Xm <- d$Xm[Wm>0]
 
-    if ((length(d$Xm) < 3*order | length(d$Xp) < 3*order) & no.warning==FALSE) {
+    if ((length(d$Xm) < 3*order | length(d$Xp) < 3*order)
+        & no.warning==FALSE) {
         warning("Too few observations to compute RD estimates.\nOnly ",
                 length(d$Xm), " control and ", length(d$Xp),
                 " treated units with positive weights")
+    }
+    if ((length(unique(d$Xm)) <= order | length(unique(d$Xp)) <= order)
+         & no.warning==FALSE) {
+        warning("Too few distinct values to compute RD estimates.\nOnly ",
+                length(unique(d$Xm)), " unique control and ",
+                length(unique(d$Xp)), " unique treated values for ",
+                "running variable with positive weights")
     }
 
     rm <- LPReg(d$Xm, d$Ym[Wm>0], hm, K, order, se.method, d$sigma2m[Wm>0], J)
@@ -123,12 +131,11 @@ RDLPreg <- function(d, hp, kern="triangular", order=1, hm=hp, se.method="nn",
     plugin <- NA
     if ("plugin" %in% se.method) {
         if (is.function(kern)) {
-            ke <- lpKern::EqKern(kern, boundary=TRUE, order=order)
-            nu0 <- lpKern::KernMoment(ke, moment=0, boundary=TRUE, "raw2")
+            ke <- EqKern(kern, boundary=TRUE, order=order)
+            nu0 <- KernMoment(ke, moment=0, boundary=TRUE, "raw2")
         } else {
-            tbl <- lpKern::kernC
-            nu0 <- tbl[tbl$kernel==kern & tbl$order==order &
-                           tbl$boundary==TRUE, "nu0"]
+            nu0 <- kernC[kernC$kernel==kern & kernC$order==order &
+                             kernC$boundary==TRUE, "nu0"]
         }
         ## note we kept original outcomes, but only kept X's receiving positive
         ## weight

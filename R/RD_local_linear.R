@@ -54,10 +54,17 @@ RDHonest <- function(formula, data, subset, cutoff=0, M, kern="triangular",
 
     d <- RDData(mf, cutoff)
 
-    ret <- RDHonest.fit(d, M, kern, opt.criterion=opt.criterion,
-                        bw.equal=bw.equal, alpha=alpha, beta=beta,
-                        se.method=se.method, J=J,
-                        sclass=sclass, order=order)
+    if (!missing(hp)) {
+        ret <- RDHonest.fit(d, M, kern, hp, hm, alpha=alpha,
+                            se.method=se.method, J=J, sclass=sclass,
+                            order=order)
+    } else {
+        ret <- RDHonest.fit(d, M, kern, opt.criterion=opt.criterion,
+                            bw.equal=bw.equal, alpha=alpha, beta=beta,
+                            se.method=se.method, J=J,
+                            sclass=sclass, order=order)
+    }
+
     ret$call <- cl
     ret$na.action <- attr(mf, "na.action")
 
@@ -216,6 +223,13 @@ RDOptBW.fit <- function(d, M, kern="triangular", opt.criterion,
         ## TODO: something more reasonable
         X <- c(d$Xm, d$Xp)
         h1 <- 1.84*stats::sd(X)/sum(length(X))^(1/5)
+        ## Make sure this results in enough distinct values on either side of
+        ## threshold
+
+        h1 <- max(h1,
+                  sort(unique(d$Xp))[order+1],
+                  abs(sort(unique(d$Xm), decreasing=TRUE)[order+1]))
+
         r1 <- RDLPreg(d=d, hp=h1, kern=kern, order=1, se.method="nn")
         d$sigma2p <- rep(mean(r1$sigma2p), length(d$Xp))
         d$sigma2m <- rep(mean(r1$sigma2m), length(d$Xm))
@@ -250,7 +264,7 @@ RDOptBW.fit <- function(d, M, kern="triangular", opt.criterion,
                                         tol=tol)$minimum)
     }
 
-    structure(list(hp=hp, hm=hm), class="RDResults")
+    list(hp=hp, hm=hm, sigma2p=d$sigma2p, sigma2m=d$sigma2m)
 }
 
 #' Imbens and Kalyanaraman bandwidth
@@ -274,12 +288,12 @@ IKBW.fit <- function(d, kern="triangular", order=1, verbose=FALSE) {
 
     ## STEP 0: Kernel constant
     if (is.character(kern)) {
-        s <- lpKern::kernC[with(lpKern::kernC,
-                                order==1 & boundary==TRUE & kernel==kern, ), ]
+        s <- kernC[with(kernC,
+                        order==1 & boundary==TRUE & kernel==kern, ), ]
     } else if (is.function(kern)) {
-        ke <- lpKern::EqKern(kern, boundary=TRUE, order=1)
-        s <- list(mu2=lpKern::KernMoment(ke, moment=2, boundary=TRUE, "raw"),
-                  nu0=lpKern::KernMoment(ke, moment=0, boundary=TRUE, "raw2"))
+        ke <- EqKern(kern, boundary=TRUE, order=1)
+        s <- list(mu2=KernMoment(ke, moment=2, boundary=TRUE, "raw"),
+                  nu0=KernMoment(ke, moment=0, boundary=TRUE, "raw2"))
     }
     const <- (s$nu0/s$mu2^2)^(1/5)
 
@@ -325,12 +339,12 @@ IKBW.fit <- function(d, kern="triangular", order=1, verbose=FALSE) {
 #' @export
 print.RDBW <- function(x, digits = getOption("digits"), ...) {
     cat("Call:\n", deparse(x$call), "\n\n", sep = "")
-    cat("Bandiwdth below cutoff: ", format(x$hm, digits=digits))
-    cat("\nBandiwdth above cutoff: ", format(x$hp, digits=digits))
+    cat("Bandwidth below cutoff: ", format(x$hm, digits=digits))
+    cat("\nBandwidth above cutoff: ", format(x$hp, digits=digits))
     if (x$hm==x$hp) {
-        cat(" (Bandwidth are the same)\n\n")
+        cat(" (Bandwidths are the same)\n\n")
     } else {
-        cat(" (Bandwidth are different)\n\n")
+        cat(" (Bandwidths are different)\n\n")
     }
     invisible(x)
 }
@@ -355,12 +369,12 @@ print.RDResults <- function(x, digits = getOption("digits"), ...) {
             ", ", fmt(r[j, 1]+r[j, 6]), "), (", fmt(r[j, 4]),
             ", Inf), (-Inf, ", fmt(r[j, 5]), ")\n", sep="")
 
-    cat("\nBandiwdth below cutoff: ", format(x$hm, digits=digits))
-    cat("\nBandiwdth above cutoff: ", format(x$hp, digits=digits))
+    cat("\nBandwidth below cutoff: ", format(x$hm, digits=digits))
+    cat("\nBandwidth above cutoff: ", format(x$hp, digits=digits))
     if (x$hm==x$hp) {
-        cat(" (Bandwidth are the same)\n")
+        cat(" (Bandwidths are the same)\n")
     } else {
-        cat(" (Bandwidth are different)\n")
+        cat(" (Bandwidths are different)\n")
     }
     cat("Number of effective observations:",
         format(x$eff.obs, digits=digits), "\n")
