@@ -1,6 +1,6 @@
 ---
 title: "Equivalent kernels and their moments"
-author: "Michal Kolesar"
+author: "Michal Kolesár"
 date: "`r Sys.Date()`"
 output:
   pdf_document:
@@ -11,15 +11,15 @@ vignette: >
   %\VignetteEncoding{UTF-8}
 ---
 
-This package computes equivalent kernels for local linear regression and their
-moments. For orders $r=1,2$ (local linear and local quadratic), selected moments
-and equivalent kernels are computed analytically for the the uniform, triangular
-and Epanechnikov kernels. Higher-order moments, and moments for other kernels
-with bounded support normalized to $[-1,1]$ are computed numerically.
+This package also computes equivalent kernels for local linear regression and
+their moments. For orders $r=1,2$ (local linear and local quadratic), selected
+moments and equivalent kernels are computed analytically for the the uniform,
+triangular and Epanechnikov kernels. Higher-order moments, and moments for other
+kernels with bounded support normalized to $[-1,1]$ are computed numerically.
 
 The uniform, triangular and Epanechnikov kernels are defined as $$
-k_{U}(u)=\frac{1}{2}I(|u|<1),\qquad k_{T}(u)=(1-|u|)I(|u|<1), \qquad
-k_{E}(u)=\frac{3}{4}(1-u^2)I(|u|<1). $$
+k_{\text{Unif}}(u)=\frac{1}{2}I(|u|<1),\qquad k_{\text{Tri}}(u)=(1-|u|)I(|u|<1),
+    \qquad k_{\text{Epa}}(u)=\frac{3}{4}(1-u^2)I(|u|<1). $$
 
 We compute the following moments
 $$
@@ -28,7 +28,8 @@ $$
 \pi_{j}(k)=\int_{\mathcal{X}} |u^j k^2(u)| \, du,
 $$
 where $\mathcal{X}$ is $[0,1]$ for boundary regression, and $[-1,1]$ for
-interior regression.
+interior regression, and $k$ is a kernel of equivalent kernel.
+
 
 # Equivalent kernels
 
@@ -63,11 +64,21 @@ domain $[-1,1]$ (orders 0 and 1 are the same)
 | Triangular   | $(1-|u|)$            | $(1-|u|)$            | $\frac{6}{7}(2-5u^2)(1-|u|)$   |
 | Epanechnikov | $\frac{3}{4}(1-u^2)$ | $\frac{3}{4}(1-u^2)$ | $\frac{15}{32}(3-7u^2)(1-u^2)$ |
 
+The equivalent kernels can be computed with the function `EqKern`, which returns the equivalent kernel function
+
+```{r, echo=TRUE, results=FALSE}
+library("RDHonest")
+EqKern("uniform", boundary = TRUE, order = 2)(0.5)
+# Equivalent call
+EqKern(function(u) u <= 1, boundary = TRUE, order = 2 )(0.5)
+```
+
+
 # Kernel Moments
 
 The package stores analytically-computed low-order moments for the uniform,
-triangular, and Epanechnikov kernels for fast access. The moments for boundary
-kernels are as follows:
+triangular, and Epanechnikov kernels for fast access in the dataframe `kernC`.
+The moments for boundary kernels are as follows:
 
 | Kernel       | Order | $\mu_0$ | $\mu_1$      | $\mu_2$        | $\mu_3$         | $\mu_4$           | $\nu_0$             | $\nu_1$           | $\nu_2$            | $\nu_3$            | $\nu_4$              |
 |:-------------|:------|:--------|:-------------|---------------:|----------------:|------------------:|--------------------:|------------------:|-------------------:|-------------------:|---------------------:|
@@ -118,9 +129,19 @@ In the interior:
 | Triangular   |  2    |1        |$0.31155912$  |$0.13986945$  |$0.08443054$  |$0.060140887 $|
 | Epanechnikov |  2    |1        |$0.36033164$  |$0.17177502$  |$0.10671010$  |$0.077066194 $|
 
-Finally, the package stores the optimal constant for pointwise MSE optimal
-bandwdith (see Fan and Gijbels, page 67)
+Finally, in the column `kernC$pMSE`, the package stores the optimal constant for
+pointwise MSE optimal bandwidth (see Fan and Gijbels, page 67):
 $$
 \left(\frac{(p+1)!^2\nu_{0}}{2(p+1)\mu_{p+1}^2}\right)^{\frac{1}{2p+3}},
 $$
 where $p$ is the order of local polynomial.
+
+For other kernels, the moments can be computed using the `KernMoment` function:
+```{r}
+## mu_1, should be 0
+KernMoment(function(u) 4-6*u, moment = 1, boundary = TRUE, type = "raw")
+## nu_1, should be 0
+KernMoment(function(u) 4-6*u, moment = 1, boundary = TRUE, type = "raw2")
+## pi_1, should be 16/27
+KernMoment(function(u) 4-6*u, moment = 1, boundary = TRUE, type = "absolute")
+```

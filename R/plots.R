@@ -1,6 +1,6 @@
 #' Scatterplot of binned raw observations
 #'
-#' Scatterplot of raw observations in which each point corresponds to an binner
+#' Scatterplot of raw observations in which each point corresponds to an binned
 #' average.
 #' @param d RDdata object
 #' @param avg is number of observations to average over
