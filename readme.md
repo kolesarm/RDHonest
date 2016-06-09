@@ -1,11 +1,10 @@
 # RDHonest
 
 Honest and efficient confidence intervals in regression discontinuity designs.
+See vignette `RDHonest.pdf` (stored under `inst/doc/`) for description of the
+package.
 
 ## Installation
 
-install package with =devtools::install_github()=
-
-## Usage
-
-TODO
+You can install the package manually by downloading the source code here, or
+using the function `install_github()` from the `devtools` package.

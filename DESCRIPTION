@@ -3,8 +3,8 @@ Title: Honest Inference in Sharp Regression Discontinuity Designs
 Version: 0.0.0.9000
 Authors@R: person("Michal", "Kolesar",
     email = "kolesarmi@googlemail.com", role = c("aut", "cre"))
-Description: Honest and optimal confidence intervals in sharp regression
-    discontinuity (SRD) designs based on local polynomial regression.
+Description: Honest and nearly-optimal confidence intervals in sharp regression
+    discontinuity designs based on local polynomial regression.
 Depends:
     R (>= 3.3.0)
 License: GPL-3
