@@ -9,8 +9,7 @@ library("RDHonest")
 ## transform data to an RDdata object
 dt <- RDData(lee08, cutoff = 0)
 ## plot 25-bin averages in a window equal to 50 around the cutoff, see Figure 1
-plot_RDscatter(dt, avg=25, window = 50) +
-   xlab("Margin of victory") + ylab("Vote share in next election")
+plot_RDscatter(dt, avg=25, window = 50, xlab="Margin of victory", ylab="Vote share in next election")
 
 ## ------------------------------------------------------------------------
 ## Usual critical value
