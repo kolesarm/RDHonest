@@ -1,5 +1,5 @@
 Package: RDHonest
-Title: Honest inference in sharp regression discontinuity designs.
+Title: Honest inference in sharp regression discontinuity designs
 Version: 0.1.2
 Authors@R: person("Michal", "Kolesar",
     email = "kolesarmi@googlemail.com", role = c("aut", "cre"))

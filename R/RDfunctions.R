@@ -134,8 +134,9 @@ RDLPreg <- function(d, hp, kern="triangular", order=1, hm=hp, se.method="nn",
             ke <- EqKern(kern, boundary=TRUE, order=order)
             nu0 <- KernMoment(ke, moment=0, boundary=TRUE, "raw2")
         } else {
-            nu0 <- kernC[kernC$kernel==kern & kernC$order==order &
-                             kernC$boundary==TRUE, "nu0"]
+            nu0 <- RDHonest::kernC[RDHonest::kernC$kernel==kern &
+                                   RDHonest::kernC$order==order &
+                                   RDHonest::kernC$boundary==TRUE, "nu0"]
         }
         ## note we kept original outcomes, but only kept X's receiving positive
         ## weight

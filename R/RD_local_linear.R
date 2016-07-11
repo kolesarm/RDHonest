@@ -288,7 +288,7 @@ IKBW.fit <- function(d, kern="triangular", order=1, verbose=FALSE) {
 
     ## STEP 0: Kernel constant
     if (is.character(kern)) {
-        s <- kernC[with(kernC,
+        s <- RDHonest::kernC[with(RDHonest::kernC,
                         order==1 & boundary==TRUE & kernel==kern, ), ]
     } else if (is.function(kern)) {
         ke <- EqKern(kern, boundary=TRUE, order=1)
