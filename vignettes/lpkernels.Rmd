@@ -122,12 +122,12 @@ In the interior:
 
 | Kernel       | Order | $\pi_0$ | $\pi_1$      | $\pi_2$      | $\pi_3$      | $\pi_4$      |
 |:-------------|:------|:--------|:-------------|:-------------|:-------------|:-------------|
-| Uniform      |  0    |1        |$\frac{1}{2}$ |$\frac{1}{3}$ |$\frac{1}{4}$ |$\frac{1}{5} $|
+| Uniform      |  0    |1        |$\frac{1}{2}$ |$\frac{1}{3}$ |$\frac{1}{4}$ |$\frac{1}{5}$ |
 | Triangular   |  0    |1        |$\frac{1}{3}$ |$\frac{1}{6}$ |$\frac{1}{10}$|$\frac{1}{15}$|
 | Epanechnikov |  0    |1        |$\frac{3}{8}$ |$\frac{1}{5}$ |$\frac{1}{8}$ |$\frac{3}{35}$|
-| Uniform      |  2    |1        |$0.4875$      |$0.27885480$  |$0.1975$      |$0.157419807 $|
-| Triangular   |  2    |1        |$0.31155912$  |$0.13986945$  |$0.08443054$  |$0.060140887 $|
-| Epanechnikov |  2    |1        |$0.36033164$  |$0.17177502$  |$0.10671010$  |$0.077066194 $|
+| Uniform      |  2    |1        |$0.4875$      |$0.27885480$  |$0.1975$      |$0.157419807$ |
+| Triangular   |  2    |1        |$0.31155912$  |$0.13986945$  |$0.08443054$  |$0.060140887$ |
+| Epanechnikov |  2    |1        |$0.36033164$  |$0.17177502$  |$0.10671010$  |$0.077066194$ |
 
 Finally, in the column `kernC$pMSE`, the package stores the optimal constant for
 pointwise MSE optimal bandwidth (see Fan and Gijbels, page 67):
