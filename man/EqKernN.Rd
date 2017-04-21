@@ -18,4 +18,3 @@ EqKernN(K, boundary = TRUE, order = 0)
 Compute Equivalent kernel numerically
 }
 \keyword{internal}
-

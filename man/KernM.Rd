@@ -10,4 +10,3 @@ KernM(K, order = 2, boundary = boundary)
 M matrix
 }
 \keyword{internal}
-

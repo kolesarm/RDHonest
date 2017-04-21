@@ -25,4 +25,3 @@ IK bandwidth
 Calculate bandwidth for sharp RD based on local linear regression using
 method by Imbens and Kalyanaraman (2012, ReStud)
 }
-

@@ -64,4 +64,3 @@ list with elements:
 Calculate sharp RD estimate and its variance given a bandwidth using local
 polynomial regression of order \code{order}.
 }
-

@@ -29,4 +29,3 @@ KernMoment(function(u) u<1, moment = 3, boundary = FALSE)
 KernMoment(EqKern(kernel = "triangular", order = 2),
            moment = 3)
 }
-

@@ -58,7 +58,7 @@ CheckClass <- function(x, class)
                                         " needs to be class ", class, "!"))
 
 
-#' Split function into k bits and optimize on each bit in case not unimodal
+#' Split function into k bits and optimize on each bit in case not convex
 #' @keywords internal
 CarefulOptim <- function(f, interval, k=10) {
     ## intervals

@@ -13,4 +13,3 @@ sigmaNN(X, Y, J = 3)
 method assumes X is sorted
 }
 \keyword{internal}
-

@@ -2,6 +2,7 @@
 title: "Honest inference in Sharp Regression Discontinuity"
 author: "Michal Kolesár"
 date: "`r Sys.Date()`"
+
 bibliography: np-testing-library.bib
 output:
   pdf_document:
@@ -20,13 +21,13 @@ knitr::opts_chunk$set(tidy = TRUE, collapse=TRUE, comment = "#>",
                       tidy.opts=list(blank=FALSE, width.cutoff=55))
 ```
 
-
 The package `RDHonest` implements confidence intervals for the regression
-discontinuity parameter considered in @ArKo16optimal and @ArKo16honest. In this
-vignette, we demonstrate the implementation of these confidence intervals using
-a dataset from @lee08, which is included in the package as a data frame `lee08`.
+discontinuity parameter considered in @ArKo16optimal, @ArKo16honest, and
+@KoRo16. In this vignette, we demonstrate the implementation of these confidence
+intervals using datasets from @lee08 and @oreopoulos06, which are included in
+the package as a data frame `lee08` and `cghs`.
 
-## Sharp RD model
+# Sharp RD model
 
 In the sharp regression discontinuity model, we observe units $i=1,\dotsc,n$,
 with the outcome $y_i$ for the $i$th unit given by $$ y_i = f(x_i) + u_i, $$
@@ -42,6 +43,14 @@ a Democratic candidate in a US House election, and the treatment corresponds to
 winning the election. Therefore, the cutoff is zero. The outcome of interest is
 the Democratic vote share in the following election.
 
+The Oreopoulos dataset consists of a subsample of British workers, and it
+exploits a change in minimum school leaving age in the UK from 14 to 15, which
+occured in 1947. The running variable is the year in which the individual turned
+14, with the cutoff equal to 1947 so that the "treatment" is being subject to a
+higher minimmum school-leaving age. The outcome is log earnings in 1998.
+
+# Plots
+
 The package provides a function `plot_RDscatter` to plot the raw data. To remove
 some noise, the function plots averages over `avg` number of observations.
 ```{r, fig.width=4.5, fig.height=3.5, fig.cap="Lee (2008) data"}
@@ -49,8 +58,27 @@ library("RDHonest")
 ## transform data to an RDdata object
 dt <- RDData(lee08, cutoff = 0)
 ## plot 25-bin averages in a window equal to 50 around the cutoff, see Figure 1
-plot_RDscatter(dt, avg=25, window = 50, xlab="Margin of victory", ylab="Vote share in next election")
+plot_RDscatter(dt, avg=25, window = 50, xlab="Margin of victory",
+    ylab="Vote share in next election")
 ```
+
+The running variable in the Oreopoulos dataset is discrete. It is therefore
+natural to plot the average outcome by each value of the running variable, which
+is achieved using by setting `avg=Inf`. The option `dotsize="count"` makes the
+size of the points proportional to the number of observations that the point
+averages over.
+
+```{r, fig.width=4.5, fig.height=3.5, fig.cap="Oreopoulos (2006) data"}
+## transform data to an RDdata object, and transform earnings to log-earnings
+do <- RDData(data.frame(logearn=log(cghs$earnings),
+                        year14=cghs$yearat14), cutoff = 1947)
+## see Figure 2
+plot_RDscatter(do, avg=Inf, xlab="Year aged 14", ylab="Log earnings",
+    propdotsize=TRUE)
+```
+
+
+# Confidence intervals
 
 The function `RDHonest` constructs one- and two-sided confidence intervals (CIs)
 around local linear and local quadratic estimators using either a user-supplied
@@ -62,8 +90,6 @@ samples_, and achieve correct coverage asympototically uniformly over the
 parameter space otherwise. Furthermore, because the CIs explicitly take into
 account the possible bias of the estimators, the asymptotic approximation
 doesn't rely on the bandwidth to shrink to zero at a particular rate.
-
-## Honest CIs
 
 To describe the form of the CIs, let $\hat{\beta}_{h_{+},h_{-}}$ denote a a
 local polynomial estimator with bandwidth equal to $h_{+}$ above the cutoff and
@@ -100,20 +126,20 @@ $t$-statistic will be bounded by
 $cv_{1-\alpha}(B(\hat{\beta}_{h_{+},h_{-}})/\widehat{se}(\hat{\beta}_{h_{+},h_{-}}))$.
 The function `CVb` gives these critical values:
 
-```{r}
+```{r, }
 ## Usual critical value
 CVb(0, alpha=0.05)
 ## Tabulate critical values for different significance levels
 ## when bias-sd ratio equals 1/4
-knitr::kable(CVb(1/4, alpha=c(0.01, 0.05, 0.1)))
+knitr::kable(CVb(1/4, alpha=c(0.01, 0.05, 0.1)), caption="Critical values")
 ```
 
 The field `TeXDescription` is useful for plotting, or for exporting to \LaTeX,
 as in the table above.
 
-# Parameter space
+## Parameter space
 
-The package computes honest CIs when the parameter space $\mathcal{F}$
+The function `RDHonest` computes honest CIs when the parameter space $\mathcal{F}$
 corresponds to a second-order Taylor or second-order Hölder smoothness class,
 which capture two different types of smoothness restrictions. The second-order
 Taylor class assumes that $f$ lies in the the class of functions
@@ -142,6 +168,96 @@ f_{-}\in\mathcal{F}_{H}(M;(-\infty, c_{0})) \right\},$$
 
 where $$ \mathcal{F}_{H}(M;\mathcal{X})=\{f\colon |f'(x)-f'(y)|\leq M|x-y|
 \;\;x,y\in\mathcal{X}\}.$$
+
+## Discrete running variable
+
+The confidence intervals described can also be used when the running variable is
+discrete, with $G$ support points (see Section 5.1 in @KoRo16).
+
+In addition, the package provides function `bmeCI` that calculates honest
+confidence intervals under the assumption that the specification bias at zero is
+no worse at the cutoff than away from the cutoff as in Section 5.2 in @KoRo16.
+To describe the implementation of these confidence intervals, suppose the point
+estimate is given by the first element of the regression of the outcome $y_i$ on
+$m(x_i)$. For instance, local linear regression with uniform kernel and
+bandwidth $h$ corresponds to $m(x)=I(|x|\leq h)\cdot(I(x>c_0),1,x, x\cdot
+I(x>c_0))'$. Let $\theta=Q^{-1}E[m(x_i)y_i]$, where $Q=E[m(x_i)m(x_i)']$, denote
+the estimand for this regression (treating the bandwidth as fixed), and let
+$\delta(x)=f(x)-m(x)'\theta$ denote the specification error at $x$. The RD
+estimate is given by first element of the least squares estimator
+$\hat{\theta}=\hat{Q}^{-1}\sum_i m(x_i)y_i$, where $\hat{Q}=\sum_i
+m(x_i)m(x_i)'$.
+
+Let $w(x_i)$ denote a vector of indicator (dummy) variables for all support
+points of $x_i$ within distance $h$ of the cutoff, so that $\mu(x_g)$, where
+$x_g$ is the $g$th support point of $x_i$, is given by the $g$th element of the
+regression estimand $S^{-1}E[w(x_i)y_i]$, where $S=E[w(x_i)w(x_i)']$. Let
+$\hat{\mu}=\hat{S}^{-1}\sum_i w(x_i)y_i$, where $\hat{S}=\sum_i w(x_i)w(x_i)'$
+denote the least squares estimator. Then an estimate of
+$(\delta(x_1),\dotsc,\delta(x_G))'$ is given by $\hat{\delta}$, the vector with
+elements $\hat{\mu}_g-x_g\hat{\theta}$.
+
+By standard regression results, the asymptotic distribution of $\hat{\theta}$
+and $\hat{\mu}$ is given by
+\begin{equation*}
+\sqrt{n}
+\begin{pmatrix}
+\hat{\theta}-\theta\\
+\hat{\mu}-\mu
+\end{pmatrix}\overset{d}{\to}
+N\left(
+0,
+V
+\right),
+\end{equation*}
+where
+\begin{equation*}
+V=\begin{pmatrix}
+Q^{-1}E[(\epsilon_i^2+\delta(x_i)^2)m(x_i)m(x_i)']Q^{-1}&
+Q^{-1}E[\epsilon_i^2 m(x_i)w(x_i)']S^{-1}\\
+S^{-1}E[\epsilon_i^2 w(x_i)m(x_i)']Q^{-1}&
+S^{-1}E[\epsilon_i^2 w(x_i)w(x_i)']S^{-1}\\
+\end{pmatrix}.
+\end{equation*}
+
+Let $\hat{u}_i$ denote the regression residual from the regression of $y_i$ on
+$m(x_i)$, and let $\hat{\epsilon}_i$ denote the regression residuals from the
+regression of $y_i$ on $w(x_i)$. Then a consistent estimator of the asymptotic
+variance $V$ is given by
+\begin{equation*}
+\hat{V}=n\sum_i V_iV_i',
+\qquad
+V_i'=\begin{pmatrix}
+\hat{u}_i m(x_i)'\hat{Q}^{-1}&
+\hat{\epsilon}_i w(x_i)'\hat{S}^{-1}
+\end{pmatrix}.
+\end{equation*}
+
+Note that the upper left block and lower right block correspond simply to the
+Eicker-Huber-White estimators of the asymptotic variance of $\hat{\theta}$ and
+$\hat{\mu}$. By the delta method, a consistent estimator of the asymptotic
+variance of $(\hat\delta,\hat{\theta}_1)$ is given by
+\begin{equation*}
+    \hat{\Omega}=
+\begin{pmatrix}
+-X & I\\
+e_1'& 0\\
+\end{pmatrix}\hat{V}\begin{pmatrix}
+-X & I\\
+e_1'& 0\\
+\end{pmatrix}',
+\end{equation*}
+where $X$ is a matrix with $g$th row equal to $x_g'$, and $e_1$ is the first
+unit vector.
+
+In the notation of @KoRo16, let $\tau_L(\mathbf{g},\mathbf{s})=\theta_{1}
+-s^+\delta(x_{g^+}) - s^-\delta(x_{g^-})$, where $g^{+}$ and $g^{-}$ are such
+that $x_{g^{-}}\leq c_0\leq x_{g^{+}}$, and $s^{+},s^{-}\in\{-1,1\}$. A
+left-sided CI for $\tau_L(\mathbf{g},\mathbf{s})$ is then given by
+\begin{equation*}
+CI_{L}(\mathbf{g},\mathbf{s})= \hat{\theta}_{1}-s^{+}\hat\delta(x_{g^+}) -
+    s^{-}\hat\delta(x_{g^-})-z_{1-\alpha}
+\end{equation*}
 
 # Honest CIs in Lee Dataset
 

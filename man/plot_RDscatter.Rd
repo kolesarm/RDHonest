@@ -5,12 +5,14 @@
 \title{Scatterplot of binned raw observations}
 \usage{
 plot_RDscatter(d, avg = 10, xlab = NULL, ylab = NULL, window = NULL,
-  vert = TRUE)
+  vert = TRUE, propdotsize = FALSE)
 }
 \arguments{
 \item{d}{RDdata object}
 
-\item{avg}{is number of observations to average over}
+\item{avg}{is number of observations to average over. If set to \code{Inf},
+then take averages for each possible value of the running variable
+(convenient when the running variable is discrete)}
 
 \item{xlab, ylab}{x- and y-axis labels}
 
@@ -18,9 +20,12 @@ plot_RDscatter(d, avg = 10, xlab = NULL, ylab = NULL, window = NULL,
 restricted. If not specified, full data range will be plotted}
 
 \item{vert}{Draw a vertical line at cutoff?}
+
+\item{propdotsize}{If \code{TRUE}, then size of points is proportional to
+numer of observations that the point averages over (useful when
+\code{avg=Inf}). Otherwise the size of points is constant.}
 }
 \description{
 Scatterplot of raw observations in which each point corresponds to an binned
 average.
 }
-

@@ -43,5 +43,5 @@ bandwidth using local polynomial regression of order \code{order}.
  Nearest neighbor method assumes data are sorted so that
     \code{X[i] <= X[i+1]}
 }
-\keyword{internal}
 
+\keyword{internal}

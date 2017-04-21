@@ -35,4 +35,3 @@ Normally distributed with variance one and maximum bias at most \eqn{B}.
 CVb(B = 1, alpha = 0.1)
 CVb(B = c(0, 0.5, 1), alpha = c(0.05, 0.1))
 }
-

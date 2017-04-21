@@ -10,4 +10,3 @@ CarefulOptim(f, interval, k = 10)
 Split function into k bits and optimize on each bit in case not unimodal
 }
 \keyword{internal}
-

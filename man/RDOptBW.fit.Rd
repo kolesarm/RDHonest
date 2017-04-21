@@ -66,4 +66,3 @@ optimal bandwidth
 \examples{
 ## TODO
 }
-

@@ -136,6 +136,7 @@ function \code{\link{RDOptBW}}.
 as variables in \code{formula}, that is first in \code{data} and then in the
 environment of \code{formula}.
 }
+
 \examples{
 
 ## TODO
@@ -143,4 +144,3 @@ environment of \code{formula}.
 \seealso{
 \code{\link{RDOptBW}}
 }
-

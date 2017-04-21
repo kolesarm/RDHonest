@@ -111,6 +111,7 @@ length of a honest CI under second order Hölder or Taylor class.
 as variables in \code{formula}, that is first in \code{data} and then in the
 environment of \code{formula}.
 }
+
 \examples{
 
 ## TODO
@@ -118,4 +119,3 @@ environment of \code{formula}.
 \seealso{
 \code{\link{RDHonest}}
 }
-

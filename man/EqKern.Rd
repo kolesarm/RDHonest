@@ -26,4 +26,3 @@ Calculates equivalent kernel for local polynomial regression.
 \examples{
 EqKern(kernel = "uniform", order = 2)
 }
-

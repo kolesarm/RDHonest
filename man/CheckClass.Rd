@@ -10,4 +10,3 @@ CheckClass(x, class)
 check class of object
 }
 \keyword{internal}
-
