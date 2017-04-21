@@ -6,8 +6,8 @@ date: "`r Sys.Date()`"
 bibliography: np-testing-library.bib
 output:
   pdf_document:
-    toc: false
-
+    toc: true
+    toc_depth: 1
 vignette: >
   %\VignetteIndexEntry{Honest inference in Sharp Regression Discontinuity}
   %\VignetteEngine{knitr::rmarkdown}
@@ -45,9 +45,9 @@ the Democratic vote share in the following election.
 
 The Oreopoulos dataset consists of a subsample of British workers, and it
 exploits a change in minimum school leaving age in the UK from 14 to 15, which
-occured in 1947. The running variable is the year in which the individual turned
+occurred in 1947. The running variable is the year in which the individual turned
 14, with the cutoff equal to 1947 so that the "treatment" is being subject to a
-higher minimmum school-leaving age. The outcome is log earnings in 1998.
+higher minimum school-leaving age. The outcome is log earnings in 1998.
 
 # Plots
 
@@ -78,7 +78,7 @@ plot_RDscatter(do, avg=Inf, xlab="Year aged 14", ylab="Log earnings",
 ```
 
 
-# Confidence intervals
+# Inference in Local polynomial regression
 
 The function `RDHonest` constructs one- and two-sided confidence intervals (CIs)
 around local linear and local quadratic estimators using either a user-supplied
@@ -86,7 +86,7 @@ bandwidth (which is allowed to differ on either side of the cutoff), or
 bandwidth that is optimized for a given performance criterion. The sense of
 honesty is that, if the regression errors are normally distributed with known
 variance, the CIs are guaranteed to achieve correct coverage _in finite
-samples_, and achieve correct coverage asympototically uniformly over the
+samples_, and achieve correct coverage asymptotically uniformly over the
 parameter space otherwise. Furthermore, because the CIs explicitly take into
 account the possible bias of the estimators, the asymptotic approximation
 doesn't rely on the bandwidth to shrink to zero at a particular rate.
@@ -154,8 +154,8 @@ approximation error from second-order Taylor expansion of $f(x)$ about $c_{0}$
 is bounded by $M|x|^{2}/2$, uniformly over $\mathcal{X}$: \begin{align*}
 \mathcal{F}_{T}(M;\mathcal{X}) =\left\{f\colon \left|
 f(x)-f(c_0)-f'(c_0)x\right|\le M|x|^2/2\text{ all }x\in\mathcal{X}\right\}.
-\end{align*} The class $\mathcal{F}_{T}(C;\mathcal{X})$ formalizes the idea that
-the second derivative of $f$ at zero should be bounded by $M$. See Section 5 in
+\end{align*} The class $\mathcal{F}_{T}(M;\mathcal{X})$ formalizes the idea that
+the second derivative of $f$ at zero should be bounded by $M$. See Section 2 in
 @ArKo16optimal. A disadvantage of this class is that it doesn't impose
 smoothness away from boundary, which may be undesirable in many empirical
 applications. The Hölder class addresses this problem directly by bounding the
@@ -169,7 +169,7 @@ f_{-}\in\mathcal{F}_{H}(M;(-\infty, c_{0})) \right\},$$
 where $$ \mathcal{F}_{H}(M;\mathcal{X})=\{f\colon |f'(x)-f'(y)|\leq M|x-y|
 \;\;x,y\in\mathcal{X}\}.$$
 
-## Discrete running variable
+## Discrete running variable TODO
 
 The confidence intervals described can also be used when the running variable is
 discrete, with $G$ support points (see Section 5.1 in @KoRo16).
@@ -259,7 +259,11 @@ CI_{L}(\mathbf{g},\mathbf{s})= \hat{\theta}_{1}-s^{+}\hat\delta(x_{g^+}) -
     s^{-}\hat\delta(x_{g^-})-z_{1-\alpha}
 \end{equation*}
 
-# Honest CIs in Lee Dataset
+# Optimal inference TODO
+
+# Empirical examples
+
+## Lee data
 
 CIs around a local linear estimator with bandwidth that equals to 10 on either
 side of the cutoff when the parameter space is given by a Taylor and Hölder
@@ -270,7 +274,7 @@ RDHonest(voteshare ~ margin, data=lee08, kern="uniform", M=0.1, hp=10, sclass="T
 RDHonest(voteshare ~ margin, data=lee08, kern="uniform", M=0.1, hp=10, sclass="H")
 ```
 
-The confidence intervals use the neareast-neighbor method to esitmate the
+The confidence intervals use the nearest-neighbor method to estimate the
 standard error by default. The package reports two-sided as well one-sided CIs
 (with lower as well as upper limit) by default.
 
@@ -282,7 +286,7 @@ RDHonest(voteshare ~ margin, data=lee08, kern="uniform", M=0.1, opt.criterion="M
 ```
 
 It is possible to compute the MSE-optimal bandwidth directly using the function
-`RDOpt.BW`
+`RDOptBW`
 
 ```{r}
 RDOptBW(voteshare ~ margin, data=lee08, kern="uniform", M=0.1, opt.criterion="MSE", sclass="T")

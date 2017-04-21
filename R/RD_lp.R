@@ -12,13 +12,20 @@
 #' @template RDBW
 #' @template RDclass
 #' @template Kern
-#' @return Returns an object of class \code{"RDResults"}. The function \code{print}
-#'     can be used to obtain and print a summary of the results. An object of
-#'     class \code{"RDResults"} is a list containing the following components (TODO)
+#' @return Returns an object of class \code{"RDResults"}. The function
+#'     \code{print} can be used to obtain and print a summary of the results. An
+#'     object of class \code{"RDResults"} is a list containing the following
+#'     components
 #'
 #'     \describe{
 #'   \item{\code{estimate}}{Point estimate. This estimate is MSE-optimal if
 #'                   \code{what="Estimation"}}
+#'
+#'   \item{lff}{TODO}
+#'
+#'   \item{\code{maxbias}}{Maximum bias of \code{estimate}}
+#'
+#'   \item{\code{sd}}{Standard deviation of estimate}
 #'
 #'   \item{\code{lower}, \code{upper}}{Lower (upper) end-point of a one-sided CI
 #'         based on \code{estimate}. This CI is optimal if \code{what=="OCI"}}
@@ -27,17 +34,21 @@
 #'             so that the
 #'             CI is given by \code{c(estimate-hl, estimate+hl)}. The CI is optimal
 #'             if \code{what="FLCI"}}
-#'   \item{\code{maxbias}}{Maximum bias of \code{estimate}}
-#'   \item{\code{sd}}{Standard deviation of estimate}
-#'   \item{\code{eff.obs}}{Effective number of observations used by \code{estimate}}
+#'
+#'   \item{\code{eff.obs}}{Effective number of observations used by
+#'             \code{estimate}}
+#'
 #'   \item{\code{hp}, \code{hm}}{Bandwidths used}
-#'   \item{\code{naive}}{Coverage of naive CI that uses \code{qnorm(1-alpha/2)} as
-#'                critical value}
-#' }
+#'
+#'   \item{\code{naive}}{Coverage of CI that ignores bias and uses
+#'                \code{qnorm(1-alpha/2)} as critical value}
+#'       \item{\code{call}}{the matched call}}
 #' @seealso \code{\link{RDOptBW}}
 #' @examples
 #'
-#' ## TODO
+#' # Lee dataset
+#' RDHonest(voteshare ~ margin, data = lee08, kern = "uniform", M = 0.1,
+#'          hp = 10, sclass = "T")
 #' @export
 RDHonest <- function(formula, data, subset, cutoff=0, M, kern="triangular",
                      sigma2, na.action, opt.criterion, bw.equal=TRUE, hp, hm=hp,
@@ -108,7 +119,9 @@ RDHonest <- function(formula, data, subset, cutoff=0, M, kern="triangular",
 #' @seealso \code{\link{RDHonest}}
 #' @examples
 #'
-#' ## TODO
+#' ## Use Lee dataset
+#' RDOptBW(voteshare ~ margin, data = lee08, kern = "uniform",
+#'         M = 0.1, opt.criterion = "MSE", sclass = "H")
 #' @export
 RDOptBW <- function(formula, data, subset, cutoff=0, M, kern="triangular",
                     sigma2, na.action, opt.criterion, bw.equal=TRUE,
@@ -142,10 +155,12 @@ RDOptBW <- function(formula, data, subset, cutoff=0, M, kern="triangular",
 #' @template RDBW
 #' @template RDclass
 #' @template Kern
-#' @return TODO
+#' @return Returns an object of class \code{"RDResults"}, see description in
+#'     \code{\link{RDHonest}}
 #' @examples
 #'
-#' ## TODO
+#' ## Lee dataset
+#' d <- RDData(lee08, cutoff=0)
 #' @importFrom stats pnorm qnorm
 #' @export
 RDHonest.fit <- function(d, M, kern="triangular", hp, hm=hp, opt.criterion,
@@ -209,9 +224,20 @@ RDHonest.fit <- function(d, M, kern="triangular", hp, hm=hp, opt.criterion,
 #' @template RDoptBW
 #' @template RDclass
 #' @template Kern
-#' @return TODO
+#' @return a list with the following elements
+#'     \describe{
+#'     \item{\code{hp}}{bandwidth for observations above cutoff}
+#'
+#'     \item{\code{hm}}{bandwidth for observations below cutoff, equal to \code{hp}
+#'     unless \code{bw.equal==FALSE}}
+#'
+#'     \item{\code{sigma2m}, \code{sigma2p}}{estimate of conditional variance
+#'      above and below cutoff, from \code{d}}
+#'    }
 #' @examples
-#' ## TODO
+#' ## Lee data
+#' d <- RDData(lee08, cutoff=0)
+#' RDOptBW.fit(d, M=0.1, opt.criterion="MSE")[c("hp", "hm")]
 #' @export
 RDOptBW.fit <- function(d, M, kern="triangular", opt.criterion,
                         bw.equal=TRUE, alpha=0.05, beta=0.8,

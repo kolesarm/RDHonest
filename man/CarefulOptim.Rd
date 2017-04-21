@@ -2,11 +2,11 @@
 % Please edit documentation in R/utils.R
 \name{CarefulOptim}
 \alias{CarefulOptim}
-\title{Split function into k bits and optimize on each bit in case not unimodal}
+\title{Split function into k bits and optimize on each bit in case not convex}
 \usage{
 CarefulOptim(f, interval, k = 10)
 }
 \description{
-Split function into k bits and optimize on each bit in case not unimodal
+Split function into k bits and optimize on each bit in case not convex
 }
 \keyword{internal}

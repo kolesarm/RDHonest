@@ -146,9 +146,10 @@ RDLPreg <- function(d, hp, kern="triangular", order=1, hm=hp, se.method="nn",
     }
     names(plugin) <- "plugin"
     se <- sqrt(c(rm$var+rp$var, plugin))
+    eo <- 1/(1/rm$eff.obs+1/rp$eff.obs)
 
     list(estimate=theta, se=se, wm=rm$w, wp=rp$w, sigma2m=rm$sigma2,
-         sigma2p=rp$sigma2, eff.obs=rm$eff.obs+rp$eff.obs)
+         sigma2p=rp$sigma2, eff.obs=eo)
 }
 
 
