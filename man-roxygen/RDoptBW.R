@@ -20,8 +20,6 @@
 #'     \code{sigma2}, if supplied. Otherwise, for the purpose of estimating the
 #'     optimal bandwidth, conditional variance is assumed homoscedastic, and
 #'     estimated using a nearest neighbor estimator.
-#' @param bw.equal logical specifying whether bandwidths on either side of
-#'     cutoff should be constrainted to equal to each other.
 #' @param beta Determines quantile of excess length to optimize, if bandwidth
 #'     optimizes given quantile of excess length of one-sided confidence
 #'     intervals.

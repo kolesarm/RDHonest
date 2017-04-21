@@ -12,6 +12,7 @@
 #' @template RDBW
 #' @template RDclass
 #' @template Kern
+#' @template bwequal
 #' @return Returns an object of class \code{"RDResults"}. The function
 #'     \code{print} can be used to obtain and print a summary of the results. An
 #'     object of class \code{"RDResults"} is a list containing the following
@@ -21,7 +22,8 @@
 #'   \item{\code{estimate}}{Point estimate. This estimate is MSE-optimal if
 #'                   \code{what="Estimation"}}
 #'
-#'   \item{lff}{TODO}
+#'   \item{lff}{Least favorable function, only relevant for optimal estimator
+#'              under Taylor class}
 #'
 #'   \item{\code{maxbias}}{Maximum bias of \code{estimate}}
 #'
@@ -93,6 +95,7 @@ RDHonest <- function(formula, data, subset, cutoff=0, M, kern="triangular",
 #' @template RDoptBW
 #' @template RDclass
 #' @template Kern
+#' @template bwequal
 #' @return Returns an object of class \code{"RDBW"}. The function \code{print}
 #'     can be used to obtain and print a summary of the results. An object of
 #'     class \code{"RDBW"} is a list containing the following components:
@@ -155,6 +158,7 @@ RDOptBW <- function(formula, data, subset, cutoff=0, M, kern="triangular",
 #' @template RDBW
 #' @template RDclass
 #' @template Kern
+#' @template bwequal
 #' @return Returns an object of class \code{"RDResults"}, see description in
 #'     \code{\link{RDHonest}}
 #' @examples
@@ -224,6 +228,7 @@ RDHonest.fit <- function(d, M, kern="triangular", hp, hm=hp, opt.criterion,
 #' @template RDoptBW
 #' @template RDclass
 #' @template Kern
+#' @template bwequal
 #' @return a list with the following elements
 #'     \describe{
 #'     \item{\code{hp}}{bandwidth for observations above cutoff}

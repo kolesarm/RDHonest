@@ -109,7 +109,8 @@ Returns an object of class \code{"RDResults"}. The function
   \item{\code{estimate}}{Point estimate. This estimate is MSE-optimal if
                   \code{what="Estimation"}}
 
-  \item{lff}{TODO}
+  \item{lff}{Least favorable function, only relevant for optimal estimator
+             under Taylor class}
 
   \item{\code{maxbias}}{Maximum bias of \code{estimate}}
 
