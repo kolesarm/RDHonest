@@ -7,9 +7,12 @@
 #' @param d RDData
 #' @param f Least favorable function of class "RDLFFunction"
 #' @keywords internal
-Q <- function(d, f)
-    sum(f$m(d$Xm)^2/d$sigma2m)+ sum(f$p(d$Xp)^2/d$sigma2p)
+Q <- function(d, f) {
+    if (is.null(d$sigma2p) | is.null(d$sigma2m))
+        stop("variance function not supplied")
 
+    sum(f$m(d$Xm)^2/d$sigma2m)+ sum(f$p(d$Xp)^2/d$sigma2p)
+}
 
 #' Solution to inverse modulus problem in RD under Taylor(2) class
 #'
@@ -136,11 +139,14 @@ RDTOpt.fit <- function(d, M, opt.criterion, alpha=0.05, beta=0.5) {
             CVb(maxbias/sd, alpha)$cv * sd # Half-length
         }
         ## find interval to optimize over
-        b.start <- RDTOpt.fit(d, M, opt.criterion="MSE")
+        b.start <- RDTOpt.fit(d, M, opt.criterion="MSE")$omega/2
         lff <- RDgbC(d, CarefulOptim(eq, c(b.start/2,2*b.start))$minimum, C)
     }
 
-    RDEstimator(d, lff, alpha=alpha)
+    r <- RDEstimator(d, lff, alpha=alpha)
+    r$hm <- (r$lff$m(0)/C)^(1/2)
+    r$hp <- (r$lff$p(0)/C)^(1/2)
+    r
 }
 
 
@@ -175,6 +181,6 @@ RDTEfficiencyBound <- function(d, M, opt.criterion="FLCI",
         upper <- 10
         while(integrand(upper)>1e-10) upper <- 2*upper
         return(stats::integrate(integrand, 1e-6, upper)$value /
-                   RDTOpt.fit(d, C, opt.criterion="FLCI", alpha=alpha)$hl)
+                   RDTOpt.fit(d, 2*C, opt.criterion="FLCI", alpha=alpha)$hl)
     }
 }
