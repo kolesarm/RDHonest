@@ -4,7 +4,8 @@
 \alias{RDTEfficiencyBound}
 \title{Finite-sample efficiency bounds for minimax CIs}
 \usage{
-RDTEfficiencyBound(d, M, opt.criterion = "FLCI", alpha = 0.05, beta = 0.5)
+RDTEfficiencyBound(d, M, opt.criterion = "FLCI", alpha = 0.05, beta = 0.5,
+  se.initial = "IK")
 }
 \arguments{
 \item{d}{object of class \code{"RDData"}}
@@ -40,6 +41,20 @@ constructing/optimizing confidence intervals.}
 \item{beta}{Determines quantile of excess length to optimize, if bandwidth
 optimizes given quantile of excess length of one-sided confidence
 intervals.}
+
+\item{se.initial}{Method for estimating initial variance (ignored if
+    \code{hp} and \code{hm} are provided, or if data already contains
+    estimate of variance.
+
+\describe{
+
+  \item{"IK"}{Based on residuals from a local linear regression using IK
+              bandwidth}
+
+   \item{"Silverman"}{Based on Silverman's pilot bandwidth, as in Equatio
+   (14) in IK}
+
+}}
 }
 \description{
 Compute efficiency of minimax one-sided CIs at constant functions and

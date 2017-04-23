@@ -56,7 +56,8 @@ FindZero <- function(f, ival=1.1, negative=TRUE) {
 #'     }
 #' @examples
 #'
-#' ## TODO
+#' ## Transform Lee data
+#' d <- RDData(lee08, cutoff=0)
 #' @export
 RDData <- function(d, cutoff) {
 
@@ -65,6 +66,14 @@ RDData <- function(d, cutoff) {
                orig.cutoff=cutoff, var.names=names(d)[1:2])
     df$sigma2m <- d$"(sigma2)"[X<0]
     df$sigma2p <- d$"(sigma2)"[X>=0]
+
+    # Sort data
+    s <- sort(df$Xp, index.return=TRUE)
+    df$Yp <- df$Yp[s$ix]
+    df$Xp <- s$x
+    s <- sort(df$Xm, index.return=TRUE)
+    df$Ym <- df$Ym[s$ix]
+    df$Xm <- s$x
 
     structure(df, class="RDData")
 }

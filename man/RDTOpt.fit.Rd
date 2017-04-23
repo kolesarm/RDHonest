@@ -2,9 +2,12 @@
 % Please edit documentation in R/RD_opt.R
 \name{RDTOpt.fit}
 \alias{RDTOpt.fit}
-\title{Finite-sample optimal inference in RD under second-order Taylor class}
+\title{Basic computing engine called by \code{\link{RDHonest}} to compute honest
+confidence intervals for local optimal estimators in RD under second-order
+Taylor class.}
 \usage{
-RDTOpt.fit(d, M, opt.criterion, alpha = 0.05, beta = 0.5)
+RDTOpt.fit(d, M, opt.criterion, alpha = 0.05, beta = 0.5,
+  se.method = "supplied.var", J = 3, se.initial = "IK")
 }
 \arguments{
 \item{d}{object of class \code{"RDData"}}
@@ -40,13 +43,53 @@ constructing/optimizing confidence intervals.}
 \item{beta}{Determines quantile of excess length to optimize, if bandwidth
 optimizes given quantile of excess length of one-sided confidence
 intervals.}
+
+\item{se.method}{Vector with methods for estimating standard error of
+estimate. If \code{NULL}, standard errors are not computed. The elements of
+the vector can consist of the following methods:
+
+\describe{
+    \item{"nn"}{Nearest neighbor method}
+
+    \item{"EHW"}{Eicker-Huber-White, with residuals from local regression
+    (local polynomial estimators only).}
+
+    \item{"demeaned"}{Use EHW, but instead of using residuals, estimate
+        \eqn{sigma^2_i} by subtracting the estimated intercept from the
+        outcome (and not subtracting the estimated slope). Local
+        polynomial estimators only.}
+
+   \item{"plugin"}{Plug-in estimate based on asymptotic variance. Local
+        polynomial estimators only.}
+
+   \item{"supplied.var"}{Use conditional variance supplied by \code{sigma2} /
+        \code{d} instead of computing residuals}
+
+}}
+
+\item{J}{Number of nearest neighbors, if "nn" is specified in
+\code{se.method}.}
+
+\item{se.initial}{Method for estimating initial variance (ignored if
+    \code{hp} and \code{hm} are provided, or if data already contains
+    estimate of variance.
+
+\describe{
+
+  \item{"IK"}{Based on residuals from a local linear regression using IK
+              bandwidth}
+
+   \item{"Silverman"}{Based on Silverman's pilot bandwidth, as in Equatio
+   (14) in IK}
+
+}}
 }
 \value{
 Returns an object of class \code{"RDResults"}, see description in
     \code{\link{RDHonest}}
 }
 \description{
-Compute optimal CI or optimal estimator (depending on value of
-\code{opt.criterion}) in RD under second-order Taylor class. Variance of the
-estimator is computed using the conditional variance supplied by \code{d}
+Basic computing engine called by \code{\link{RDHonest}} to compute honest
+confidence intervals for local optimal estimators in RD under second-order
+Taylor class.
 }

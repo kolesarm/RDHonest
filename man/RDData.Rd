@@ -47,5 +47,6 @@ is at zero.
 }
 \examples{
 
-## TODO
+## Transform Lee data
+d <- RDData(lee08, cutoff=0)
 }

@@ -259,7 +259,11 @@ CI_{L}(\mathbf{g},\mathbf{s})= \hat{\theta}_{1}-s^{+}\hat\delta(x_{g^+}) -
     s^{-}\hat\delta(x_{g^-})-z_{1-\alpha}
 \end{equation*}
 
-# Optimal inference TODO
+# Optimal inference
+
+For the second-order Taylor smoothness class, the function `RDHonest`, with
+`kernel="optimal"`, computes finite-sample optimal estimators and confidence
+intervals, as described in Section 2.2 in @ArKo16optimal.
 
 # Empirical examples
 
@@ -291,6 +295,19 @@ It is possible to compute the MSE-optimal bandwidth directly using the function
 ```{r}
 RDOptBW(voteshare ~ margin, data=lee08, kern="uniform", M=0.1, opt.criterion="MSE", sclass="T")
 RDOptBW(voteshare ~ margin, data=lee08, kern="uniform", M=0.1, opt.criterion="MSE", sclass="H")
+```
+
+For Taylor smoothness class, instead of using local polynomial estimators, one
+can use estimators with optimally chosen weights. This typically yields tighter
+CIs. Comparing the lenghts of two-sided CIs with optimally chosen bandwidths:
+
+```{r}
+r <- RDHonest(voteshare ~ margin, data=lee08, kern="optimal", M=0.1, opt.criterion="FLCI", se.initial="Silverman", se.method="nn")
+
+2*r$hl
+
+2*RDHonest(voteshare ~ margin, data=lee08, kern="triangular", M=0.1, opt.criterion="FLCI", se.initial="Silverman", se.method="nn", sclass="T")$hl
+
 ```
 
 # References

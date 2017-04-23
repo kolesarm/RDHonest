@@ -6,7 +6,7 @@
 \usage{
 RDOptBW(formula, data, subset, cutoff = 0, M, kern = "triangular", sigma2,
   na.action, opt.criterion, bw.equal = TRUE, alpha = 0.05, beta = 0.8,
-  sclass = "H", order = 1)
+  sclass = "H", order = 1, se.initial = "Silverman")
 }
 \arguments{
 \item{formula}{object of class \code{"formula"} (or one that can be coerced
@@ -74,6 +74,20 @@ intervals.}
 \code{"H"} for Hölder class.}
 
 \item{order}{Order of local regression 1 for linear, 2 for quadratic.}
+
+\item{se.initial}{Method for estimating initial variance (ignored if
+    \code{hp} and \code{hm} are provided, or if data already contains
+    estimate of variance.
+
+\describe{
+
+  \item{"IK"}{Based on residuals from a local linear regression using IK
+              bandwidth}
+
+   \item{"Silverman"}{Based on Silverman's pilot bandwidth, as in Equatio
+   (14) in IK}
+
+}}
 }
 \value{
 Returns an object of class \code{"RDBW"}. The function \code{print}

@@ -39,3 +39,11 @@ RDHonest(voteshare ~ margin, data=lee08, kern="uniform", M=0.1, opt.criterion="M
 RDOptBW(voteshare ~ margin, data=lee08, kern="uniform", M=0.1, opt.criterion="MSE", sclass="T")
 RDOptBW(voteshare ~ margin, data=lee08, kern="uniform", M=0.1, opt.criterion="MSE", sclass="H")
 
+## ------------------------------------------------------------------------
+r <- RDHonest(voteshare ~ margin, data=lee08, kern="optimal", M=0.1, opt.criterion="FLCI", se.initial="Silverman", se.method="nn")
+
+2*r$hl
+
+2*RDHonest(voteshare ~ margin, data=lee08, kern="triangular", M=0.1, opt.criterion="FLCI", se.initial="Silverman", se.method="nn", sclass="T")$hl
+
+

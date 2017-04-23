@@ -26,6 +26,7 @@
 #' @export
 CVb <- function(B, alpha=0.05) {
     cv <- function(B, alpha = 0.05) {
+        if(is.na(B)) return(NA)
         stopifnot(B >= 0 & alpha > 0 & alpha < 1)
         stats::uniroot(function(c) pnorm(c - B) - pnorm(- c - B) - (1-alpha),
                        c(1e-10, B - 2*qnorm(alpha / 2)),

@@ -2,12 +2,12 @@
 % Please edit documentation in R/RD_lp.R
 \name{RDHonest}
 \alias{RDHonest}
-\title{Honest inference in RD based on local polynomial estimator}
+\title{Honest inference in RD}
 \usage{
 RDHonest(formula, data, subset, cutoff = 0, M, kern = "triangular", sigma2,
   na.action, opt.criterion, bw.equal = TRUE, hp, hm = hp,
   se.method = "nn", alpha = 0.05, beta = 0.8, J = 3, sclass = "H",
-  order = 1)
+  order = 1, se.initial = "Silverman")
 }
 \arguments{
 \item{formula}{object of class \code{"formula"} (or one that can be coerced
@@ -76,13 +76,21 @@ the vector can consist of the following methods:
 
 \describe{
     \item{"nn"}{Nearest neighbor method}
-    \item{"EHW"}{Eicker-Huber-White, with residuals from local regression.}
+
+    \item{"EHW"}{Eicker-Huber-White, with residuals from local regression
+    (local polynomial estimators only).}
+
     \item{"demeaned"}{Use EHW, but instead of using residuals, estimate
         \eqn{sigma^2_i} by subtracting the estimated intercept from the
-        outcome (and not subtracting the estimated slope)}
-    \item{"plugin"}{Plug-in estimate based on asymptotic variance.}
-    \item{"supplied.var"}{Use EHW with conditional variance supplied by
-        \code{sigma2} / \code{d} instead of computing residuals}
+        outcome (and not subtracting the estimated slope). Local
+        polynomial estimators only.}
+
+   \item{"plugin"}{Plug-in estimate based on asymptotic variance. Local
+        polynomial estimators only.}
+
+   \item{"supplied.var"}{Use conditional variance supplied by \code{sigma2} /
+        \code{d} instead of computing residuals}
+
 }}
 
 \item{alpha}{determines confidence level, \code{1-alpha} for
@@ -92,12 +100,27 @@ constructing/optimizing confidence intervals.}
 optimizes given quantile of excess length of one-sided confidence
 intervals.}
 
-\item{J}{Number of nearest neighbors, if "nn" is specified in \code{se.method}.}
+\item{J}{Number of nearest neighbors, if "nn" is specified in
+\code{se.method}.}
 
 \item{sclass}{Smoothness class, either \code{"T"} for Taylor or
 \code{"H"} for Hölder class.}
 
 \item{order}{Order of local regression 1 for linear, 2 for quadratic.}
+
+\item{se.initial}{Method for estimating initial variance (ignored if
+    \code{hp} and \code{hm} are provided, or if data already contains
+    estimate of variance.
+
+\describe{
+
+  \item{"IK"}{Based on residuals from a local linear regression using IK
+              bandwidth}
+
+   \item{"Silverman"}{Based on Silverman's pilot bandwidth, as in Equatio
+   (14) in IK}
+
+}}
 }
 \value{
 Returns an object of class \code{"RDResults"}. The function
@@ -110,7 +133,7 @@ Returns an object of class \code{"RDResults"}. The function
                   \code{what="Estimation"}}
 
   \item{lff}{Least favorable function, only relevant for optimal estimator
-             under Taylor class}
+             under Taylor class.}
 
   \item{\code{maxbias}}{Maximum bias of \code{estimate}}
 
@@ -131,14 +154,23 @@ Returns an object of class \code{"RDResults"}. The function
 
   \item{\code{naive}}{Coverage of CI that ignores bias and uses
                \code{qnorm(1-alpha/2)} as critical value}
-      \item{\code{call}}{the matched call}}
+
+  \item{\code{call}}{the matched call}
+
+}
 }
 \description{
 Calculate estimators and one- and two-sided CIs based on local polynomial
 estimator in RD under second-order Taylor or Hölder smoothness class. If
-bandwidth is not supplied it is calculated to be optimal for a given
-performance criterion, as specified by \code{opt.criterion} using the
-function \code{\link{RDOptBW}}.
+\code{kern="optimal"}, calculate optimal estimators under second-order Taylor
+smoothness class.
+}
+\details{
+The bandwidth is calculated to be optimal for a given performance criterion,
+as specified by \code{opt.criterion}. For local polynomial estimators, this
+optimal bandwidth is calculated using the function \code{\link{RDOptBW}}.
+Alternatively, for local polynomial estimators, the bandwidths above and
+below the cutoff can be specified by \code{hp} and \code{hm}.
 }
 \section{Note}{
 

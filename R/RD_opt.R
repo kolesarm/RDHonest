@@ -7,12 +7,9 @@
 #' @param d RDData
 #' @param f Least favorable function of class "RDLFFunction"
 #' @keywords internal
-Q <- function(d, f) {
-    if (is.null(d$sigma2p) | is.null(d$sigma2m))
-        stop("variance function not supplied")
-
+Q <- function(d, f)
     sum(f$m(d$Xm)^2/d$sigma2m)+ sum(f$p(d$Xp)^2/d$sigma2p)
-}
+
 
 #' Solution to inverse modulus problem in RD under Taylor(2) class
 #'
@@ -76,23 +73,47 @@ RDLFFunction <- function(d, C, delta)
 #' \eqn{hat{L}_{delta, C}}
 #' @param d RDData
 #' @param f RDLFFunction
+#' @template RDse
 #' @keywords internal
-RDEstimator <- function(d, f, alpha=0.05) {
+RDEstimator <- function(d, f, alpha=0.05, se.method="supplied.var", J=3) {
     den <- sum(f$p(d$Xp) / d$sigma2p) # denominator
-    Lhat <- (sum(f$p(d$Xp) * d$Yp / d$sigma2p) -
-                 sum(f$m(d$Xm) * d$Ym / d$sigma2m)) / den
+
+    Wp <- f$p(d$Xp) / (d$sigma2p*den)
+    Wm <- f$m(d$Xm) / (d$sigma2m*den)
+
+    ## Drop observations with zero weight
+    d$Xp <- d$Xp[Wp!=0]
+    d$Xm <- d$Xm[Wm!=0]
+    d$Yp <- d$Yp[Wp!=0]
+    d$Ym <- d$Ym[Wm!=0]
+    d$sigma2p <- d$sigma2p[Wp!=0]
+    d$sigma2m <- d$sigma2m[Wm!=0]
+    Wp <- Wp[Wp!=0]
+    Wm <- Wm[Wm!=0]
+    Lhat <- sum(Wp * d$Yp) - sum(Wm * d$Ym)
+
     q <- Q(d, f)
     b <- f$m(0)+f$p(0)
-    sd <- sqrt(q)/den                   # standard deviation
+
+    ## standard deviation
+    sd <- c(NA, NA, NA, NA)
+    names(sd) <- c("supplied.var", "nn", "EHW", "demeaned")
+    sdL <- function(s2p, s2m) sqrt(sum(Wp^2 * s2p) + sum(Wm^2 * s2m))
+
+    if ("supplied.var" %in% se.method)
+        sd[1] <- sdL(d$sigma2p, d$sigma2m)
+    if ("nn" %in% se.method)
+        sd[2] <- sdL(sigmaNN(d$Xp, d$Yp, J=J), sigmaNN(d$Xm, d$Ym, J=J))
+    if ("demeaned" %in% se.method)
+        sd[4] <- sdL((d$Yp - sum(Wp*d$Yp))^2, (d$Ym - sum(Wm*d$Ym))^2)
+    sd <- sd[se.method]
     maxbias <- b - q/den                # b-q/den
     lower <- Lhat - maxbias - qnorm(1-alpha)*sd
     upper <- Lhat + maxbias + qnorm(1-alpha)*sd
-    hl <- RDHonest::CVb(maxbias/sd, alpha)$cv * sd # Half-length
+    hl <- CVb(maxbias/sd, alpha)$cv * sd # Half-length
 
     ## Effective number of observations
-    ## 1/\sum_i w_i^2, since var(Lhat)=sigma^2 *\sum_i w_i^2 under homo
-    eff.obs <- 1/(sum( (f$p(d$Xp)/(d$sigma2p*den))^2) +
-        sum( (f$m(d$Xm)/(d$sigma2m*den))^2))
+    eff.obs <- 1/sum(Wp^2) + 1/sum(Wm^2)
 
     structure(list(estimate=Lhat, lff=f, maxbias=maxbias, sd=sd, lower=lower,
                    upper=upper, hl=hl, delta=sqrt(4*q), omega=2*b,
@@ -100,21 +121,26 @@ RDEstimator <- function(d, f, alpha=0.05) {
               class="RDResults")
 }
 
-#' Finite-sample optimal inference in RD under second-order Taylor class
-#'
-#' Compute optimal CI or optimal estimator (depending on value of
-#' \code{opt.criterion}) in RD under second-order Taylor class. Variance of the
-#' estimator is computed using the conditional variance supplied by \code{d}
+#' Basic computing engine called by \code{\link{RDHonest}} to compute honest
+#' confidence intervals for local optimal estimators in RD under second-order
+#' Taylor class.
 #'
 #' @param d object of class \code{"RDData"}
 #' @template RDoptBW
+#' @template RDse
+#' @template RDseInitial
 #' @param M Bound on second derivative of the conditional mean function.
 #' @return Returns an object of class \code{"RDResults"}, see description in
 #'     \code{\link{RDHonest}}
 #' @export
-RDTOpt.fit <- function(d, M, opt.criterion, alpha=0.05, beta=0.5) {
-    ## We just need to find optimal delta, see end of appendix C for formulas
+RDTOpt.fit <- function(d, M, opt.criterion, alpha=0.05, beta=0.5,
+                       se.method="supplied.var", J=3, se.initial="IK") {
+    ## First check if sigma2 is supplied
+    if (is.null(d$sigma2p) | is.null(d$sigma2m))
+        d <- RDprelimVar(d, se.initial)
+
     C <-  M/2
+    ## Find optimal delta, see Supplement to 1511.06028v2
     if (opt.criterion=="OCI") {
         lff <- RDLFFunction(d, C, qnorm(1-alpha)+qnorm(beta))
     } else if (opt.criterion=="MSE") {
@@ -127,23 +153,25 @@ RDTOpt.fit <- function(d, M, opt.criterion, alpha=0.05, beta=0.5) {
     } else if (opt.criterion=="FLCI") {
         eq <- function(b) {
             r <- RDgbC(d, b, C)
-            q <- Q(d, r)
+            q1 <- Q(d, r)
             ## b*bnmflci(sqrt(q), alpha=alpha)$c *
             ##     sum(RDgbC(d, b, C)$p(d$Xp) / d$sigma2p) - q
 
             ## Instead of using the above formula from page S5 of 1511.06028v2,
             ## optimize half-length directly
             den <- sum(r$p(d$Xp) / d$sigma2p) # denominator
-            sd <- sqrt(q)/den                   # standard deviation
-            maxbias <- b - q/den                # b-q/den
-            CVb(maxbias/sd, alpha)$cv * sd # Half-length
+            hse <- sqrt(q1)/den                   # standard deviation
+            maxbias <- b - q1/den                # b-q/den
+            CVb(maxbias/hse, alpha)$cv * hse # Half-length
         }
-        ## find interval to optimize over
-        b.start <- RDTOpt.fit(d, M, opt.criterion="MSE")$omega/2
-        lff <- RDgbC(d, CarefulOptim(eq, c(b.start/2,2*b.start))$minimum, C)
+        ## eq is convex, start around MSE optimal b
+        bs <- RDTOpt.fit(d, M, "MSE", alpha, beta,
+                         se.initial=se.intial)$omega/2
+        lff <- RDgbC(d, stats::optimize(eq, c(bs/2, 3*bs/2))$minimum, C)
     }
 
-    r <- RDEstimator(d, lff, alpha=alpha)
+    ## Compute optimal estimator
+    r <- RDEstimator(d, lff, alpha, se.method, J)
     r$hm <- (r$lff$m(0)/C)^(1/2)
     r$hp <- (r$lff$p(0)/C)^(1/2)
     r
@@ -158,10 +186,15 @@ RDTOpt.fit <- function(d, M, opt.criterion, alpha=0.05, beta=0.5) {
 #' @param d object of class \code{"RDData"}
 #' @template RDoptBW
 #' @param M Bound on second derivative of the conditional mean function.
+#' @template RDseInitial
 #' @export
 RDTEfficiencyBound <- function(d, M, opt.criterion="FLCI",
-                               alpha=0.05, beta=0.5) {
+                               alpha=0.05, beta=0.5, se.initial="IK") {
     C <- M/2
+    ## First check if sigma2 is supplied
+    if (is.null(d$sigma2p) | is.null(d$sigma2m))
+        d <- RDprelimVar(d, se.initial)
+
     if (opt.criterion=="OCI") {
         delta <- qnorm(1-alpha)+qnorm(beta)
         r1 <- RDEstimator(d, RDLFFunction(d, C, delta))

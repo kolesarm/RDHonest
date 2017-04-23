@@ -21,37 +21,29 @@ LPReg <- function(X, Y, h, K, order=1, se.method=NULL, sigma2, J=3) {
     if (sum(W>0)<=order | h==0 | det(Gamma)==0)
         return(list(theta=0, sigma2=NA, var=NA, w=function(u) 0, eff.obs=0))
 
-
     beta <- drop(solve(Gamma, crossprod(R, W*Y)))
     hsigma2 <- drop(Y - R %*% beta)^2     # squared residuals
-
-    ## weight function if we think of the estimator as linear estimator
-    w <- function(x) solve(Gamma, t(outer(x, 0:order, "^")*K(x/h)))[1, ]
 
     EHW <- function(sigma2)
         (solve(Gamma, crossprod(sigma2*W*R, W*R)) %*% solve(Gamma))[1, 1]
 
     ## Robust variance-based formulae
-    ehw <- if("EHW" %in% se.method) EHW(hsigma2) else NA
-    sup <- if("supplied.var" %in% se.method) EHW(sigma2) else NA
-
-    if("demeaned" %in% se.method) {
-        hsigma2 <- (Y-beta[1])^2
-        dem <- EHW(hsigma2)
-    } else  {
-        dem <- NA
-    }
-
-    if("nn" %in% se.method) {
-        hsigma2 <- sigmaNN(X, Y, J=J)
-        nn <- EHW(hsigma2)
-    } else  {
-        nn <- NA
-    }
-
-    v <- c(sup, nn, ehw, dem)
+    v <- c(NA, NA, NA, NA)
     names(v) <- c("supplied.var", "nn", "EHW", "demeaned")
 
+    if("EHW" %in% se.method) v[3] <- EHW(hsigma2)
+    if("supplied.var" %in% se.method) v[1] <- EHW(sigma2)
+    if("demeaned" %in% se.method) {
+        hsigma2 <- (Y-beta[1])^2
+        v[4] <- EHW(hsigma2)
+    }
+    if("nn" %in% se.method) {
+        hsigma2 <- sigmaNN(X, Y, J=J)
+        v[2] <- EHW(hsigma2)
+    }
+
+    ## weight function if we think of the estimator as linear estimator
+    w <- function(x) solve(Gamma, t(outer(x, 0:order, "^")*K(x/h)))[1, ]
     eff.obs <- 1/sum(w(X)^2)
     list(theta=beta[1], sigma2=hsigma2, var=v, w=w, eff.obs=eff.obs)
 }
@@ -87,25 +79,16 @@ LPReg <- function(X, Y, h, K, order=1, se.method=NULL, sigma2, J=3) {
 RDLPreg <- function(d, hp, kern="triangular", order=1, hm=hp, se.method="nn",
                     no.warning=FALSE, J=3) {
 
-    ## Pre-sorting makes standard error computations faster
-    if (is.unsorted(d$Xp) & ("nn" %in% se.method)) {
-        s <- sort(d$Xp, index.return=TRUE)
-        d$Yp <- d$Yp[s$ix]
-        d$Xp <- s$x
-        s <- sort(d$Xm, index.return=TRUE)
-        d$Ym <- d$Ym[s$ix]
-        d$Xm <- s$x
-    }
     K <- if (!is.function(kern)) {
              EqKern(kern, boundary=FALSE, order=0)
          } else {
              kern
          }
-    Wm <- if (hm==0) 0*d$Xm else K(d$Xm/hm) # kernel weights
-    Wp <- if (hp==0) 0*d$Xp else K(d$Xp/hp)
+    Wm <- if (hm<=0) 0*d$Xm else K(d$Xm/hm) # kernel weights
+    Wp <- if (hp<=0) 0*d$Xp else K(d$Xp/hp)
 
     ## variance calculations are faster if we only keep data with positive
-    ## weights
+    ## kernel weights
     d$Xp <- d$Xp[Wp>0]
     d$Xm <- d$Xm[Wm>0]
 
@@ -146,8 +129,8 @@ RDLPreg <- function(d, hp, kern="triangular", order=1, hm=hp, se.method="nn",
     }
     names(plugin) <- "plugin"
     se <- sqrt(c(rm$var+rp$var, plugin))
-    eo <- 1/(1/rm$eff.obs+1/rp$eff.obs)
-
+    ## eo <- 1/(1/rm$eff.obs+1/rp$eff.obs)
+    eo <- rm$eff.obs+rp$eff.obs
     list(estimate=theta, se=se, wm=rm$w, wp=rp$w, sigma2m=rm$sigma2,
          sigma2p=rp$sigma2, eff.obs=eo)
 }
@@ -170,4 +153,35 @@ sigmaNN <- function(X, Y, J=3) {
         sigma2[k] <- Jk/(Jk+1)*(Y[k]-mean(Y[ind]))^2
     }
     sigma2
+}
+
+#' Compute preliminary estimate of variance
+#'
+#' @template RDseInitial
+#' @keywords internal
+RDprelimVar <- function(d, se.initial="Silverman") {
+    ## Silverman pilot bandwidth for uniform kernel, making sure this
+    ## results in enough distinct values on either side of threshold
+    X <- c(d$Xm, d$Xp)
+    h1 <- max(1.84*stats::sd(X)/sum(length(X))^(1/5),
+              sort(unique(d$Xp))[2],
+              abs(sort(unique(d$Xm), decreasing=TRUE)[2]))
+
+    if (se.initial=="Silverman") {
+        ## Equation (12) in IK
+        d$sigma2m <- rep(stats::var(d$Ym[d$Xm >= -h1]), length(d$Xm))
+        d$sigma2p <- rep(stats::var(d$Yp[d$Xp <= h1]), length(d$Xp))
+
+    } else if (se.initial=="SilvermanOld") {
+        ## This is how the Honest paper used to do it
+        r1 <- RDLPreg(d=d, hp=h1, kern="triangular", order=1, se.method="nn")
+        d$sigma2p <- rep(mean(r1$sigma2p), length(d$Xp))
+        d$sigma2m <- rep(mean(r1$sigma2m), length(d$Xm))
+    } else {
+        r1 <- RDLPreg(d, IKBW.fit(d), se.method="demeaned")
+        d$sigma2m <- rep(mean(r1$sigma2m), length(d$Xm))
+        d$sigma2p <- rep(mean(r1$sigma2p), length(d$Xp))
+    }
+
+    d
 }

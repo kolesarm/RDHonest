@@ -1,10 +1,15 @@
-#' Honest inference in RD based on local polynomial estimator
+#' Honest inference in RD
 #'
 #' Calculate estimators and one- and two-sided CIs based on local polynomial
 #' estimator in RD under second-order Taylor or Hölder smoothness class. If
-#' bandwidth is not supplied it is calculated to be optimal for a given
-#' performance criterion, as specified by \code{opt.criterion} using the
-#' function \code{\link{RDOptBW}}.
+#' \code{kern="optimal"}, calculate optimal estimators under second-order Taylor
+#' smoothness class.
+#'
+#' The bandwidth is calculated to be optimal for a given performance criterion,
+#' as specified by \code{opt.criterion}. For local polynomial estimators, this
+#' optimal bandwidth is calculated using the function \code{\link{RDOptBW}}.
+#' Alternatively, for local polynomial estimators, the bandwidths above and
+#' below the cutoff can be specified by \code{hp} and \code{hm}.
 #'
 #' @template RDFormula
 #' @template RDse
@@ -13,6 +18,7 @@
 #' @template RDclass
 #' @template Kern
 #' @template bwequal
+#' @template RDseInitial
 #' @return Returns an object of class \code{"RDResults"}. The function
 #'     \code{print} can be used to obtain and print a summary of the results. An
 #'     object of class \code{"RDResults"} is a list containing the following
@@ -23,7 +29,7 @@
 #'                   \code{what="Estimation"}}
 #'
 #'   \item{lff}{Least favorable function, only relevant for optimal estimator
-#'              under Taylor class}
+#'              under Taylor class.}
 #'
 #'   \item{\code{maxbias}}{Maximum bias of \code{estimate}}
 #'
@@ -44,7 +50,10 @@
 #'
 #'   \item{\code{naive}}{Coverage of CI that ignores bias and uses
 #'                \code{qnorm(1-alpha/2)} as critical value}
-#'       \item{\code{call}}{the matched call}}
+#'
+#'   \item{\code{call}}{the matched call}
+#'
+#' }
 #' @seealso \code{\link{RDOptBW}}
 #' @examples
 #'
@@ -55,7 +64,7 @@
 RDHonest <- function(formula, data, subset, cutoff=0, M, kern="triangular",
                      sigma2, na.action, opt.criterion, bw.equal=TRUE, hp, hm=hp,
                      se.method="nn", alpha=0.05, beta=0.8, J=3, sclass="H",
-                     order=1) {
+                     order=1, se.initial="Silverman") {
 
     ## construct model frame
     cl <- mf <- match.call(expand.dots = FALSE)
@@ -67,15 +76,19 @@ RDHonest <- function(formula, data, subset, cutoff=0, M, kern="triangular",
 
     d <- RDData(mf, cutoff)
 
-    if (!missing(hp)) {
+    if (kern=="optimal") {
+        ret <- RDTOpt.fit(d, M, opt.criterion=opt.criterion,
+                         alpha=alpha, beta=beta,
+                         se.method=se.method, J=J, se.initial=se.initial)
+    } else if (!missing(hp)) {
         ret <- RDHonest.fit(d, M, kern, hp, hm, alpha=alpha,
                             se.method=se.method, J=J, sclass=sclass,
-                            order=order)
+                            order=order, se.initial=se.initial)
     } else {
         ret <- RDHonest.fit(d, M, kern, opt.criterion=opt.criterion,
                             bw.equal=bw.equal, alpha=alpha, beta=beta,
                             se.method=se.method, J=J,
-                            sclass=sclass, order=order)
+                            sclass=sclass, order=order, se.initial=se.initial)
     }
 
     ret$call <- cl
@@ -96,6 +109,7 @@ RDHonest <- function(formula, data, subset, cutoff=0, M, kern="triangular",
 #' @template RDclass
 #' @template Kern
 #' @template bwequal
+#' @template RDseInitial
 #' @return Returns an object of class \code{"RDBW"}. The function \code{print}
 #'     can be used to obtain and print a summary of the results. An object of
 #'     class \code{"RDBW"} is a list containing the following components:
@@ -128,7 +142,8 @@ RDHonest <- function(formula, data, subset, cutoff=0, M, kern="triangular",
 #' @export
 RDOptBW <- function(formula, data, subset, cutoff=0, M, kern="triangular",
                     sigma2, na.action, opt.criterion, bw.equal=TRUE,
-                    alpha=0.05, beta=0.8, sclass="H", order=1) {
+                    alpha=0.05, beta=0.8, sclass="H", order=1,
+                    se.initial="Silverman") {
 
     ## construct model frame
     cl <- mf <- match.call(expand.dots = FALSE)
@@ -141,7 +156,7 @@ RDOptBW <- function(formula, data, subset, cutoff=0, M, kern="triangular",
     d <- RDData(mf, cutoff)
 
     ret <- RDOptBW.fit(d, M, kern, opt.criterion, bw.equal, alpha, beta, sclass,
-                       order)
+                       order, se.initial=se.initial)
     class(ret) <- "RDBW"
     ret$call <- cl
     ret$na.action <- attr(mf, "na.action")
@@ -151,7 +166,7 @@ RDOptBW <- function(formula, data, subset, cutoff=0, M, kern="triangular",
 
 
 #' Basic computing engine called by \code{\link{RDHonest}} to compute honest
-#' confidence intervals
+#' confidence intervals for local polynomial estimators.
 #' @param d object of class \code{"RDData"}
 #' @template RDse
 #' @template RDoptBW
@@ -159,25 +174,26 @@ RDOptBW <- function(formula, data, subset, cutoff=0, M, kern="triangular",
 #' @template RDclass
 #' @template Kern
 #' @template bwequal
+#' @template RDseInitial
 #' @return Returns an object of class \code{"RDResults"}, see description in
 #'     \code{\link{RDHonest}}
-#' @examples
-#'
-#' ## Lee dataset
-#' d <- RDData(lee08, cutoff=0)
 #' @importFrom stats pnorm qnorm
 #' @export
 RDHonest.fit <- function(d, M, kern="triangular", hp, hm=hp, opt.criterion,
                          bw.equal=TRUE, alpha=0.05, beta=0.8, se.method="nn",
-                         J=3, sclass="H", order=1) {
+                         J=3, sclass="H", order=1, se.initial="Silverman") {
     CheckClass(d, "RDData")
 
     if (missing(hp)) {
         r <- RDOptBW.fit(d, M, kern, opt.criterion, bw.equal, alpha,
-                         beta, sclass, order)
+                         beta, sclass, order, se.initial=se.initial)
         hp <- r$hp
         hm <- r$hm
     }
+
+    ## Use initial se estimate
+    if (is.null(d$sigma2p) & "supplied.var" %in% se.method)
+        d <- RDprelimVar(d, se.initial=se.initial)
 
     ## Suppress warnings about too few observations
     r1 <- RDLPreg(d, hp, kern, order, hm, se.method, TRUE, J)
@@ -229,6 +245,7 @@ RDHonest.fit <- function(d, M, kern="triangular", hp, hm=hp, opt.criterion,
 #' @template RDclass
 #' @template Kern
 #' @template bwequal
+#' @template RDseInitial
 #' @return a list with the following elements
 #'     \describe{
 #'     \item{\code{hp}}{bandwidth for observations above cutoff}
@@ -246,25 +263,11 @@ RDHonest.fit <- function(d, M, kern="triangular", hp, hm=hp, opt.criterion,
 #' @export
 RDOptBW.fit <- function(d, M, kern="triangular", opt.criterion,
                         bw.equal=TRUE, alpha=0.05, beta=0.8,
-                        sclass="H", order=1) {
+                        sclass="H", order=1, se.initial="Silverman") {
 
-    ## First check if sigma2 is supplied, if not, use nn method
-    if (is.null(d$sigma2p) | is.null(d$sigma2m)) {
-        ## Silverman pilot bandwidth for uniform kernel
-        ## TODO: something more reasonable
-        X <- c(d$Xm, d$Xp)
-        h1 <- 1.84*stats::sd(X)/sum(length(X))^(1/5)
-        ## Make sure this results in enough distinct values on either side of
-        ## threshold
-
-        h1 <- max(h1,
-                  sort(unique(d$Xp))[order+1],
-                  abs(sort(unique(d$Xm), decreasing=TRUE)[order+1]))
-
-        r1 <- RDLPreg(d=d, hp=h1, kern=kern, order=1, se.method="nn")
-        d$sigma2p <- rep(mean(r1$sigma2p), length(d$Xp))
-        d$sigma2m <- rep(mean(r1$sigma2m), length(d$Xm))
-    }
+    ## First check if sigma2 is supplied
+    if (is.null(d$sigma2p) | is.null(d$sigma2m))
+        d <- RDprelimVar(d, se.initial=se.initial)
 
     ## Objective function for optimizing bandwidth
     obj <- function(hp, hm) {
@@ -298,6 +301,7 @@ RDOptBW.fit <- function(d, M, kern="triangular", opt.criterion,
     list(hp=hp, hm=hm, sigma2p=d$sigma2p, sigma2m=d$sigma2m)
 }
 
+
 #' Imbens and Kalyanaraman bandwidth
 #'
 #' Calculate bandwidth for sharp RD based on local linear regression using
@@ -328,11 +332,13 @@ IKBW.fit <- function(d, kern="triangular", order=1, verbose=FALSE) {
     }
     const <- (s$nu0/s$mu2^2)^(1/5)
 
-    ## STEP 1: Estimate f(0), sigma^2_(0) and sigma^2_+(0)
-    h1 <- 1.84*stats::sd(X)/N^(1/5)  ## Silverman pilot bandwidth for uniform kernel
-    f0 <- sum(X >= -h1 & X<= h1) / (2*N*h1)
-    varm <- stats::var(d$Ym[d$Xm >= -h1]) # Equation (12) in IK
-    varp <- stats::var(d$Yp[d$Xp <= h1])
+    ## STEP 1: Estimate f(0), sigma^2_(0) and sigma^2_+(0), using Silverman
+    ## pilot bandwidth for uniform kernel
+    d <- RDprelimVar(d, se.initial="Silverman")
+    h1 <- 1.84*stats::sd(X)/N^(1/5)
+    f0 <- sum(abs(X) <= h1) / (2*N*h1)
+    varm <- d$sigma2m[1]
+    varp <- d$sigma2p[1]
 
     ## STEP 2: Estimate second derivatives m_{+}^(2) and m_{-}^(2)
 
@@ -365,11 +371,9 @@ IKBW.fit <- function(d, kern="triangular", order=1, verbose=FALSE) {
 }
 
 
-
-
 #' @export
 print.RDBW <- function(x, digits = getOption("digits"), ...) {
-    cat("Call:\n", deparse(x$call), "\n\n", sep = "")
+    cat("Call:\n", deparse(x$call), "\n\n", sep = "", fill=TRUE)
     cat("Bandwidth below cutoff: ", format(x$hm, digits=digits))
     cat("\nBandwidth above cutoff: ", format(x$hp, digits=digits))
     if (x$hm==x$hp) {
@@ -384,7 +388,9 @@ print.RDBW <- function(x, digits = getOption("digits"), ...) {
 #' @export
 print.RDResults <- function(x, digits = getOption("digits"), ...) {
     if (!is.null(x$call))
-        cat("Call:\n", deparse(x$call), "\n\n", sep = "")
+        cat("Call:\n", deparse(x$call), "\n\n", sep = "", fill=TRUE)
+    bw <- if (class(x$lff) !="RDLFFunction")
+              "Bandwidth" else "Smoothing parameter"
 
     cat("Inference by se.method:\n")
     r <- as.data.frame(x[c("estimate", "maxbias", "sd",
@@ -400,12 +406,12 @@ print.RDResults <- function(x, digits = getOption("digits"), ...) {
             ", ", fmt(r[j, 1]+r[j, 6]), "), (", fmt(r[j, 4]),
             ", Inf), (-Inf, ", fmt(r[j, 5]), ")\n", sep="")
 
-    cat("\nBandwidth below cutoff: ", format(x$hm, digits=digits))
-    cat("\nBandwidth above cutoff: ", format(x$hp, digits=digits))
+    cat("\n", bw, " below cutoff: ", format(x$hm, digits=digits), sep="")
+    cat("\n", bw, " above cutoff: ", format(x$hp, digits=digits), sep="")
     if (x$hm==x$hp) {
-        cat(" (Bandwidths are the same)\n")
+        cat(" (", bw, "s are the same)\n", sep="")
     } else {
-        cat(" (Bandwidths are different)\n")
+        cat(" (", bw, "s are different)\n", sep="")
     }
     cat("Number of effective observations:",
         format(x$eff.obs, digits=digits), "\n")
