@@ -77,18 +77,4 @@ test_that("Honest inference in Lee and LM data",  {
                  M = 0.1, opt.criterion = "MSE", sclass = "T",
                  se.initial="Silverman")
     expect_equal(r$hp, 5.0590753991)
-
-
 })
-    ## r <- RDHonest(voteshare ~ margin, data=lee08, kern="optimal",
-    ##               M=0.2, opt.criterion="MSE", se.method="supplied.var",
-    ##               se.initial="IK")
-    ## expect_equal(r$lower, c("supplied.var"=2.2838100315))
-    ## r <- RDHonest(voteshare ~ margin, data=lee08, kern="optimal",
-    ##          M=0.04, opt.criterion="OCI", se.method="supplied.var",
-    ##          se.initial="IK", beta=0.8)
-    ## expect_equal(r$lower, c("supplied.var"=2.2802786871))
-    ## r <- RDHonest(voteshare ~ margin, data=lee08, kern="optimal",
-    ##               M=0.04, opt.criterion="FLCI", se.method="supplied.var",
-    ##               se.initial="IK")
-    ## expect_equal(r$estimate-r$hl, c("supplied.var"=2.3786060461))

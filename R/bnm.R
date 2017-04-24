@@ -38,5 +38,4 @@ CVb <- function(B, alpha=0.05) {
     d$TeXDescription <- paste("$\\alpha=", d$alpha, "$", sep="")
 
     d
-
 }
