@@ -159,7 +159,7 @@ sigmaNN <- function(X, Y, J=3) {
 #'
 #' @template RDseInitial
 #' @keywords internal
-RDprelimVar <- function(d, se.initial="Silverman") {
+RDprelimVar <- function(d, se.initial="SilvermanEHW") {
     ## Silverman pilot bandwidth for uniform kernel, making sure this
     ## results in enough distinct values on either side of threshold
     X <- c(d$Xm, d$Xp)
@@ -171,16 +171,25 @@ RDprelimVar <- function(d, se.initial="Silverman") {
         ## Equation (12) in IK
         d$sigma2m <- rep(stats::var(d$Ym[d$Xm >= -h1]), length(d$Xm))
         d$sigma2p <- rep(stats::var(d$Yp[d$Xp <= h1]), length(d$Xp))
-
-    } else if (se.initial=="SilvermanOld") {
+    } else if (se.initial=="SilvermanNN") {
         ## This is how the Honest paper used to do it
-        r1 <- RDLPreg(d=d, hp=h1, kern="triangular", order=1, se.method="nn")
+        r1 <- RDLPreg(d=d, hp=h1, kern="uniform", order=1, se.method="nn")
         d$sigma2p <- rep(mean(r1$sigma2p), length(d$Xp))
         d$sigma2m <- rep(mean(r1$sigma2m), length(d$Xm))
-    } else {
+    } else if (se.initial=="SilvermanEHW") {
+        r1 <- RDLPreg(d=d, hp=h1, kern="uniform", order=1, se.method="EHW")
+        d$sigma2p <- rep(mean(r1$sigma2p), length(d$Xp))
+        d$sigma2m <- rep(mean(r1$sigma2m), length(d$Xm))
+    } else if (se.initial=="IKdemeaned") {
         r1 <- RDLPreg(d, IKBW.fit(d), se.method="demeaned")
         d$sigma2m <- rep(mean(r1$sigma2m), length(d$Xm))
         d$sigma2p <- rep(mean(r1$sigma2p), length(d$Xp))
+    } else if (se.initial=="IKdemeaned"){
+        r1 <- RDLPreg(d, IKBW.fit(d), se.method="EHW")
+        d$sigma2m <- rep(mean(r1$sigma2m), length(d$Xm))
+        d$sigma2p <- rep(mean(r1$sigma2p), length(d$Xp))
+    } else {
+        stop("Unknown method for estimating initial variance")
     }
 
     d

@@ -181,7 +181,7 @@ RDOptBW <- function(formula, data, subset, cutoff=0, M, kern="triangular",
 #' @export
 RDHonest.fit <- function(d, M, kern="triangular", hp, hm=hp, opt.criterion,
                          bw.equal=TRUE, alpha=0.05, beta=0.8, se.method="nn",
-                         J=3, sclass="H", order=1, se.initial="Silverman") {
+                         J=3, sclass="H", order=1, se.initial="SilvermanEHW") {
     CheckClass(d, "RDData")
 
     if (missing(hp)) {
@@ -263,7 +263,7 @@ RDHonest.fit <- function(d, M, kern="triangular", hp, hm=hp, opt.criterion,
 #' @export
 RDOptBW.fit <- function(d, M, kern="triangular", opt.criterion,
                         bw.equal=TRUE, alpha=0.05, beta=0.8,
-                        sclass="H", order=1, se.initial="Silverman") {
+                        sclass="H", order=1, se.initial="SilvermanEHW") {
 
     ## First check if sigma2 is supplied
     if (is.null(d$sigma2p) | is.null(d$sigma2m))
