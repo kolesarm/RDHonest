@@ -5,7 +5,7 @@
 \title{Finite-sample efficiency bounds for minimax CIs}
 \usage{
 RDTEfficiencyBound(d, M, opt.criterion = "FLCI", alpha = 0.05, beta = 0.5,
-  se.initial = "IK")
+  se.initial = "IKEHW")
 }
 \arguments{
 \item{d}{object of class \code{"RDData"}}
@@ -42,17 +42,22 @@ constructing/optimizing confidence intervals.}
 optimizes given quantile of excess length of one-sided confidence
 intervals.}
 
-\item{se.initial}{Method for estimating initial variance (ignored if
-    \code{hp} and \code{hm} are provided, or if data already contains
-    estimate of variance.
+\item{se.initial}{Method for estimating initial variance for computing
+    optimal bandwidth. Ignored data already contains estimate of variance.
 
 \describe{
 
-  \item{"IK"}{Based on residuals from a local linear regression using IK
-              bandwidth}
+\item{"IKEHW"}{Based on residuals from a local linear regression using a
+              triangular kenrel and IK bandwidth}
 
-   \item{"Silverman"}{Based on Silverman's pilot bandwidth, as in Equatio
-   (14) in IK}
+\item{"IKdemeaned"}{Based on sum of squared deviations of outcome from
+              estimate of intercept in local linear regression with
+              triangular kenrel and IK bandwidth}
+
+\item{"Silverman"}{Use residuals from local constant regression with uniform
+kernel and bandwidth selected using Silverman's rule of thumb, as in Equation
+(14) in IK}
+\item{"SilvermanNN"}{Use nearest neighbor estimates, rather than residuals}
 
 }}
 }

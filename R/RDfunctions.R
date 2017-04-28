@@ -157,9 +157,11 @@ sigmaNN <- function(X, Y, J=3) {
 
 #' Compute preliminary estimate of variance
 #'
+#' @param d object of class \code{"RDData"}
 #' @template RDseInitial
-#' @keywords internal
-RDprelimVar <- function(d, se.initial="SilvermanEHW") {
+#' @return object of class \code{"RDData"} containing estimated variances.
+#' @export
+RDprelimVar <- function(d, se.initial="IKEHW") {
     ## Silverman pilot bandwidth for uniform kernel, making sure this
     ## results in enough distinct values on either side of threshold
     X <- c(d$Xm, d$Xp)
@@ -176,15 +178,15 @@ RDprelimVar <- function(d, se.initial="SilvermanEHW") {
         r1 <- RDLPreg(d=d, hp=h1, kern="uniform", order=1, se.method="nn")
         d$sigma2p <- rep(mean(r1$sigma2p), length(d$Xp))
         d$sigma2m <- rep(mean(r1$sigma2m), length(d$Xm))
-    } else if (se.initial=="SilvermanEHW") {
-        r1 <- RDLPreg(d=d, hp=h1, kern="uniform", order=1, se.method="EHW")
-        d$sigma2p <- rep(mean(r1$sigma2p), length(d$Xp))
-        d$sigma2m <- rep(mean(r1$sigma2m), length(d$Xm))
+    ## } else if (se.initial=="SilvermanEHW") {
+    ##     r1 <- RDLPreg(d=d, hp=h1, kern="uniform", order=1, se.method="EHW")
+    ##     d$sigma2p <- rep(mean(r1$sigma2p), length(d$Xp))
+    ##     d$sigma2m <- rep(mean(r1$sigma2m), length(d$Xm))
     } else if (se.initial=="IKdemeaned") {
         r1 <- RDLPreg(d, IKBW.fit(d), se.method="demeaned")
         d$sigma2m <- rep(mean(r1$sigma2m), length(d$Xm))
         d$sigma2p <- rep(mean(r1$sigma2p), length(d$Xp))
-    } else if (se.initial=="IKdemeaned"){
+    } else if (se.initial=="IKEHW"){
         r1 <- RDLPreg(d, IKBW.fit(d), se.method="EHW")
         d$sigma2m <- rep(mean(r1$sigma2m), length(d$Xm))
         d$sigma2p <- rep(mean(r1$sigma2p), length(d$Xp))

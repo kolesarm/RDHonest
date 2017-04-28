@@ -134,7 +134,7 @@ RDEstimator <- function(d, f, alpha=0.05, se.method="supplied.var", J=3) {
 #'     \code{\link{RDHonest}}
 #' @export
 RDTOpt.fit <- function(d, M, opt.criterion, alpha=0.05, beta=0.5,
-                       se.method="supplied.var", J=3, se.initial="IK") {
+                       se.method="supplied.var", J=3, se.initial="IKEHW") {
     ## First check if sigma2 is supplied
     if (is.null(d$sigma2p) | is.null(d$sigma2m))
         d <- RDprelimVar(d, se.initial)
@@ -165,8 +165,7 @@ RDTOpt.fit <- function(d, M, opt.criterion, alpha=0.05, beta=0.5,
             CVb(maxbias/hse, alpha)$cv * hse # Half-length
         }
         ## eq is convex, start around MSE optimal b
-        bs <- RDTOpt.fit(d, M, "MSE", alpha, beta,
-                         se.initial=se.intial)$omega/2
+        bs <- RDTOpt.fit(d, M, "MSE", alpha, beta)$omega/2
         lff <- RDgbC(d, stats::optimize(eq, c(bs/2, 3*bs/2))$minimum, C)
     }
 
@@ -189,7 +188,7 @@ RDTOpt.fit <- function(d, M, opt.criterion, alpha=0.05, beta=0.5,
 #' @template RDseInitial
 #' @export
 RDTEfficiencyBound <- function(d, M, opt.criterion="FLCI",
-                               alpha=0.05, beta=0.5, se.initial="IK") {
+                               alpha=0.05, beta=0.5, se.initial="IKEHW") {
     C <- M/2
     ## First check if sigma2 is supplied
     if (is.null(d$sigma2p) | is.null(d$sigma2m))

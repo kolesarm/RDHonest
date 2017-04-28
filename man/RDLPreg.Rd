@@ -16,10 +16,10 @@ not supplied, it is assumed to equal to \code{hp}. If neither bandwidth
 is supplied, optimal bandwidth is computed according to criterion given
 by \code{opt.criterion}.}
 
-\item{kern}{specifies kernel function used in the local regression. It
-can either be a string equal to "triangular" (\eqn{k(u)=(1-|u|)_{+}}),
-"epanechnikov" (\eqn{k(u)=(3/4)(1-u^2)_{+}}), or "uniform" (\eqn{k(u)=
-(|u|<1)/2}), or else a function.}
+\item{kern}{specifies kernel function used in the local regression. It can
+either be a string equal to \code{"triangular"} (\eqn{k(u)=(1-|u|)_{+}}),
+\code{"epanechnikov"} (\eqn{k(u)=(3/4)(1-u^2)_{+}}), or \code{"uniform"}
+(\eqn{k(u)= (|u|<1)/2}), or else a kernel function.}
 
 \item{order}{Order of local regression 1 for linear, 2 for quadratic.}
 

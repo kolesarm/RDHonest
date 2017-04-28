@@ -7,17 +7,17 @@ confidence intervals for local polynomial estimators.}
 \usage{
 RDHonest.fit(d, M, kern = "triangular", hp, hm = hp, opt.criterion,
   bw.equal = TRUE, alpha = 0.05, beta = 0.8, se.method = "nn", J = 3,
-  sclass = "H", order = 1, se.initial = "Silverman")
+  sclass = "H", order = 1, se.initial = "IKEHW")
 }
 \arguments{
 \item{d}{object of class \code{"RDData"}}
 
 \item{M}{Bound on second derivative of the conditional mean function.}
 
-\item{kern}{specifies kernel function used in the local regression. It
-can either be a string equal to "triangular" (\eqn{k(u)=(1-|u|)_{+}}),
-"epanechnikov" (\eqn{k(u)=(3/4)(1-u^2)_{+}}), or "uniform" (\eqn{k(u)=
-(|u|<1)/2}), or else a function.}
+\item{kern}{specifies kernel function used in the local regression. It can
+either be a string equal to \code{"triangular"} (\eqn{k(u)=(1-|u|)_{+}}),
+\code{"epanechnikov"} (\eqn{k(u)=(3/4)(1-u^2)_{+}}), or \code{"uniform"}
+(\eqn{k(u)= (|u|<1)/2}), or else a kernel function.}
 
 \item{hp, hm}{bandwidth for treated (units with positive running variable),
 and control (units with negative running variable) units. If \code{hm} is
@@ -89,17 +89,22 @@ the vector can consist of the following methods:
 
 \item{order}{Order of local regression 1 for linear, 2 for quadratic.}
 
-\item{se.initial}{Method for estimating initial variance (ignored if
-    \code{hp} and \code{hm} are provided, or if data already contains
-    estimate of variance.
+\item{se.initial}{Method for estimating initial variance for computing
+    optimal bandwidth. Ignored data already contains estimate of variance.
 
 \describe{
 
-  \item{"IK"}{Based on residuals from a local linear regression using IK
-              bandwidth}
+\item{"IKEHW"}{Based on residuals from a local linear regression using a
+              triangular kenrel and IK bandwidth}
 
-   \item{"Silverman"}{Based on Silverman's pilot bandwidth, as in Equatio
-   (14) in IK}
+\item{"IKdemeaned"}{Based on sum of squared deviations of outcome from
+              estimate of intercept in local linear regression with
+              triangular kenrel and IK bandwidth}
+
+\item{"Silverman"}{Use residuals from local constant regression with uniform
+kernel and bandwidth selected using Silverman's rule of thumb, as in Equation
+(14) in IK}
+\item{"SilvermanNN"}{Use nearest neighbor estimates, rather than residuals}
 
 }}
 }

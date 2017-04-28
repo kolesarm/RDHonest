@@ -64,7 +64,7 @@
 RDHonest <- function(formula, data, subset, cutoff=0, M, kern="triangular",
                      sigma2, na.action, opt.criterion, bw.equal=TRUE, hp, hm=hp,
                      se.method="nn", alpha=0.05, beta=0.8, J=3, sclass="H",
-                     order=1, se.initial="Silverman") {
+                     order=1, se.initial="IKEHW") {
 
     ## construct model frame
     cl <- mf <- match.call(expand.dots = FALSE)
@@ -143,7 +143,7 @@ RDHonest <- function(formula, data, subset, cutoff=0, M, kern="triangular",
 RDOptBW <- function(formula, data, subset, cutoff=0, M, kern="triangular",
                     sigma2, na.action, opt.criterion, bw.equal=TRUE,
                     alpha=0.05, beta=0.8, sclass="H", order=1,
-                    se.initial="Silverman") {
+                    se.initial="IKEHW") {
 
     ## construct model frame
     cl <- mf <- match.call(expand.dots = FALSE)
@@ -181,19 +181,20 @@ RDOptBW <- function(formula, data, subset, cutoff=0, M, kern="triangular",
 #' @export
 RDHonest.fit <- function(d, M, kern="triangular", hp, hm=hp, opt.criterion,
                          bw.equal=TRUE, alpha=0.05, beta=0.8, se.method="nn",
-                         J=3, sclass="H", order=1, se.initial="SilvermanEHW") {
+                         J=3, sclass="H", order=1, se.initial="IKEHW") {
     CheckClass(d, "RDData")
+
+    ## Initial se estimate
+    if ((is.null(d$sigma2p) | is.null(d$sigma2m)) &
+        ("supplied.var" %in% se.method | missing(hp)))
+        d <- RDprelimVar(d, se.initial=se.initial)
 
     if (missing(hp)) {
         r <- RDOptBW.fit(d, M, kern, opt.criterion, bw.equal, alpha,
-                         beta, sclass, order, se.initial=se.initial)
+                         beta, sclass, order)
         hp <- r$hp
         hm <- r$hm
     }
-
-    ## Use initial se estimate
-    if (is.null(d$sigma2p) & "supplied.var" %in% se.method)
-        d <- RDprelimVar(d, se.initial=se.initial)
 
     ## Suppress warnings about too few observations
     r1 <- RDLPreg(d, hp, kern, order, hm, se.method, TRUE, J)
@@ -263,7 +264,7 @@ RDHonest.fit <- function(d, M, kern="triangular", hp, hm=hp, opt.criterion,
 #' @export
 RDOptBW.fit <- function(d, M, kern="triangular", opt.criterion,
                         bw.equal=TRUE, alpha=0.05, beta=0.8,
-                        sclass="H", order=1, se.initial="SilvermanEHW") {
+                        sclass="H", order=1, se.initial="IKEHW") {
 
     ## First check if sigma2 is supplied
     if (is.null(d$sigma2p) | is.null(d$sigma2m))
