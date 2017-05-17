@@ -18,6 +18,18 @@ RDMbound(d, s, ap, am, alpha = 0.5, sclass = "T")
 \item{sclass}{Smoothness class, either \code{"T"} for Taylor or
 \code{"H"} for Hölder class.}
 }
+\value{
+Returns a list with the following elements
+
+\describe{
+\item{\code{mu+,mu-}}{Lower bound of CI for observations above and below
+      cutoff}
+
+\item{\code{Z+,Z-}}{Point estimate used for lower bound}
+
+\item{\code{sd+,sd-}}{Standard deviations of point estimates}
+}
+}
 \description{
 Estimate a lower bound on smoothness constant M and provide a lower
 confidence interval.

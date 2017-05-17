@@ -41,11 +41,11 @@ CboundXY <- function(Y, X, a, alpha, sigma2, sclass="T") {
 #' \describe{
 
 #' \item{\code{mu+,mu-}}{Lower bound of CI for observations above and below
-#'       cutoff}}
+#'       cutoff}
 #'
-#' \item{\code{Z+,Z-}}{Point estimate used for lower bound}}
+#' \item{\code{Z+,Z-}}{Point estimate used for lower bound}
 #'
-#' \item{\code{sd+,sd-}}{Standard deviations of point estimates}}
+#' \item{\code{sd+,sd-}}{Standard deviations of point estimates}
 #' }
 #' @export
 RDMbound <- function(d, s, ap, am, alpha=0.5, sclass="T") {

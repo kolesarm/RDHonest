@@ -25,6 +25,8 @@ rebp <- rebp[rebp$tr==1, c("age", "period", "female", "unemployment_duration")]
 names(rebp)[4] <- "duration"
 rebp$period <- rebp$period==1
 rebp$female <- rebp$female==1
+## Fix rounding in stata
+rebp$age <- round(rebp$age*12)/12
 devtools::use_data(rebp, overwrite=TRUE, internal=FALSE)
 
 ## 4. LM data from Douglas Miller's website

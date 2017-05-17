@@ -147,10 +147,9 @@ Returns an object of class \code{"RDResults"}. The function
   \item{\code{lower}, \code{upper}}{Lower (upper) end-point of a one-sided CI
         based on \code{estimate}. This CI is optimal if \code{what=="OCI"}}
 
-  \item{\code{hl}}{Half-length of a two-sided CI based on \code{estimate},
-            so that the
-            CI is given by \code{c(estimate-hl, estimate+hl)}. The CI is optimal
-            if \code{what="FLCI"}}
+  \item{\code{hl}}{Half-length of a two-sided CI based on \code{estimate}, so
+            that the CI is given by \code{c(estimate-hl, estimate+hl)}. The
+            CI is optimal if \code{opt.criterion="FLCI"}}
 
   \item{\code{eff.obs}}{Effective number of observations used by
             \code{estimate}}
