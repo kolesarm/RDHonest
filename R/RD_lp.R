@@ -293,9 +293,20 @@ RDOptBW.fit <- function(d, M, kern="triangular", opt.criterion,
         hp <- abs(r$par[1])
         hm <- abs(r$par[2])
     } else {
-        hm <- hp <- abs(stats::optimize(function(h)
-            obj(h, h), interval=c(0, max(abs(c(d$Xp, d$Xm)))),
+        obj1 <- function(h) obj(h, h)
+        hmin <- max(unique(d$Xp)[order+1], sort(unique(abs(d$Xm)))[order+1])
+        hmax <- max(abs(c(d$Xp, d$Xm)))
+        ## Optimize piecewise constant function using modification of golden
+        ## search. In fact, the criterion may not be unimodal, so proceed with
+        ## caution. (For triangular kernel, it appears unimodal)
+        if (kern=="uniform") {
+            supp <- sort(unique(c(d$Xp, abs(d$Xm))))
+            hp <- hm <- gss(obj1, supp[supp>=hmin])
+        } else {
+            hm <- hp <- abs(stats::optimize(obj1, interval=c(hmin, hmax),
                                         tol=tol)$minimum)
+        }
+
     }
 
     list(hp=hp, hm=hm, sigma2p=d$sigma2p, sigma2m=d$sigma2m)

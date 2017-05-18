@@ -103,3 +103,27 @@ CarefulOptim <- function(f, interval, k=10) {
     jopt <- which.min(obj)
     list(objective=obj[jopt], minimum=arg[jopt])
 }
+
+#' Modified golden section for unimodal piecewise constant function
+gss <- function(f, xs) {
+    gr <- (sqrt(5) + 1) / 2
+    a <- 1
+    b <- length(xs)
+    c <- round(b - (b - a) / gr)
+    d <- round(a + (b - a) / gr)
+
+    while (b - a > 100) {
+        if (f(xs[c]) < f(xs[d])) {
+            b <- d
+        } else {
+            a <- c
+        }
+
+        # recompute both c and d
+        c <- round(b - (b - a) / gr)
+        d <- round(a + (b - a) / gr)
+    }
+
+    supp <- xs[a:b]
+    supp[which.min(sapply(supp, f))]
+}

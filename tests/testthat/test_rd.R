@@ -28,10 +28,28 @@ test_that("Honest inference in Lee and LM data",  {
                      J=3, alpha=0.05, opt.criterion="MSE", bw.equal=TRUE,
                      se.initial="SilvermanNN")
     }
+    ff <- function(h, kern, se.method) {
+        RDHonest.fit(d, M=0.0076085544, kern=kern, sclass="H",
+                     se.method=se.method,
+                     J=3, alpha=0.05, hp=h, bw.equal=TRUE,
+                     se.initial="SilvermanNN")
+    }
+
+    ## In this case the objective is not unimodal, but the modification still
+    ## finds the minimum
     r <- es("uniform", "supplied.var")
-    expect_equal(r$hm, 18)
-    r <- es("uniform", "nn")
-    expect_equal(unname(r$estimate-r$hl), -2.7294671445)
+    r1 <- es("uniform", "nn")
+    ## Old algorithm
+    ## expect_equal(unname(r$lower), -2.716800146662)
+    ## expect_equal(unname(r1$estimate-r1$hl), -2.7294671445)
+    ## New algorithm
+    expect_equal(unname(r$lower), -2.6908821020)
+    expect_equal(unname(r$hp), 17.5696563721)
+    expect_equal(unname(r1$estimate-r1$hl), -2.7106778586)
+
+    ## Just a sanity check
+    expect_equal(r$maxbias, ff(r$hp, "uniform", "supplied.var")$maxbias)
+
     r <- es("triangular", "nn")
     expect_equal(r$hm, 22.8088245304)
     expect_equal(unname(r$estimate+r$hl), 0.0547661086)
@@ -65,18 +83,36 @@ test_that("Honest inference in Lee and LM data",  {
                   M = 0.1, hp = 10, sclass = "H")
     expect_equal(unname(r$lower), 2.3747626508)
 
-    r <- RDOptBW(voteshare ~ margin, data = lee08, kern = "uniform",
-                 M = 0.1, opt.criterion = "MSE", sclass = "T",
+    ## Again careful, not unimodal
+    ## r1 <- RDOptBW(voteshare ~ margin, data = lee08, kern = "uniform",
+    ##              M = 0.1, opt.criterion = "MSE", sclass = "T",
+    ##              se.initial="SilvermanNN")
+    ## r2 <- RDHonest(voteshare ~ margin, data = lee08, kern = "uniform",
+    ##               M = 0.1, opt.criterion = "MSE", sclass = "H",
+    ##               se.initial="SilvermanNN")
+    ## r3 <- RDOptBW(voteshare ~ margin, data = lee08, kern = "uniform",
+    ##              M = 0.1, opt.criterion = "MSE", sclass = "T",
+    ##              se.initial="Silverman")
+    ## Old optimization
+    ## expect_equal(r1$hp, 4.9367547102)
+    ## expect_equal(unname(r2$lower), 2.3916108168)
+    ## expect_equal(r3$hp, 5.0590753991)
+
+    ## Decrease M, these results are not true minima...
+    r1 <- RDOptBW(voteshare ~ margin, data = lee08, kern = "uniform",
+                 M = 0.01, opt.criterion = "MSE", sclass = "T",
                  se.initial="SilvermanNN")
-    expect_equal(r$hp, 4.9367547102)
-    r <- RDHonest(voteshare ~ margin, data = lee08, kern = "uniform",
-                  M = 0.1, opt.criterion = "MSE", sclass = "H",
+    r2 <- RDHonest(voteshare ~ margin, data = lee08, kern = "uniform",
+                  M = 0.01, opt.criterion = "MSE", sclass = "H",
                   se.initial="SilvermanNN")
-    expect_equal(unname(r$lower), 2.3916108168)
-    r <- RDOptBW(voteshare ~ margin, data = lee08, kern = "uniform",
+    r3 <- RDOptBW(voteshare ~ margin, data = lee08, kern = "uniform",
                  M = 0.1, opt.criterion = "MSE", sclass = "T",
                  se.initial="Silverman")
-    expect_equal(r$hp, 5.0590753991)
+
+    expect_equal(r1$hp, 12.6576125622)
+    expect_equal(unname(r2$lower), 6.0484981004)
+    expect_equal(r3$hp, 5.0866454840)
+
 })
 
 test_that("BME CIs match paper", {
@@ -88,4 +124,36 @@ test_that("BME CIs match paper", {
                       regformula="y~I(x>=0)+x+I(x^2)+I(x^3)+I(x^4)")
 
     expect_equal(r1$CI, c(-0.23749230603, 0.34429708773))
+})
+
+test_that("Optmizing bw", {
+    xprobs <- c(rep(.5/5, 5), rep(.5/4, 4))
+    xsupp <- sort(c(-(1:5)/5, (1:4)/4))
+    set.seed(42)
+    x <- sample(xsupp, 100, prob=xprobs, replace=TRUE)
+    d <- data.frame(y=rnorm(100, sd=1), x=x)
+
+    r <- RDHonest(y~x, data=d, cutoff=0, M=40, kern="uniform",
+                  opt.criterion="FLCI")
+    expect_equal(r$hp, 1/2)
+
+    r <- RDHonest(y~x, data=d, cutoff=0, M=60, kern="uniform",
+                  opt.criterion="FLCI", order=2)
+    expect_equal(r$hp, 3/4)
+
+    r <- RDHonest(y~x, data=d, cutoff=0, M=0.4, kern="uniform",
+                  opt.criterion="FLCI", order=2)
+    expect_equal(r$hp, 1)
+
+    xprobs <- c(rep(.5/4, 4), rep(.5/4, 4))
+    xsupp <- sort(c(-(1:4)/4, (1:4)/4))
+    set.seed(42)
+    x <- sample(xsupp, 100, prob=xprobs, replace=TRUE)
+    d <- data.frame(y=rnorm(100, sd=1), x=x)
+    r1 <- RDHonest(y~x, data=d, cutoff=0, M=40, kern="triangular",
+                  opt.criterion="FLCI")
+    r2 <- RDHonest(y~x, data=d, cutoff=0, M=40, kern="triangular", hp=0.51)
+    expect_equal(r1$lower, r2$lower)
+
+
 })

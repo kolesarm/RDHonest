@@ -5,8 +5,8 @@
 \title{BME method to compute honest CIs}
 \usage{
 RDHonestBME(formula, data, subset, cutoff = 0, kern = "triangular",
-  na.action, bw.equal = TRUE, hp, hm = hp, alpha = 0.05, order = 1,
-  regformla)
+  na.action, bw.equal = TRUE, hp = Inf, hm = hp, alpha = 0.05,
+  order = 0, regformula)
 }
 \description{
 BME method to compute honest CIs
