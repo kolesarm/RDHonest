@@ -2,12 +2,62 @@
 % Please edit documentation in R/RD_bme.R
 \name{RDHonestBME}
 \alias{RDHonestBME}
-\title{BME method to compute honest CIs}
+\title{BME method to compute honest CIs in RD designs with discrete regressors}
 \usage{
-RDHonestBME(formula, data, subset, cutoff = 0, kern = "triangular",
-  na.action, bw.equal = TRUE, hp = Inf, hm = hp, alpha = 0.05,
-  order = 0, regformula)
+RDHonestBME(formula, data, subset, cutoff = 0, na.action, hp = Inf,
+  hm = hp, alpha = 0.05, order = 0, regformula)
+}
+\arguments{
+\item{formula}{object of class \code{"formula"} (or one that can be coerced
+to that class) of the form \code{outcome ~ running_variable}}
+
+\item{data}{optional data frame, list or environment (or object coercible by
+\code{as.data.frame} to a data frame) containing the outcome and running
+variables in the model. If not found in \code{data}, the variables are
+taken from \code{environment(formula)}, typically the environment from
+which the function is called.}
+
+\item{subset}{optional vector specifying a subset of observations to be used
+in the fitting process.}
+
+\item{cutoff}{specifies the RD cutoff in the running variable.}
+
+\item{na.action}{function which indicates what should happen when the data
+contain \code{NA}s. The default is set by the \code{na.action} setting of
+\code{options} (usually \code{na.omit}).}
+
+\item{hp, hm}{bandwidth for treated (units with positive running variable),
+and control (units with negative running variable) units. If \code{hm} is
+not supplied, it is assumed to equal to \code{hp}. If neither bandwidth
+is supplied, optimal bandwidth is computed according to criterion given
+by \code{opt.criterion}.}
+
+\item{alpha}{determines confidence level, \code{1-alpha}}
+
+\item{order}{Order of local regression 1 for linear, 2 for quadratic.}
+
+\item{regformula}{Explicitly specify regression formula as alternative to
+local linear regression, with \code{y} and \code{x} denoting the outcome
+and the running variable, and cutoff is normalized to \code{0}. Local
+linear regression (\code{order=1}) is equivalent to
+\code{regformula="y~x*I(x>0)"}. Inference is done the \code{order+2}th
+element of the design matrix}
 }
 \description{
-BME method to compute honest CIs
+Computes honest CIs for local linear regression with uniform kernel as in
+Kolesar and Rothe
+}
+\section{Note}{
+
+\code{subset} is evaluated in the same way as variables in \code{formula},
+that is first in \code{data} and then in the environment of \code{formula}.
+}
+
+\examples{
+
+RDHonestBME(log(cghs$earnings)~yearat14, data=cghs, hp=3,
+            order=1, cutoff=1947)
+## Equivalent to
+RDHonestBME(log(cghs$earnings)~yearat14, data=cghs, hp=3,
+            cutoff=1947, regformula="y~x*I(x>0)")
 }

@@ -4,7 +4,7 @@
 \alias{RDHonest}
 \title{Honest inference in RD}
 \usage{
-RDHonest(formula, data, subset, cutoff = 0, M, kern = "triangular", sigma2,
+RDHonest(formula, data, subset, cutoff = 0, M, kern = "triangular",
   na.action, opt.criterion, bw.equal = TRUE, hp, hm = hp,
   se.method = "nn", alpha = 0.05, beta = 0.8, J = 3, sclass = "H",
   order = 1, se.initial = "IKEHW")
@@ -30,9 +30,6 @@ in the fitting process.}
 either be a string equal to \code{"triangular"} (\eqn{k(u)=(1-|u|)_{+}}),
 \code{"epanechnikov"} (\eqn{k(u)=(3/4)(1-u^2)_{+}}), or \code{"uniform"}
 (\eqn{k(u)= (|u|<1)/2}), or else a kernel function.}
-
-\item{sigma2}{optional vector speficying the conditional variance of the
-outcome variable.}
 
 \item{na.action}{function which indicates what should happen when the data
 contain \code{NA}s. The default is set by the \code{na.action} setting of
@@ -178,9 +175,8 @@ below the cutoff can be specified by \code{hp} and \code{hm}.
 }
 \section{Note}{
 
-\code{subset} and \code{sigma2} are evaluated in the same way
-as variables in \code{formula}, that is first in \code{data} and then in the
-environment of \code{formula}.
+\code{subset} is evaluated in the same way as variables in \code{formula},
+that is first in \code{data} and then in the environment of \code{formula}.
 }
 
 \examples{

@@ -105,6 +105,7 @@ CarefulOptim <- function(f, interval, k=10) {
 }
 
 #' Modified golden section for unimodal piecewise constant function
+#' @keywords internal
 gss <- function(f, xs) {
     gr <- (sqrt(5) + 1) / 2
     a <- 1

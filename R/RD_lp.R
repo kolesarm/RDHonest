@@ -61,13 +61,13 @@
 #'          hp = 10, sclass = "T")
 #' @export
 RDHonest <- function(formula, data, subset, cutoff=0, M, kern="triangular",
-                     sigma2, na.action, opt.criterion, bw.equal=TRUE, hp, hm=hp,
+                     na.action, opt.criterion, bw.equal=TRUE, hp, hm=hp,
                      se.method="nn", alpha=0.05, beta=0.8, J=3, sclass="H",
                      order=1, se.initial="IKEHW") {
 
     ## construct model frame
     cl <- mf <- match.call(expand.dots = FALSE)
-    m <- match(c("formula", "data", "subset", "na.action", "sigma2"),
+    m <- match(c("formula", "data", "subset", "na.action"),
                names(mf), 0L)
     mf <- mf[c(1L, m)]
     mf[[1L]] <- quote(stats::model.frame)
@@ -140,13 +140,13 @@ RDHonest <- function(formula, data, subset, cutoff=0, M, kern="triangular",
 #'         M = 0.1, opt.criterion = "MSE", sclass = "H")
 #' @export
 RDOptBW <- function(formula, data, subset, cutoff=0, M, kern="triangular",
-                    sigma2, na.action, opt.criterion, bw.equal=TRUE,
+                    na.action, opt.criterion, bw.equal=TRUE,
                     alpha=0.05, beta=0.8, sclass="H", order=1,
                     se.initial="IKEHW") {
 
     ## construct model frame
     cl <- mf <- match.call(expand.dots = FALSE)
-    m <- match(c("formula", "data", "subset", "na.action", "sigma2"),
+    m <- match(c("formula", "data", "subset", "na.action"),
                names(mf), 0L)
     mf <- mf[c(1L, m)]
     mf[[1L]] <- quote(stats::model.frame)

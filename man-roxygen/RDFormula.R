@@ -1,7 +1,6 @@
 #' @section Note:
-#' \code{subset} and \code{sigma2} are evaluated in the same way
-#' as variables in \code{formula}, that is first in \code{data} and then in the
-#' environment of \code{formula}.
+#' \code{subset} is evaluated in the same way as variables in \code{formula},
+#' that is first in \code{data} and then in the environment of \code{formula}.
 
 #' @param formula object of class \code{"formula"} (or one that can be coerced
 #'     to that class) of the form \code{outcome ~ running_variable}
@@ -13,8 +12,6 @@
 #' @param subset optional vector specifying a subset of observations to be used
 #'     in the fitting process.
 #' @param cutoff specifies the RD cutoff in the running variable.
-#' @param sigma2 optional vector speficying the conditional variance of the
-#'     outcome variable.
 #' @param na.action function which indicates what should happen when the data
 #'     contain \code{NA}s. The default is set by the \code{na.action} setting of
 #'     \code{options} (usually \code{na.omit}).
