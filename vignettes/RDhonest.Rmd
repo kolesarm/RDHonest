@@ -310,4 +310,8 @@ r <- RDHonest(voteshare ~ margin, data=lee08, kern="optimal", M=0.1, opt.criteri
 
 ```
 
+### Oreopoulos data
+
+TODO
+
 # References

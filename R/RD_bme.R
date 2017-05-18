@@ -38,7 +38,7 @@ RDlpformula <- function(order) {
 #'             order=1, cutoff=1947)
 #' ## Equivalent to
 #' RDHonestBME(log(cghs$earnings)~yearat14, data=cghs, hp=3,
-#'             cutoff=1947, regformula="y~x*I(x>0)")
+#'             cutoff=1947, order=1, regformula="y~x*I(x>=0)")
 #' @export
 RDHonestBME <- function(formula, data, subset, cutoff=0, na.action, hp=Inf,
                         hm=hp, alpha=0.05, order=0, regformula) {
@@ -122,7 +122,7 @@ print.RDBMEresults <- function(x, digits = getOption("digits"), ...) {
     fmt <- function(x) format(x, digits=digits, width=digits+1)
 
     cat("Confidence intervals:\n")
-    cat("(", fmt(r$CI[1]), ", ", fmt(r$CI[2]), ")\n", sep="")
+    cat("(", fmt(x$CI[1]), ", ", fmt(x$CI[2]), ")\n", sep="")
 
     invisible(x)
 }
