@@ -59,5 +59,5 @@ RDHonestBME(log(cghs$earnings)~yearat14, data=cghs, hp=3,
             order=1, cutoff=1947)
 ## Equivalent to
 RDHonestBME(log(cghs$earnings)~yearat14, data=cghs, hp=3,
-            cutoff=1947, regformula="y~x*I(x>0)")
+            cutoff=1947, order=1, regformula="y~x*I(x>=0)")
 }

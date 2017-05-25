@@ -1,41 +1,19 @@
-#' Compute lower bound on C
-#' @keywords internal
-CboundXY <- function(Y, X, a, alpha, sigma2, sclass="T") {
-    Ik <- function(A, k) a[k]<= A & A < a[k+1]
-    E <- function(A, k) sum(A*Ik(X, k)) / sum(Ik(X, k))
-    lam <- (E(X, 3)-E(X, 2)) / (E(X, 3)-E(X, 1))
-    den <- if (sclass=="T") {
-               lam*E(X^2, 1)+(1-lam)*E(X^2, 3)+E(X^2, 3)^2
-           } else {
-               stop("Don't know to compute the bound for this smoothness class")
-           }
-    Za <- (lam*E(Y, 1)+(1-lam)*E(Y, 3)-E(Y, 2)) / den
-    sd <- lam^2*E(sigma2, 1)/sum(Ik(X, 1)) + (1-lam)^2*E(sigma2, 3) /
-        sum(Ik(X, 3)) + E(sigma2, 2)/sum(Ik(X, 2))
-    sd <- sqrt(sd) / den
-
-    if (abs(Za/sd) < CVb(0, alpha=alpha)$cv) {
-        hatmu <- 0
-    } else {
-        hatmu <- FindZero(function(m) abs(Za/sd)-CVb(m/sd, alpha=alpha)$cv,
-                          negative=FALSE)
-    }
-
-    list(hatmu=hatmu, Zh=Za, sd=sd)
-}
-
-
-#' Lower bound on smoothness constant M
+#' Lower bound on smoothness constant M in RD designs
 #'
 #' Estimate a lower bound on smoothness constant M and provide a lower
 #' confidence interval.
 #'
 #' @param d RDData object
-#' @param ap,am Vectors specifying intervals to take averages over
-#' @param sclass Smoothness class, either \code{"T"} for Taylor or
-#'     \code{"H"} for Hölder class.
+#' @param s Number of support points that curvature estimates should average
+#'     over
+#' @param sclass Smoothness class, either \code{"T"} for Taylor or \code{"H"}
+#'     for Hölder class.
 #' @param alpha determines confidence level \code{1-alpha}.
-#' @param s with of a bin
+#' @param separate If \code{TRUE}, report estimates separately for data above
+#'     and below cutoff. If \code{FALSE}, report pooled estimates
+#' @param multiple If \code{TRUE}, use multiple curvature estimates. If
+#'     \code{FALSE}, use a single estimate using only observations closest to
+#'     the cutoff.
 #' @return Returns a list with the following elements
 #'
 #' \describe{
@@ -48,18 +26,113 @@ CboundXY <- function(Y, X, a, alpha, sigma2, sclass="T") {
 #' \item{\code{sd+,sd-}}{Standard deviations of point estimates}
 #' }
 #' @export
-RDMbound <- function(d, s, ap, am, alpha=0.5, sclass="T") {
-    if (missing(ap) | missing(am)) {
-        ap <- c(0, d$Xp[s+1], d$Xp[2*s+1], d$Xp[3*s+1])
-        nm <- length(d$Xm)
-        am <- c(0, abs(d$Xm)[nm-s], abs(d$Xm)[nm-2*s], abs(d$Xm)[nm-3*s])
+RDSmoothnessBound <- function(d, s, separate=TRUE, multiple=TRUE, alpha=0.05,
+                              sclass="T") {
+    ## First estimate variance
+    if (is.null(d$sigma2p) | is.null(d$sigma2m))
+        d <- RDPrelimVar(d, se.initial="NN")
+
+    ## Curvature estimate based on jth set of three points closest to zero
+    Dk <- function(Y, X, xu, s2, j) {
+        I1 <- X >= xu[3*j*s-3*s+1]  & X <= xu[3*j*s-2*s]
+        I2 <- X >= xu[3*j*s-2*s+1]  & X <= xu[3*j*s-s]
+        I3 <- X >= xu[3*j*s-  s+1]  & X <= xu[3*j*s]
+
+        lam <- (mean(X[I3])-mean(X[I2])) / (mean(X[I3])-mean(X[I1]))
+        den <- if  (sclass=="T") {
+                   (1-lam)*mean(X[I3]^2) + lam*mean(X[I1]^2) + mean(X[I2]^2)
+               } else {
+                   (1-lam)*mean(X[I3]^2) + lam*mean(X[I1]^2) - mean(X[I2]^2)
+               }
+        Del <- 2*(lam*mean(Y[I1])+(1-lam)*mean(Y[I3])-mean(Y[I2])) / den
+        VD <- 4*(lam^2*mean(s2[I1])/sum(I1) +
+                 (1-lam)^2*mean(s2[I3])/sum(I3) + mean(s2[I2])/sum(I2)) / den^2
+        c(Del, sqrt(VD), mean(Y[I1]), mean(Y[I2]), mean(Y[I3]), range(X[I1]),
+          range(X[I2]), range(X[I3]))
     }
 
-    rp <- CboundXY(d$Yp, d$Xp, ap, alpha, mean(d$sigma2p), sclass)
-    rm <-  CboundXY(d$Ym, abs(d$Xm), am, alpha, mean(d$sigma2m), sclass)
-    names(rp) <- c("mu+", "Z+", "sd+")
-    names(rm) <- c("mu-", "Z-", "sd-")
-    r <- unlist(c(rp, rm))
-    ## Convert C to M
-    2*r
+    xp <- unique(d$Xp)
+    xm <- sort(unique(abs(d$Xm)))
+
+    Dpj <- function(j) Dk(d$Yp, d$Xp, xp, d$sigma2p, j)
+    Dmj <- function(j) Dk(d$Ym, abs(d$Xm), xm, d$sigma2m, j)
+
+    if (multiple==TRUE) {
+        ## Positive Deltas
+        Sp <- floor(length(xp)/(3*s))
+        Sm <- floor(length(xm)/(3*s))
+        if (min(Sp, Sm) ==0) stop("Value of s is too big")
+    } else {
+        Sp <- Sm <- 1
+    }
+    Dp <- sapply(1:Sp, Dpj)
+    Dm <- sapply(1:Sm, Dmj)
+
+    ## Critical value
+    cv <- function(M, Z, sd, alpha) {
+        if (ncol(Z)==1) {
+            return(CVb(M/sd, alpha=alpha)$cv)
+        } else {
+            S <- Z+M*outer(rep(1, nrow(Z)), 1/sd)
+            maxS <- abs(S[cbind(1:nrow(Z), max.col(S))])
+            return(unname(quantile(maxS, 1-alpha)))
+        }
+    }
+
+    hatM <- function(D) {
+        ts <- abs(D[1, ]/D[2, ])
+        maxt <- D[, which.max(ts)]
+        set.seed(42)
+        Z <- matrix(rnorm(10000*ncol(D)), ncol=ncol(D))
+
+        if (max(ts) < cv(0, Z, D[2, ], 1/2)) {
+            hatM <- lower <- 0
+        } else {
+            hatM <- FindZero(function(m)
+                max(ts)-cv(m, Z, D[2, ], 1/2), negative=FALSE)
+            if (max(ts) < cv(0, Z, D[2, ], alpha)) {
+                lower <- 0
+            } else {
+                lower <- FindZero(function(m)
+                    max(ts)-cv(m, Z, D[2, ], alpha), negative=FALSE)
+            }
+        }
+        list(hatM=hatM, lower=lower, Delta=maxt[1], sdDelta=maxt[2],
+             y1=maxt[3],y2=maxt[4], y3=maxt[5],
+             I1=maxt[6:7], I2=maxt[8:9], I3=maxt[10:11])
+    }
+
+    if (separate==TRUE) {
+        po <- hatM(Dp)
+        ne <- hatM(Dm)
+    } else {
+        po <- ne <- hatM(cbind(Dm, Dp))
+    }
+
+    ret <- list(po=po, ne=ne)
+    class(ret) <- "RDSmoothnessBound"
+    ret
+}
+
+#' @export
+print.RDSmoothnessBound <- function(x, digits = getOption("digits"), ...) {
+    pr <- function(r) {
+        cat("Estimate: ", r$hatM, ", Lower CI: [", r$lower,
+            ", Inf)\n", sep="")
+        cat("\nDelta: ", r$Delta, ", sd=", r$sdDelta, sep="")
+        cat("\nE_n[f(x_1)]: ", r$y1, ", I1=[", r$I1[1], ", ", r$I1[2], "]\n",
+            "E_n[f(x_2)]: ", r$y2, ", I2=[", r$I2[1], ", ", r$I2[2], "]\n",
+            "E_n[f(x_3)]: ", r$y3, ", I3=[", r$I3[1], ", ", r$I3[2], "]\n", sep="")
+    }
+    if (x$po$hatM==x$ne$hatM) {
+        cat("\nSmoothness bound estimate:\n")
+        pr(x$po)
+    } else {
+        cat("\nSmoothness bound estimate using observations above cutoff:\n")
+        pr(x$po)
+        cat("\nSmoothness bound estimate using observations below cutoff:\n")
+        pr(x$ne)
+    }
+
+    invisible(x)
 }

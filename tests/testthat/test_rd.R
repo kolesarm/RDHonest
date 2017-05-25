@@ -7,7 +7,7 @@ test_that("IK bandwidth calculations", {
 
     r <- RDLPreg(d, hp=IKBW.fit(d, kern="uniform"), kern="uniform")
     expect_equal(r$estimate, 8.0770003749)
-    d <- RDprelimVar(RDData(lee08, cutoff=0), se.initial="IKdemeaned")
+    d <- RDPrelimVar(RDData(lee08, cutoff=0), se.initial="IKdemeaned")
     expect_equal(sqrt(mean(d$sigma2p)), 14.5030086128)
     expect_equal(sqrt(mean(d$sigma2m)), 12.4627517531)
 })

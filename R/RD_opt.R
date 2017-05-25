@@ -137,7 +137,7 @@ RDTOpt.fit <- function(d, M, opt.criterion, alpha=0.05, beta=0.5,
                        se.method="supplied.var", J=3, se.initial="IKEHW") {
     ## First check if sigma2 is supplied
     if (is.null(d$sigma2p) | is.null(d$sigma2m))
-        d <- RDprelimVar(d, se.initial)
+        d <- RDPrelimVar(d, se.initial)
 
     C <-  M/2
     ## Find optimal delta, see Supplement to 1511.06028v2
@@ -192,7 +192,7 @@ RDTEfficiencyBound <- function(d, M, opt.criterion="FLCI",
     C <- M/2
     ## First check if sigma2 is supplied
     if (is.null(d$sigma2p) | is.null(d$sigma2m))
-        d <- RDprelimVar(d, se.initial)
+        d <- RDPrelimVar(d, se.initial)
 
     if (opt.criterion=="OCI") {
         delta <- qnorm(1-alpha)+qnorm(beta)

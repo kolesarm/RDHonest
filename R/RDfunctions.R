@@ -161,7 +161,7 @@ sigmaNN <- function(X, Y, J=3) {
 #' @template RDseInitial
 #' @return object of class \code{"RDData"} containing estimated variances.
 #' @export
-RDprelimVar <- function(d, se.initial="IKEHW") {
+RDPrelimVar <- function(d, se.initial="IKEHW") {
     ## Silverman pilot bandwidth for uniform kernel, making sure this
     ## results in enough distinct values on either side of threshold
     X <- c(d$Xm, d$Xp)
@@ -190,6 +190,9 @@ RDprelimVar <- function(d, se.initial="IKEHW") {
         r1 <- RDLPreg(d, IKBW.fit(d), se.method="EHW")
         d$sigma2m <- rep(mean(r1$sigma2m), length(d$Xm))
         d$sigma2p <- rep(mean(r1$sigma2p), length(d$Xp))
+    } else if (se.initial=="NN") {
+        d$sigma2p <- sigmaNN(d$Xp, d$Yp, J=3)
+        d$sigma2m <- sigmaNN(d$Xm, d$Ym, J=3)
     } else {
         stop("Unknown method for estimating initial variance")
     }

@@ -186,7 +186,7 @@ RDHonest.fit <- function(d, M, kern="triangular", hp, hm=hp, opt.criterion,
     ## Initial se estimate
     if ((is.null(d$sigma2p) | is.null(d$sigma2m)) &
         ("supplied.var" %in% se.method | missing(hp)))
-        d <- RDprelimVar(d, se.initial=se.initial)
+        d <- RDPrelimVar(d, se.initial=se.initial)
 
     if (missing(hp)) {
         r <- RDOptBW.fit(d, M, kern, opt.criterion, bw.equal, alpha,
@@ -267,7 +267,7 @@ RDOptBW.fit <- function(d, M, kern="triangular", opt.criterion,
 
     ## First check if sigma2 is supplied
     if (is.null(d$sigma2p) | is.null(d$sigma2m))
-        d <- RDprelimVar(d, se.initial=se.initial)
+        d <- RDPrelimVar(d, se.initial=se.initial)
 
     ## Objective function for optimizing bandwidth
     obj <- function(hp, hm) {
@@ -345,7 +345,7 @@ IKBW.fit <- function(d, kern="triangular", order=1, verbose=FALSE) {
 
     ## STEP 1: Estimate f(0), sigma^2_(0) and sigma^2_+(0), using Silverman
     ## pilot bandwidth for uniform kernel
-    d <- RDprelimVar(d, se.initial="Silverman")
+    d <- RDPrelimVar(d, se.initial="Silverman")
     h1 <- 1.84*stats::sd(X)/N^(1/5)
     f0 <- sum(abs(X) <= h1) / (2*N*h1)
     varm <- d$sigma2m[1]
