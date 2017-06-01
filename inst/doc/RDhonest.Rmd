@@ -7,7 +7,7 @@ bibliography: np-testing-library.bib
 output:
   pdf_document:
     toc: true
-    toc_depth: 1
+    toc_depth: 2
 vignette: >
   %\VignetteIndexEntry{Honest inference in Sharp Regression Discontinuity}
   %\VignetteEngine{knitr::rmarkdown}
@@ -25,7 +25,9 @@ The package `RDHonest` implements confidence intervals for the regression
 discontinuity parameter considered in @ArKo16optimal, @ArKo16honest, and
 @KoRo16. In this vignette, we demonstrate the implementation of these confidence
 intervals using datasets from @lee08 and @oreopoulos06, which are included in
-the package as a data frame `lee08` and `cghs`.
+the package as a data frame `lee08` and `cghs`. The datasets from @lalive08 and
+@LuMi07 that are used in @ArKo16honest, and @KoRo16 are also included in the
+package as data frames `rebp` and `headst`.
 
 # Sharp RD model
 
@@ -49,16 +51,29 @@ occurred in 1947. The running variable is the year in which the individual turne
 14, with the cutoff equal to 1947 so that the "treatment" is being subject to a
 higher minimum school-leaving age. The outcome is log earnings in 1998.
 
+Some of the functions in the package require the data to be transformed into a custom `RDData` format. This can be accomplished with the `RDData` function:
+
+```{r}
+library("RDHonest")
+## Assumes first column in the data frame corresponds to outcome,
+## and second to running variable
+dl <- RDData(lee08, cutoff = 0)
+
+## Transform earnings to log earnings
+do <- RDData(data.frame(logearn=log(cghs$earnings),
+                        year14=cghs$yearat14), cutoff = 1947)
+```
+
 # Plots
 
 The package provides a function `plot_RDscatter` to plot the raw data. To remove
-some noise, the function plots averages over `avg` number of observations.
+some noise, the function plots averages over `avg` number of observations. The
+function takes an `RDData` object as an argument
+
 ```{r, fig.width=4.5, fig.height=3.5, fig.cap="Lee (2008) data"}
-library("RDHonest")
-## transform data to an RDdata object
-dt <- RDData(lee08, cutoff = 0)
-## plot 25-bin averages in a window equal to 50 around the cutoff, see Figure 1
-plot_RDscatter(dt, avg=25, window = 50, xlab="Margin of victory",
+## plot 25-bin averages in for observations 50 at most points away from the cutoff.
+## See Figure 1
+plot_RDscatter(dl, avg=25, window = 50, xlab="Margin of victory",
     ylab="Vote share in next election")
 ```
 
@@ -69,16 +84,15 @@ size of the points proportional to the number of observations that the point
 averages over.
 
 ```{r, fig.width=4.5, fig.height=3.5, fig.cap="Oreopoulos (2006) data"}
-## transform data to an RDdata object, and transform earnings to log-earnings
-do <- RDData(data.frame(logearn=log(cghs$earnings),
-                        year14=cghs$yearat14), cutoff = 1947)
 ## see Figure 2
-plot_RDscatter(do, avg=Inf, xlab="Year aged 14", ylab="Log earnings",
+f2 <- plot_RDscatter(do, avg=Inf, xlab="Year aged 14", ylab="Log earnings",
     propdotsize=TRUE)
+## Adjust size of dots if they are too big
+f2 + ggplot2::scale_size_area(max_size = 4)
 ```
 
 
-# Inference in Local polynomial regression
+# Inference based on local polynomial estimates
 
 The function `RDHonest` constructs one- and two-sided confidence intervals (CIs)
 around local linear and local quadratic estimators using either a user-supplied
@@ -124,11 +138,16 @@ $B(\hat{\beta}_{h_{+},h_{-}})/\widehat{se}(\hat{\beta}_{h_{+},h_{-}})$, so that,
 in large samples, the $1-\alpha$ quantile of the absolute value of the
 $t$-statistic will be bounded by
 $cv_{1-\alpha}(B(\hat{\beta}_{h_{+},h_{-}})/\widehat{se}(\hat{\beta}_{h_{+},h_{-}}))$.
+This approach gives tigher CIs than simply adding and subtracting
+$B(\hat{\beta}_{h_+,h_-})$ from the point estimate, in addition to adding and subtracting $z_{1-\alpha}\hat{se}(\hat{\beta}_{h_+,h_-})$
+
 The function `CVb` gives these critical values:
 
 ```{r, }
 ## Usual critical value
-CVb(0, alpha=0.05)
+CVb(0, alpha=0.05) # returns a list
+CVb(1/2, alpha=0.05)$cv # extract critical value
+
 ## Tabulate critical values for different significance levels
 ## when bias-sd ratio equals 1/4
 knitr::kable(CVb(1/4, alpha=c(0.01, 0.05, 0.1)), caption="Critical values")
@@ -139,14 +158,15 @@ as in the table above.
 
 ## Parameter space
 
-The function `RDHonest` computes honest CIs when the parameter space $\mathcal{F}$
-corresponds to a second-order Taylor or second-order Hölder smoothness class,
-which capture two different types of smoothness restrictions. The second-order
-Taylor class assumes that $f$ lies in the the class of functions
-$$\mathcal{F}_{\text{Taylor}}(M)= \left \{f_{+}-f_{-}\colon
-f_{+}\in\mathcal{F}_{T}(M;[c_{0}%]
-    %(
-    ,\infty)),\;
+To implement the honest CIs, one needs to specify the parameter space
+$\mathcal{F}$. The function `RDHonest` computes honest CIs when the parameter
+space $\mathcal{F}$ corresponds to a second-order Taylor or second-order Hölder
+smoothness class, which capture two different types of smoothness restrictions.
+The second-order Taylor class assumes that $f$ lies in the the class of
+functions $$\mathcal{F}_{\text{Taylor}}(M)= \left \{f_{+}-f_{-}\colon
+f_{+}\in\mathcal{F}_{T}(M; [c_{0}
+%] %(
+,\infty)),\;
 f_{-}\in\mathcal{F}_{T}(M;(-\infty, c_{0})) \right\},$$
 
 where $\mathcal{F}_{T}(M;\mathcal{X})$ consists of functions $f$ such that the
@@ -156,28 +176,84 @@ is bounded by $M|x|^{2}/2$, uniformly over $\mathcal{X}$: \begin{align*}
 f(x)-f(c_0)-f'(c_0)x\right|\le M|x|^2/2\text{ all }x\in\mathcal{X}\right\}.
 \end{align*} The class $\mathcal{F}_{T}(M;\mathcal{X})$ formalizes the idea that
 the second derivative of $f$ at zero should be bounded by $M$. See Section 2 in
-@ArKo16optimal. A disadvantage of this class is that it doesn't impose
-smoothness away from boundary, which may be undesirable in many empirical
-applications. The Hölder class addresses this problem directly by bounding the
-second derivative globally. In particular, it assumes that $f$ lies in the class
-of functions $$\mathcal{F}_{\text{Hölder}}(M)= \left \{f_{+}-f_{-}\colon
-f_{+}\in\mathcal{F}_{H}(M;[c_{0}%]
-%(
-,\infty)),\;
+@ArKo16optimal (note the constant $C$ in that paper equals $C=M/2$ here). This
+class is doesn't impose smoothness away from boundary, which may be undesirable
+in some empirical applications. The Hölder class addresses this problem by
+bounding the second derivative globally. In particular, it assumes that $f$ lies
+in the class of functions $$\mathcal{F}_{\text{Hölder}}(M)= \left
+\{f_{+}-f_{-}\colon f_{+}\in\mathcal{F}_{H}(M;[c_{0}%] %( ,\infty)),\;
 f_{-}\in\mathcal{F}_{H}(M;(-\infty, c_{0})) \right\},$$
 
 where $$ \mathcal{F}_{H}(M;\mathcal{X})=\{f\colon |f'(x)-f'(y)|\leq M|x-y|
 \;\;x,y\in\mathcal{X}\}.$$
 
-## Discrete running variable TODO
+The smoothness class is specified using the option `sclass`. CIs around a local
+linear estimator with bandwidth that equals to 10 on either side of the cutoff
+when the parameter space is given by a Taylor and Hölder smoothness class,
+respectively, with $M=0.1$:
 
-The confidence intervals described can also be used when the running variable is
-discrete, with $G$ support points (see Section 5.1 in @KoRo16).
+```{r}
+RDHonest(voteshare ~ margin, data=lee08, kern="uniform", M=0.1, hp=10, sclass="T")
+RDHonest(voteshare ~ margin, data=lee08, kern="uniform", M=0.1, hp=10, sclass="H")
+```
 
-In addition, the package provides function `bmeCI` that calculates honest
+The confidence intervals use the nearest-neighbor method to estimate the
+standard error by default (this can be changed using the option `se.method`, see
+help file). The package reports two-sided as well one-sided CIs (with lower as
+well as upper limit) by default.
+
+Instead of specifing a bandwidth, one can just specify the smoothness class and smoothness constant $M$, and the bandwidth will be chosen optimally for a given optimality criterion:
+
+```{r}
+RDHonest(voteshare ~ margin, data=lee08, kern="triangular",
+    M=0.1, opt.criterion="MSE", sclass="H")
+## Choose bws optimal for length of CI, allowing for different bws
+## on either side of cutoff
+RDHonest(voteshare ~ margin, data=lee08, kern="triangular", M=0.1,
+    opt.criterion="FLCI", sclass="H", bw.equal=FALSE)
+```
+
+It is also possible to compute the optimal bandwidths directly using the function
+`RDOptBW`
+
+```{r}
+RDOptBW(voteshare ~ margin, data=lee08, kern="triangular",
+    M=0.1, opt.criterion="MSE", sclass="H")
+```
+
+
+
+
+## Inference when running variable is discrete
+
+The confidence intervals described above can also be used when the running
+variable is discrete, with $G$ support points: their construction makes no
+assumptions on the nature of the running variable (see Section 5.1 in @KoRo16
+for more detailed discussion).
+
+As an example, consider the @oreopoulos06 data, in which the running variable is age in years:
+```{r}
+## Replicate Table 2, column (10)
+RDHonest(log(earnings) ~ yearat14, cutoff=1947,
+    data=cghs, kern="uniform", M=0.04, opt.criterion="FLCI", sclass="H")
+## Triangular kernel generally gives tigher CIs
+RDHonest(log(earnings) ~ yearat14, cutoff=1947,
+    data=cghs, kern="triangular", M=0.04, opt.criterion="FLCI", sclass="H")
+```
+
+In addition, the package provides function `RDHonestBME` that calculates honest
 confidence intervals under the assumption that the specification bias at zero is
 no worse at the cutoff than away from the cutoff as in Section 5.2 in @KoRo16.
-To describe the implementation of these confidence intervals, suppose the point
+
+```{r}
+## Replicate Table 2, column (6), run local linear regression (order=1)
+## with a uniform kernel (other kernels are not yet implemented)
+RDHonestBME(log(earnings) ~ yearat14, cutoff=1947,
+    data=cghs, hp=3, order=1)
+```
+
+
+Let us describe the implementation of the variance estimator $\hat{V}(W)$ used to construct the CI as described in in Section 5.2 in @KoRo16. Suppose the point
 estimate is given by the first element of the regression of the outcome $y_i$ on
 $m(x_i)$. For instance, local linear regression with uniform kernel and
 bandwidth $h$ corresponds to $m(x)=I(|x|\leq h)\cdot(I(x>c_0),1,x, x\cdot
@@ -205,14 +281,14 @@ and $\hat{\mu}$ is given by
 \hat{\theta}-\theta\\
 \hat{\mu}-\mu
 \end{pmatrix}\overset{d}{\to}
-N\left(
+\mathcal{N}\left(
 0,
-V
+\Omega
 \right),
 \end{equation*}
 where
 \begin{equation*}
-V=\begin{pmatrix}
+\Omega=\begin{pmatrix}
 Q^{-1}E[(\epsilon_i^2+\delta(x_i)^2)m(x_i)m(x_i)']Q^{-1}&
 Q^{-1}E[\epsilon_i^2 m(x_i)w(x_i)']S^{-1}\\
 S^{-1}E[\epsilon_i^2 w(x_i)m(x_i)']Q^{-1}&
@@ -223,11 +299,11 @@ S^{-1}E[\epsilon_i^2 w(x_i)w(x_i)']S^{-1}\\
 Let $\hat{u}_i$ denote the regression residual from the regression of $y_i$ on
 $m(x_i)$, and let $\hat{\epsilon}_i$ denote the regression residuals from the
 regression of $y_i$ on $w(x_i)$. Then a consistent estimator of the asymptotic
-variance $V$ is given by
+variance $\Omega$ is given by
 \begin{equation*}
-\hat{V}=n\sum_i V_iV_i',
+\hat{\Omega}=n\sum_i T_iT_i',
 \qquad
-V_i'=\begin{pmatrix}
+T_i'=\begin{pmatrix}
 \hat{u}_i m(x_i)'\hat{Q}^{-1}&
 \hat{\epsilon}_i w(x_i)'\hat{S}^{-1}
 \end{pmatrix}.
@@ -238,11 +314,11 @@ Eicker-Huber-White estimators of the asymptotic variance of $\hat{\theta}$ and
 $\hat{\mu}$. By the delta method, a consistent estimator of the asymptotic
 variance of $(\hat\delta,\hat{\theta}_1)$ is given by
 \begin{equation*}
-    \hat{\Omega}=
+    \hat{\Sigma}=
 \begin{pmatrix}
 -X & I\\
 e_1'& 0\\
-\end{pmatrix}\hat{V}\begin{pmatrix}
+\end{pmatrix}\hat{\Omega}\begin{pmatrix}
 -X & I\\
 e_1'& 0\\
 \end{pmatrix}',
@@ -250,64 +326,64 @@ e_1'& 0\\
 where $X$ is a matrix with $g$th row equal to $x_g'$, and $e_1$ is the first
 unit vector.
 
-In the notation of @KoRo16, let $\tau_L(\mathbf{g},\mathbf{s})=\theta_{1}
--s^+\delta(x_{g^+}) - s^-\delta(x_{g^-})$, where $g^{+}$ and $g^{-}$ are such
-that $x_{g^{-}}\leq c_0\leq x_{g^{+}}$, and $s^{+},s^{-}\in\{-1,1\}$. A
-left-sided CI for $\tau_L(\mathbf{g},\mathbf{s})$ is then given by
+Recall that in the notation of @KoRo16, $W=(g^-,g^+,s^-,s^+)$, and $g^{+}$ and
+$g^{-}$ are such that $x_{g^{-}}< c_0\leq x_{g^{+}}$, and
+$s^{+},s^{-}\in\{-1,1\}$. An upper limit for a right-sided CI for
+$\theta_1+b(W)$ is then given by
+
 \begin{equation*}
-CI_{L}(\mathbf{g},\mathbf{s})= \hat{\theta}_{1}-s^{+}\hat\delta(x_{g^+}) -
-    s^{-}\hat\delta(x_{g^-})-z_{1-\alpha}
+\hat{\theta}_{1}+s^{+}\hat\delta(x_{g^+})+
+s^{-}\hat\delta(x_{g^-})+z_{1-\alpha}\hat{V}(W),
 \end{equation*}
+
+where $\hat{V}(W)=a(W)'\hat{\Sigma}a(W)$, and $a(W)\in\mathbb{R}^{G_{h}+1}$
+denotes a vector with the $g_{-}$th element equal to $s^{-}$,
+$(G_{h}^{-}+g_{+})$th element equal to $s^{+}$, the last element equal to one,
+and the remaining elements equal to zero. The rest of the construction then
+follows the description in Section 5.2 in @KoRo16.
 
 # Optimal inference
 
 For the second-order Taylor smoothness class, the function `RDHonest`, with
 `kernel="optimal"`, computes finite-sample optimal estimators and confidence
-intervals, as described in Section 2.2 in @ArKo16optimal.
-
-# Empirical examples
-
-## Lee data
-
-CIs around a local linear estimator with bandwidth that equals to 10 on either
-side of the cutoff when the parameter space is given by a Taylor and Hölder
-smoothness class, respectively, with $M=0.1$:
+intervals, as described in Section 2.2 in @ArKo16optimal. This typically yields
+tighter CIs. Comparing the lenghts of two-sided CIs with optimally chosen
+bandwidths, using Silverman's rule of thumb to estimate the preliminary variance estimate used to compute optimal bandwidths:
 
 ```{r}
-RDHonest(voteshare ~ margin, data=lee08, kern="uniform", M=0.1, hp=10, sclass="T")
-RDHonest(voteshare ~ margin, data=lee08, kern="uniform", M=0.1, hp=10, sclass="H")
-```
-
-The confidence intervals use the nearest-neighbor method to estimate the
-standard error by default. The package reports two-sided as well one-sided CIs
-(with lower as well as upper limit) by default.
-
-CIs around MSE-optimal bandwidth:
-
-```{r}
-RDHonest(voteshare ~ margin, data=lee08, kern="uniform", M=0.1, opt.criterion="MSE", sclass="T")
-RDHonest(voteshare ~ margin, data=lee08, kern="uniform", M=0.1, opt.criterion="MSE", sclass="H")
-```
-
-It is possible to compute the MSE-optimal bandwidth directly using the function
-`RDOptBW`
-
-```{r}
-RDOptBW(voteshare ~ margin, data=lee08, kern="uniform", M=0.1, opt.criterion="MSE", sclass="T")
-RDOptBW(voteshare ~ margin, data=lee08, kern="uniform", M=0.1, opt.criterion="MSE", sclass="H")
-```
-
-For Taylor smoothness class, instead of using local polynomial estimators, one
-can use estimators with optimally chosen weights. This typically yields tighter
-CIs. Comparing the lenghts of two-sided CIs with optimally chosen bandwidths:
-
-```{r}
-r <- RDHonest(voteshare ~ margin, data=lee08, kern="optimal", M=0.1, opt.criterion="FLCI", se.initial="Silverman", se.method="nn")
-
-2*r$hl
+2*RDHonest(voteshare ~ margin, data=lee08, kern="optimal", M=0.1, opt.criterion="FLCI", se.initial="Silverman", se.method="nn")$hl
 
 2*RDHonest(voteshare ~ margin, data=lee08, kern="triangular", M=0.1, opt.criterion="FLCI", se.initial="Silverman", se.method="nn", sclass="T")$hl
 
 ```
+
+
+# Specification testing
+
+The package also implements lower-bound estimates for the smoothness constant
+$M$ for the Taylor and Hölder smoothess class, as described in the supplements to @KoRo16 and @ArKo16optimal
+
+```{r}
+## Add variance estimate to the lee data so that the RDSmoothnessBound
+## function doesn't have to compute them each time
+dl <- RDHonest::RDPrelimVar(dl, se.initial="NN")
+
+### Only use three point-average for averages of a 100 points closest to cutoff,
+### and report results separately for points above and below cutoff
+RDSmoothnessBound(dl, s=100, separate=TRUE, multiple=FALSE, sclass="T")
+
+### Pool estimates based on observations below and above cutoff, and
+### use three-point averages over the entire support of the running variable
+RDSmoothnessBound(dl, s=100, separate=FALSE, multiple=TRUE, sclass="H")
+```
+
+<!-- export(EqKern) -->
+<!-- export(IKBW.fit) -->
+<!-- export(KernMoment) -->
+<!-- export(RDLPreg) -->
+<!-- export(RDPrelimVar) -->
+<!-- export(RDTEfficiencyBound) -->
+<!-- export(RDTOpt.fit) -->
+
 
 # References

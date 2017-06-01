@@ -22,15 +22,7 @@ plot_RDscatter <- function(d, avg=10, xlab=NULL, ylab=NULL,
              call. = FALSE)
     }
 
-    ## Sort data
-    if (is.unsorted(d$Xp) | is.unsorted(d$Xm)) {
-        s <- sort(d$Xp, index.return=TRUE)
-        d$Yp <- d$Yp[s$ix]
-        d$Xp <- s$x
-        s <- sort(d$Xm, index.return=TRUE)
-        d$Ym <- d$Ym[s$ix]
-        d$Xm <- s$x
-    }
+    ## RDData is sorted
     if (!is.null(window)) {
         d$Yp <- d$Yp[d$Xp<=window]
         d$Ym <- d$Ym[d$Xm>=-window]
