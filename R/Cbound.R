@@ -75,7 +75,7 @@ RDSmoothnessBound <- function(d, s, separate=TRUE, multiple=TRUE, alpha=0.05,
         } else {
             S <- Z+M*outer(rep(1, nrow(Z)), 1/sd)
             maxS <- abs(S[cbind(1:nrow(Z), max.col(S))])
-            return(unname(quantile(maxS, 1-alpha)))
+            return(unname(stats::quantile(maxS, 1-alpha)))
         }
     }
 
@@ -83,7 +83,7 @@ RDSmoothnessBound <- function(d, s, separate=TRUE, multiple=TRUE, alpha=0.05,
         ts <- abs(D[1, ]/D[2, ])
         maxt <- D[, which.max(ts)]
         set.seed(42)
-        Z <- matrix(rnorm(10000*ncol(D)), ncol=ncol(D))
+        Z <- matrix(stats::rnorm(10000*ncol(D)), ncol=ncol(D))
 
         if (max(ts) < cv(0, Z, D[2, ], 1/2)) {
             hatM <- lower <- 0
