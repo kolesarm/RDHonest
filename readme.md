@@ -11,7 +11,8 @@ See vignette `RDHonest.pdf` (stored under `inst/doc/`) for description of the
 package.
 
 This software pacakge is based upon work supported by the National Science
-Foundation under grant number SES-1628878.
+Foundation under grant numbers SES-1628939 (Armstrong) and SES-1628878
+(Kolesár).
 
 ## Installation
 
