@@ -14,7 +14,7 @@
 #'         polynomial estimators only.}
 #'
 #'    \item{"plugin"}{Plug-in estimate based on asymptotic variance. Local
-#'         polynomial estimators only.}
+#'         polynomial estimators in RD only.}
 #'
 #'    \item{"supplied.var"}{Use conditional variance supplied by \code{sigma2} /
 #'         \code{d} instead of computing residuals}

@@ -67,13 +67,16 @@ LPReg <- function(X, Y, h, K, order=1, se.method=NULL, sigma2, J=3) {
 #'               by \code{se.method}.}
 #'     \item{wm,wp}{Implicit weight functions used}
 #'
-#'     \item{sigma2m, sigma2p}{Estimates of \eqn{sigma^2(X)} for values
-#'             of running variable below (above) cutoff and receiving positive
+#'     \item{sigma2m, sigma2p}{Estimates of \eqn{sigma^2(X)} for values of
+#'             running variable below (above) cutoff and receiving positive
 #'             kernel weight. By default, estimates are based on squared
-#'             regression residuals, as used in "EHW". If \code{"demeaned"}
-#'             or \code{"nn"} is specifed,  estimates are based on that method,
-#'             with \code{"nn"} method used if both are specified.}
-#'     \item{eff.obs}{Number of effective observations}
+#'             regression residuals, as used in \code{"EHW"}. If
+#'             \code{"demeaned"} or \code{"nn"} is specifed, estimates are based
+#'             on that method, with \code{"nn"} method used if both are
+#'             specified.}
+#'
+#'      \item{eff.obs}{Number of effective observations}
+#'
 #' }
 #' @export
 RDLPreg <- function(d, hp, kern="triangular", order=1, hm=hp, se.method="nn",
