@@ -26,7 +26,7 @@
 #'
 #'     \describe{
 #'   \item{\code{estimate}}{Point estimate. This estimate is MSE-optimal if
-#'                   \code{what="Estimation"}}
+#'                   \code{opt.criterion="MSE"}}
 #'
 #'   \item{lff}{Least favorable function, only relevant for optimal estimator
 #'              under Taylor class.}
@@ -36,7 +36,8 @@
 #'   \item{\code{sd}}{Standard deviation of estimate}
 #'
 #'   \item{\code{lower}, \code{upper}}{Lower (upper) end-point of a one-sided CI
-#'         based on \code{estimate}. This CI is optimal if \code{what=="OCI"}}
+#'         based on \code{estimate}. This CI is optimal if
+#'         \code{opt.criterion=="OCI"}}
 #'
 #'   \item{\code{hl}}{Half-length of a two-sided CI based on \code{estimate}, so
 #'             that the CI is given by \code{c(estimate-hl, estimate+hl)}. The

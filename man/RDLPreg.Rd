@@ -39,7 +39,7 @@ the vector can consist of the following methods:
         polynomial estimators only.}
 
    \item{"plugin"}{Plug-in estimate based on asymptotic variance. Local
-        polynomial estimators only.}
+        polynomial estimators in RD only.}
 
    \item{"supplied.var"}{Use conditional variance supplied by \code{sigma2} /
         \code{d} instead of computing residuals}
@@ -60,13 +60,16 @@ list with elements:
               by \code{se.method}.}
     \item{wm,wp}{Implicit weight functions used}
 
-    \item{sigma2m, sigma2p}{Estimates of \eqn{sigma^2(X)} for values
-            of running variable below (above) cutoff and receiving positive
+    \item{sigma2m, sigma2p}{Estimates of \eqn{sigma^2(X)} for values of
+            running variable below (above) cutoff and receiving positive
             kernel weight. By default, estimates are based on squared
-            regression residuals, as used in "EHW". If \code{"demeaned"}
-            or \code{"nn"} is specifed,  estimates are based on that method,
-            with \code{"nn"} method used if both are specified.}
-    \item{eff.obs}{Number of effective observations}
+            regression residuals, as used in \code{"EHW"}. If
+            \code{"demeaned"} or \code{"nn"} is specifed, estimates are based
+            on that method, with \code{"nn"} method used if both are
+            specified.}
+
+     \item{eff.obs}{Number of effective observations}
+
 }
 }
 \description{

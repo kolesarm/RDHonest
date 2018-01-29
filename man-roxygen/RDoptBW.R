@@ -5,14 +5,13 @@
 #'
 #'    \describe{
 #'
-#'    \item{\code{"MSE"}, \code{"aMSE"}}{Finite-sample or asymtotic maximum
-#'        MSE}
+#'    \item{\code{"MSE"}}{Finite-sample maximum MSE}
 #'
-#'    \item{\code{"FLCI"}, \code{"aFLCI"}}{Length of (fixed-length) two-sided
+#'    \item{\code{"FLCI"}}{Length of (fixed-length) two-sided
 #'        confidence intervals.}
 #'
-#'    \item{\code{"OCI"}, \code{"aOCI"}}{Given quantile of excess length of
-#'        one-sided confidence intervals}
+#'    \item{\code{"OCI"}}{Given quantile of excess length of one-sided
+#'        confidence intervals}
 #'
 #'     }
 #'

@@ -42,14 +42,13 @@ contain \code{NA}s. The default is set by the \code{na.action} setting of
 
    \describe{
 
-   \item{\code{"MSE"}, \code{"aMSE"}}{Finite-sample or asymtotic maximum
-       MSE}
+   \item{\code{"MSE"}}{Finite-sample maximum MSE}
 
-   \item{\code{"FLCI"}, \code{"aFLCI"}}{Length of (fixed-length) two-sided
+   \item{\code{"FLCI"}}{Length of (fixed-length) two-sided
        confidence intervals.}
 
-   \item{\code{"OCI"}, \code{"aOCI"}}{Given quantile of excess length of
-       one-sided confidence intervals}
+   \item{\code{"OCI"}}{Given quantile of excess length of one-sided
+       confidence intervals}
 
     }
 
@@ -83,7 +82,7 @@ the vector can consist of the following methods:
         polynomial estimators only.}
 
    \item{"plugin"}{Plug-in estimate based on asymptotic variance. Local
-        polynomial estimators only.}
+        polynomial estimators in RD only.}
 
    \item{"supplied.var"}{Use conditional variance supplied by \code{sigma2} /
         \code{d} instead of computing residuals}
@@ -106,22 +105,23 @@ intervals.}
 \item{order}{Order of local regression 1 for linear, 2 for quadratic.}
 
 \item{se.initial}{Method for estimating initial variance for computing
-    optimal bandwidth. Ignored data already contains estimate of variance.
+    optimal bandwidth. Ignored if data already contains estimate of variance.
 
 \describe{
 
 \item{"IKEHW"}{Based on residuals from a local linear regression using a
-              triangular kenrel and IK bandwidth}
+              triangular kernel and IK bandwidth}
 
 \item{"IKdemeaned"}{Based on sum of squared deviations of outcome from
               estimate of intercept in local linear regression with
-              triangular kenrel and IK bandwidth}
+              triangular kernel and IK bandwidth}
 
 \item{"Silverman"}{Use residuals from local constant regression with uniform
 kernel and bandwidth selected using Silverman's rule of thumb, as in Equation
 (14) in IK}
 \item{"SilvermanNN"}{Use nearest neighbor estimates, rather than residuals}
 
+\item{"NN"}{Use nearest neighbor estimates, without assuming homoscedasticity}
 }}
 }
 \value{
@@ -132,7 +132,7 @@ Returns an object of class \code{"RDResults"}. The function
 
     \describe{
   \item{\code{estimate}}{Point estimate. This estimate is MSE-optimal if
-                  \code{what="Estimation"}}
+                  \code{opt.criterion="MSE"}}
 
   \item{lff}{Least favorable function, only relevant for optimal estimator
              under Taylor class.}
@@ -142,7 +142,8 @@ Returns an object of class \code{"RDResults"}. The function
   \item{\code{sd}}{Standard deviation of estimate}
 
   \item{\code{lower}, \code{upper}}{Lower (upper) end-point of a one-sided CI
-        based on \code{estimate}. This CI is optimal if \code{what=="OCI"}}
+        based on \code{estimate}. This CI is optimal if
+        \code{opt.criterion=="OCI"}}
 
   \item{\code{hl}}{Half-length of a two-sided CI based on \code{estimate}, so
             that the CI is given by \code{c(estimate-hl, estimate+hl)}. The

@@ -26,14 +26,13 @@ either be a string equal to \code{"triangular"} (\eqn{k(u)=(1-|u|)_{+}}),
 
    \describe{
 
-   \item{\code{"MSE"}, \code{"aMSE"}}{Finite-sample or asymtotic maximum
-       MSE}
+   \item{\code{"MSE"}}{Finite-sample maximum MSE}
 
-   \item{\code{"FLCI"}, \code{"aFLCI"}}{Length of (fixed-length) two-sided
+   \item{\code{"FLCI"}}{Length of (fixed-length) two-sided
        confidence intervals.}
 
-   \item{\code{"OCI"}, \code{"aOCI"}}{Given quantile of excess length of
-       one-sided confidence intervals}
+   \item{\code{"OCI"}}{Given quantile of excess length of one-sided
+       confidence intervals}
 
     }
 
@@ -58,22 +57,23 @@ intervals.}
 \item{order}{Order of local regression 1 for linear, 2 for quadratic.}
 
 \item{se.initial}{Method for estimating initial variance for computing
-    optimal bandwidth. Ignored data already contains estimate of variance.
+    optimal bandwidth. Ignored if data already contains estimate of variance.
 
 \describe{
 
 \item{"IKEHW"}{Based on residuals from a local linear regression using a
-              triangular kenrel and IK bandwidth}
+              triangular kernel and IK bandwidth}
 
 \item{"IKdemeaned"}{Based on sum of squared deviations of outcome from
               estimate of intercept in local linear regression with
-              triangular kenrel and IK bandwidth}
+              triangular kernel and IK bandwidth}
 
 \item{"Silverman"}{Use residuals from local constant regression with uniform
 kernel and bandwidth selected using Silverman's rule of thumb, as in Equation
 (14) in IK}
 \item{"SilvermanNN"}{Use nearest neighbor estimates, rather than residuals}
 
+\item{"NN"}{Use nearest neighbor estimates, without assuming homoscedasticity}
 }}
 }
 \value{

@@ -21,14 +21,13 @@ RDTOpt.fit(d, M, opt.criterion, alpha = 0.05, beta = 0.5,
 
    \describe{
 
-   \item{\code{"MSE"}, \code{"aMSE"}}{Finite-sample or asymtotic maximum
-       MSE}
+   \item{\code{"MSE"}}{Finite-sample maximum MSE}
 
-   \item{\code{"FLCI"}, \code{"aFLCI"}}{Length of (fixed-length) two-sided
+   \item{\code{"FLCI"}}{Length of (fixed-length) two-sided
        confidence intervals.}
 
-   \item{\code{"OCI"}, \code{"aOCI"}}{Given quantile of excess length of
-       one-sided confidence intervals}
+   \item{\code{"OCI"}}{Given quantile of excess length of one-sided
+       confidence intervals}
 
     }
 
@@ -60,7 +59,7 @@ the vector can consist of the following methods:
         polynomial estimators only.}
 
    \item{"plugin"}{Plug-in estimate based on asymptotic variance. Local
-        polynomial estimators only.}
+        polynomial estimators in RD only.}
 
    \item{"supplied.var"}{Use conditional variance supplied by \code{sigma2} /
         \code{d} instead of computing residuals}
@@ -71,22 +70,23 @@ the vector can consist of the following methods:
 \code{se.method}.}
 
 \item{se.initial}{Method for estimating initial variance for computing
-    optimal bandwidth. Ignored data already contains estimate of variance.
+    optimal bandwidth. Ignored if data already contains estimate of variance.
 
 \describe{
 
 \item{"IKEHW"}{Based on residuals from a local linear regression using a
-              triangular kenrel and IK bandwidth}
+              triangular kernel and IK bandwidth}
 
 \item{"IKdemeaned"}{Based on sum of squared deviations of outcome from
               estimate of intercept in local linear regression with
-              triangular kenrel and IK bandwidth}
+              triangular kernel and IK bandwidth}
 
 \item{"Silverman"}{Use residuals from local constant regression with uniform
 kernel and bandwidth selected using Silverman's rule of thumb, as in Equation
 (14) in IK}
 \item{"SilvermanNN"}{Use nearest neighbor estimates, rather than residuals}
 
+\item{"NN"}{Use nearest neighbor estimates, without assuming homoscedasticity}
 }}
 }
 \value{
