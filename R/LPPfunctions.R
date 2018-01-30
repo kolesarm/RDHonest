@@ -63,6 +63,9 @@ LPPreg <- function(d, h, kern="triangular", order=1, se.method="nn",
 
 #' Compute preliminary estimate of variance
 #'
+#' Compute estimate of variance, which can then be used in optimal bandwidth
+#' calculations.
+#'
 #' @param d object of class \code{"LPPData"}
 #' @template LPPseInitial
 #' @return object of class \code{"LPPData"} containing estimated variances.

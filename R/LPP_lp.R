@@ -141,7 +141,8 @@ LPPOptBW <- function(formula, data, subset, point=0, M, kern="triangular",
     ret
 }
 
-
+#' Honest inference at a point
+#'
 #' Basic computing engine called by \code{\link{LPPHonest}} to compute honest
 #' confidence intervals for local polynomial estimators.
 #' @param d object of class \code{"LPPData"}
@@ -184,7 +185,7 @@ LPPHonest.fit <- function(d, M, kern="triangular", h, opt.criterion,
         if(sclass=="T")  {
             bias <- M/2 * sum(abs(w*d$X^2))
         } else if (sclass=="H" & order==1) {
-            bias <- -M/2 * sum(w*d$X^2)
+            bias <- abs(-M/2 * sum(w*d$X^2))
         } else if (sclass=="H" & order==2) {
             ## need to find numerically
             bb <- function(b) -2*sum(w*(pmax(d$X-b, 0)^2))
@@ -210,6 +211,8 @@ LPPHonest.fit <- function(d, M, kern="triangular", h, opt.criterion,
 }
 
 
+#' Optimal bandwidth selection for inference at a point
+#'
 #' Basic computing engine called by \code{\link{LPPOptBW}} used to find
 #' optimal bandwidth
 #' @param d object of class \code{"LPPData"}
@@ -269,17 +272,26 @@ LPPOptBW.fit <- function(d, M, kern="triangular", opt.criterion, alpha=0.05,
 }
 
 
-#' Rule of thumb bandwidth
+#' Rule of thumb bandwidth for inference at a point
 #'
 #' Calculate bandwidth for inference at a point on local linear regression using
-#' method in Fan and Gijbels (1996, Chapter 4.2). If \code{order} is even,
-#' formula assumes we're doing inference at a boundary point.
+#' method in Fan and Gijbels (1996, Chapter 4.2).
 #'
 #' @param d object of class \code{"LPPData"}
 #' @template Kern
 #' @return ROT bandwidth
 #' @param boundary Is point at a boundary?
 #' @importFrom stats lm quantile
+#' @references{
+#'
+#' \cite{Fan , J., and I. Gijbels (1996): Local Polynomial Modelling and Its
+#' Applications, Monographs on Statistics and Applied Probability. Chapman &
+#' Hall/CRC, New York, NY.}
+#'
+#' }
+#' @examples
+#' dp <- LPPData(lee08[lee08$margin>0, ], point=0)
+#' bp1 <- ROTBW.fit(dp, kern="uniform", order=1)
 #' @export
 ROTBW.fit <- function(d, kern="triangular", order=1, boundary=NULL) {
     X <- d$X
@@ -289,7 +301,6 @@ ROTBW.fit <- function(d, kern="triangular", order=1, boundary=NULL) {
     if( (boundary==TRUE) & (order %% 2 ==0) )
         warning("ROT method for computing bandwidth requires either\n",
                 "order to be odd or else a boundary point")
-
     N <- length(d$X)
 
     ## STEP 0: Estimate f_X(0) using Silverman
@@ -321,7 +332,7 @@ ROTBW.fit <- function(d, kern="triangular", order=1, boundary=NULL) {
     B <- deriv * mup
     V <- sigma2 * nu0 /f0
 
-    (V/(B^2 * 2 * (order+1) * N))^(1/(2*order+1))
+    (V/(B^2 * 2 * (order+1) * N))^(1/(2*order+3))
 }
 
 

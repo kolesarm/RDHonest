@@ -2,7 +2,7 @@
 % Please edit documentation in R/LPP_lp.R
 \name{ROTBW.fit}
 \alias{ROTBW.fit}
-\title{Rule of thumb bandwidth}
+\title{Rule of thumb bandwidth for inference at a point}
 \usage{
 ROTBW.fit(d, kern = "triangular", order = 1, boundary = NULL)
 }
@@ -23,6 +23,18 @@ ROT bandwidth
 }
 \description{
 Calculate bandwidth for inference at a point on local linear regression using
-method in Fan and Gijbels (1996, Chapter 4.2). If \code{order} is even,
-formula assumes we're doing inference at a boundary point.
+method in Fan and Gijbels (1996, Chapter 4.2).
+}
+\examples{
+dp <- LPPData(lee08[lee08$margin>0, ], point=0)
+bp1 <- ROTBW.fit(dp, kern="uniform", order=1)
+}
+\references{
+{
+
+\cite{Fan , J., and I. Gijbels (1996): Local Polynomial Modelling and Its
+Applications, Monographs on Statistics and Applied Probability. Chapman &
+Hall/CRC, New York, NY.}
+
+}
 }

@@ -2,9 +2,7 @@
 % Please edit documentation in R/RD_opt.R
 \name{RDTOpt.fit}
 \alias{RDTOpt.fit}
-\title{Basic computing engine called by \code{\link{RDHonest}} to compute honest
-confidence intervals for local optimal estimators in RD under second-order
-Taylor class.}
+\title{Optimal inference in RD under Taylor class}
 \usage{
 RDTOpt.fit(d, M, opt.criterion, alpha = 0.05, beta = 0.5,
   se.method = "supplied.var", J = 3, se.initial = "IKEHW")

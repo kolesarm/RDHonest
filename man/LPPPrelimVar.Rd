@@ -26,5 +26,6 @@ LPPPrelimVar(d, se.initial = "IKEHW")
 object of class \code{"LPPData"} containing estimated variances.
 }
 \description{
-Compute preliminary estimate of variance
+Compute estimate of variance, which can then be used in optimal bandwidth
+calculations.
 }

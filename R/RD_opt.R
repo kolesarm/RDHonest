@@ -121,6 +121,8 @@ RDEstimator <- function(d, f, alpha=0.05, se.method="supplied.var", J=3) {
               class="RDResults")
 }
 
+#' Optimal inference in RD under Taylor class
+#'
 #' Basic computing engine called by \code{\link{RDHonest}} to compute honest
 #' confidence intervals for local optimal estimators in RD under second-order
 #' Taylor class.

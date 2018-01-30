@@ -2,8 +2,7 @@
 % Please edit documentation in R/RD_lp.R
 \name{RDHonest.fit}
 \alias{RDHonest.fit}
-\title{Basic computing engine called by \code{\link{RDHonest}} to compute honest
-confidence intervals for local polynomial estimators.}
+\title{Honest inference in RD}
 \usage{
 RDHonest.fit(d, M, kern = "triangular", hp, hm = hp, opt.criterion,
   bw.equal = TRUE, alpha = 0.05, beta = 0.8, se.method = "nn", J = 3,

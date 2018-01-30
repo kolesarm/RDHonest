@@ -164,7 +164,8 @@ RDOptBW <- function(formula, data, subset, cutoff=0, M, kern="triangular",
     ret
 }
 
-
+#' Honest inference in RD
+#'
 #' Basic computing engine called by \code{\link{RDHonest}} to compute honest
 #' confidence intervals for local polynomial estimators.
 #' @param d object of class \code{"RDData"}
@@ -239,6 +240,8 @@ RDHonest.fit <- function(d, M, kern="triangular", hp, hm=hp, opt.criterion,
 }
 
 
+#' Optimal bandwidth selection in RD
+#'
 #' Basic computing engine called by \code{\link{RDOptBW}} used to find
 #' optimal bandwidth
 #' @param d object of class \code{"RDData"}

@@ -2,8 +2,7 @@
 % Please edit documentation in R/LPP_lp.R
 \name{LPPOptBW.fit}
 \alias{LPPOptBW.fit}
-\title{Basic computing engine called by \code{\link{LPPOptBW}} used to find
-optimal bandwidth}
+\title{Optimal bandwidth selection for inference at a point}
 \usage{
 LPPOptBW.fit(d, M, kern = "triangular", opt.criterion, alpha = 0.05,
   beta = 0.8, sclass = "H", order = 1, se.initial = "ROTEHW")

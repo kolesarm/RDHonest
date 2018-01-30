@@ -3,7 +3,7 @@
 \docType{data}
 \name{headst}
 \alias{headst}
-\title{Ludwig-Miller (2007) Head Start data}
+\title{Head Start data from Ludwig and Miller (2007)}
 \format{A data frame with 3,127 rows and 9 variables:
 
 \describe{
@@ -38,5 +38,14 @@ is also removed due to it being an outlier for both outcomes. Counties with
 oldcode equal to (3014, 32032, 47010, 47040, 47074, 47074, 47078, 47079,
 47096) matched more than one FIPS entry, so the county labels may not be
 correct. Mortality data is missing for Alaska.
+}
+\references{
+{
+
+\cite{Ludwig , J., and D. L. Miller (2007): "Does Head Start improve
+      children's life chances? Evidence from a regression discontinuity
+      design," Quarterly Journal of Economics, 122(1), 159-208.}
+
+}
 }
 \keyword{datasets}

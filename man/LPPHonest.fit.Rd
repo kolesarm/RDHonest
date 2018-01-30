@@ -2,8 +2,7 @@
 % Please edit documentation in R/LPP_lp.R
 \name{LPPHonest.fit}
 \alias{LPPHonest.fit}
-\title{Basic computing engine called by \code{\link{LPPHonest}} to compute honest
-confidence intervals for local polynomial estimators.}
+\title{Honest inference at a point}
 \usage{
 LPPHonest.fit(d, M, kern = "triangular", h, opt.criterion, alpha = 0.05,
   beta = 0.8, se.method = "nn", J = 3, sclass = "H", order = 1,

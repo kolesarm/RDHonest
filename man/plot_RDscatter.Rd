@@ -29,3 +29,6 @@ numer of observations that the point averages over (useful when
 Scatterplot of raw observations in which each point corresponds to an binned
 average.
 }
+\examples{
+plot_RDscatter(RDData(lee08, cutoff=0), avg=20)
+}

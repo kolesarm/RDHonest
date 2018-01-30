@@ -13,6 +13,8 @@
 #' @param propdotsize If \code{TRUE}, then size of points is proportional to
 #'     numer of observations that the point averages over (useful when
 #'     \code{avg=Inf}). Otherwise the size of points is constant.
+#' @examples
+#' plot_RDscatter(RDData(lee08, cutoff=0), avg=20)
 #' @export
 plot_RDscatter <- function(d, avg=10, xlab=NULL, ylab=NULL,
                            window=NULL, vert=TRUE, propdotsize=FALSE) {

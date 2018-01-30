@@ -18,4 +18,12 @@ lee08
 \description{
 Lee (2008) US House elections dataset
 }
+\references{
+{
+
+\cite{Lee , D. S. (2008): "Randomized experiments from non-random selection in
+      U.S. House elections," Journal of Econometrics, 142(2), 675-697.}
+
+}
+}
 \keyword{datasets}

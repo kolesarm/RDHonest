@@ -1,10 +1,11 @@
 Package: RDHonest
 Title: Honest inference in sharp regression discontinuity designs
-Version: 0.2.1.9001
+Version: 0.2.1.9002
 Authors@R: person("Michal", "Kolesar",
     email = "kolesarmi@googlemail.com", role = c("aut", "cre"))
 Description: Honest and nearly-optimal confidence intervals in sharp regression
-    discontinuity designs based on local polynomial regression.
+    discontinuity designs and for inference at a point based on local polynomial
+    regression.
 Depends:
     R (>= 3.3.0)
 License: GPL-3

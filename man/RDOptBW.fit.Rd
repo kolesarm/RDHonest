@@ -2,8 +2,7 @@
 % Please edit documentation in R/RD_lp.R
 \name{RDOptBW.fit}
 \alias{RDOptBW.fit}
-\title{Basic computing engine called by \code{\link{RDOptBW}} used to find
-optimal bandwidth}
+\title{Optimal bandwidth selection in RD}
 \usage{
 RDOptBW.fit(d, M, kern = "triangular", opt.criterion, bw.equal = TRUE,
   alpha = 0.05, beta = 0.8, sclass = "H", order = 1,

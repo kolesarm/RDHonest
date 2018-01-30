@@ -160,6 +160,9 @@ sigmaNN <- function(X, Y, J=3) {
 
 #' Compute preliminary estimate of variance
 #'
+#' Compute estimate of variance, which can then be used in optimal bandwidth
+#' calculations.
+#'
 #' @param d object of class \code{"RDData"}
 #' @template RDseInitial
 #' @return object of class \code{"RDData"} containing estimated variances.

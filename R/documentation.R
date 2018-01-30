@@ -1,5 +1,4 @@
-#' Ludwig-Miller (2007) Head Start data
-#'
+#' Head Start data from Ludwig and Miller (2007)
 #'
 #' Subset of Ludwig-Miller data. Counties with missing poverty rate, of with
 #' both outcomes missing (\code{hs} and \code{mortality}) were removed. In the
@@ -29,6 +28,13 @@
 #' \item{county}{County name}
 #' }
 #' @source Douglas Miller's website
+#' @references{
+#'
+#' \cite{Ludwig , J., and D. L. Miller (2007): "Does Head Start improve
+#'       children's life chances? Evidence from a regression discontinuity
+#'       design," Quarterly Journal of Economics, 122(1), 159-208.}
+#'
+#' }
 "headst"
 
 #' Lalive (2008) Unemployment duration dataa
@@ -42,6 +48,13 @@
 #'   \item{female}{Indicator for female}
 #'   \item{duration}{unemployment duration in weeks}
 #'  }
+#' @references{
+#'
+#' \cite{Lalive, R. (2008): "How Do Extended Benefits Affect Unemployment
+#'       Duration? A Regression Discontinuity Approach." Journal of Econometrics,
+#'       142(2): 785-806.}
+#'
+#' }
 #' @source Rafael Lalive's website
 "rebp"
 
@@ -55,6 +68,12 @@
 #'   \item{margin}{Democratic margin of victory}
 #'  }
 #' @source Mostly Harmless Econometrics website
+#' @references{
+#'
+#' \cite{Lee , D. S. (2008): "Randomized experiments from non-random selection in
+#'       U.S. House elections," Journal of Econometrics, 142(2), 675-697.}
+#'
+#' }
 "lee08"
 
 #' Oreopoulos (2006) UK general household survey dataset
@@ -64,6 +83,13 @@
 #'   \item{earnings}{Annual earnings in 1998 (UK pounds)}
 #'   \item{yearat14}{Year individual turned 14}
 #'  }
+#' @references{
+#'
+#' \cite{Oreopoulos, P. (2006): "Estimating Average and Local Average Treatment
+#'       Effects When Compulsory Education Schooling Laws Really Matter",
+#'       American Economic Review, 96(1), 152-175}
+#'
+#' }
 #' @source American Economic Review data archive
 "cghs"
 

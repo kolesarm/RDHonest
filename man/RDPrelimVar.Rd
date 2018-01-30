@@ -33,5 +33,6 @@ kernel and bandwidth selected using Silverman's rule of thumb, as in Equation
 object of class \code{"RDData"} containing estimated variances.
 }
 \description{
-Compute preliminary estimate of variance
+Compute estimate of variance, which can then be used in optimal bandwidth
+calculations.
 }

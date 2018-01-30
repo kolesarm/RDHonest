@@ -18,4 +18,13 @@ cghs
 \description{
 Oreopoulos (2006) UK general household survey dataset
 }
+\references{
+{
+
+\cite{Oreopoulos, P. (2006): "Estimating Average and Local Average Treatment
+      Effects When Compulsory Education Schooling Laws Really Matter",
+      American Economic Review, 96(1), 152-175}
+
+}
+}
 \keyword{datasets}
