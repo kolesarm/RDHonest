@@ -141,6 +141,33 @@ LPPOptBW <- function(formula, data, subset, point=0, M, kern="triangular",
     ret
 }
 
+#' Rule of thumb for choosing M
+#'
+#' Use global quartic regression to estimate a bound on the second derivative
+#' for inference under under second order Hölder class.
+#'
+#' @param d object of class \code{"LPPData"}
+#' @examples
+#' LPP_MROT.fit(LPPData(lee08[lee08$margin>0, ], point=0))
+#' @export
+LPP_MROT.fit <- function(d) {
+    CheckClass(d, "LPPData")
+
+    ## STEP 1: Estimate (p+1)th derivative and sigma^2 using global polynomial
+    ## regression
+    R <- outer(d$X, 0:4, "^")
+    r1 <- unname(lm(d$Y ~ 0 + R)$coefficients)
+    f2 <- function(x) abs(2*r1[3]+6*x*r1[4]+12*x^2*r1[5])
+
+    ## maximum occurs either at endpoints, or else at the extremum,
+    ## -r1[4]/(4*r1[5]), if the extremum is in the support
+    f2e <- -r1[4]/(4*r1[5])
+    M <- max(f2(min(d$X)), f2(max(d$X)))
+    if (min(d$X) < f2e & max(d$X) > f2e) M <- max(f2(f2e), M)
+
+    M
+}
+
 #' Honest inference at a point
 #'
 #' Basic computing engine called by \code{\link{LPPHonest}} to compute honest
