@@ -386,6 +386,30 @@ IKBW.fit <- function(d, kern="triangular", order=1, verbose=FALSE) {
 }
 
 
+#' Rule of thumb for choosing M
+#'
+#' Use global quartic regression on either side of the cutoff to estimate a
+#' bound on the second derivative for inference under under second order Hölder
+#' class.
+#'
+#' @param d object of class \code{"RDData"}
+#' @examples
+#' RD_MROT.fit(RDData(lee08, cutoff=0))
+#' @export
+RD_MROT.fit <- function(d) {
+    CheckClass(d, "RDData")
+
+    dtp <- data.frame(Y=d$Yp, X=d$Xp)
+    dtm <- data.frame(Y=d$Ym, X=d$Xm)
+    colnames(dtp) <- colnames(dtm) <- d$var.names
+    dp <- LPPData(dtp, point=0)
+    dm <- LPPData(dtm, point=0)
+
+    max(LPP_MROT.fit(dp), LPP_MROT.fit(dm))
+}
+
+
+
 #' @export
 print.RDBW <- function(x, digits = getOption("digits"), ...) {
     cat("Call:\n", deparse(x$call), "\n\n", sep = "", fill=TRUE)
