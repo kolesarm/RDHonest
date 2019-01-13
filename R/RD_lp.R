@@ -55,6 +55,11 @@
 #'
 #' }
 #' @seealso \code{\link{RDOptBW}}
+#' @references{
+#' \cite{Imbens, Guido, and Kalyanaraman, Karthik,
+#' "Optimal bandwidth choice for the regression discontinuity estimator." The
+#' Review of Economic Studies 79 (3): 933-959.}
+#' }
 #' @examples
 #'
 #' # Lee dataset
@@ -134,6 +139,11 @@ RDHonest <- function(formula, data, subset, cutoff=0, M, kern="triangular",
 #'
 #'    }
 #' @seealso \code{\link{RDHonest}}
+#' @references{
+#' \cite{Imbens, Guido, and Kalyanaraman, Karthik,
+#' "Optimal bandwidth choice for the regression discontinuity estimator." The
+#' Review of Economic Studies 79 (3): 933-959.}
+#' }
 #' @examples
 #'
 #' ## Use Lee dataset
@@ -260,6 +270,11 @@ RDHonest.fit <- function(d, M, kern="triangular", hp, hm=hp, opt.criterion,
 #'     \item{\code{sigma2m}, \code{sigma2p}}{estimate of conditional variance
 #'      above and below cutoff, from \code{d}}
 #'    }
+#' @references{
+#' \cite{Imbens, Guido, and Kalyanaraman, Karthik,
+#' "Optimal bandwidth choice for the regression discontinuity estimator." The
+#' Review of Economic Studies 79 (3): 933-959.}
+#' }
 #' @examples
 #' ## Lee data
 #' d <- RDData(lee08, cutoff=0)
@@ -320,12 +335,17 @@ RDOptBW.fit <- function(d, M, kern="triangular", opt.criterion,
 #' Imbens and Kalyanaraman bandwidth
 #'
 #' Calculate bandwidth for sharp RD based on local linear regression using
-#' method by Imbens and Kalyanaraman (2012, ReStud)
+#' method by Imbens and Kalyanaraman (2012)
 #' @param d object of class \code{"RDData"}
 #' @template Kern
 #' @param verbose Print details of calculation?
-#' @return IK bandwidth
+#' @return Imbens and Kalyanaraman bandwidth
 #' @importFrom stats coef lm
+#' @references{
+#' \cite{Imbens, Guido, and Kalyanaraman, Karthik,
+#' "Optimal bandwidth choice for the regression discontinuity estimator." The
+#' Review of Economic Studies 79 (3): 933-959.}
+#' }
 #' @export
 IKBW.fit <- function(d, kern="triangular", order=1, verbose=FALSE) {
     if (order!=1)

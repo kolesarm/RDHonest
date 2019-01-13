@@ -138,8 +138,8 @@ $B(\hat{\beta}_{h_{+},h_{-}})/\widehat{se}(\hat{\beta}_{h_{+},h_{-}})$, so that,
 in large samples, the $1-\alpha$ quantile of the absolute value of the
 $t$-statistic will be bounded by
 $cv_{1-\alpha}(B(\hat{\beta}_{h_{+},h_{-}})/\widehat{se}(\hat{\beta}_{h_{+},h_{-}}))$.
-This approach gives tigher CIs than simply adding and subtracting
-$B(\hat{\beta}_{h_+,h_-})$ from the point estimate, in addition to adding and subtracting $z_{1-\alpha}\hat{se}(\hat{\beta}_{h_+,h_-})$
+This approach gives tighter CIs than simply adding and subtracting
+$B(\hat{\beta}_{h_+,h_-})$ from the point estimate, in addition to adding and subtracting $z_{1-\alpha}\widehat{se}(\hat{\beta}_{h_+,h_-})$
 
 The function `CVb` gives these critical values:
 
@@ -173,7 +173,7 @@ where $\mathcal{F}_{T}(M;\mathcal{X})$ consists of functions $f$ such that the
 approximation error from second-order Taylor expansion of $f(x)$ about $c_{0}$
 is bounded by $M|x|^{2}/2$, uniformly over $\mathcal{X}$: \begin{align*}
 \mathcal{F}_{T}(M;\mathcal{X}) =\left\{f\colon \left|
-f(x)-f(c_0)-f'(c_0)x\right|\le M|x|^2/2\text{ all }x\in\mathcal{X}\right\}.
+f(x)-f(c_0)-f'(c_0)x\right| \leq M|x|^2/2\text{ all }x\in\mathcal{X}\right\}.
 \end{align*} The class $\mathcal{F}_{T}(M;\mathcal{X})$ formalizes the idea that
 the second derivative of $f$ at zero should be bounded by $M$. See Section 2 in
 @ArKo16optimal (note the constant $C$ in that paper equals $C=M/2$ here). This
@@ -202,7 +202,9 @@ standard error by default (this can be changed using the option `se.method`, see
 help file). The package reports two-sided as well one-sided CIs (with lower as
 well as upper limit) by default.
 
-Instead of specifing a bandwidth, one can just specify the smoothness class and smoothness constant $M$, and the bandwidth will be chosen optimally for a given optimality criterion:
+Instead of specifying a bandwidth, one can just specify the smoothness class and
+smoothness constant $M$, and the bandwidth will be chosen optimally for a given
+optimality criterion:
 
 ```{r}
 RDHonest(voteshare ~ margin, data=lee08, kern="triangular",
@@ -301,7 +303,7 @@ $m(x_i)$, and let $\hat{\epsilon}_i$ denote the regression residuals from the
 regression of $y_i$ on $w(x_i)$. Then a consistent estimator of the asymptotic
 variance $\Omega$ is given by
 \begin{equation*}
-\hat{\Omega}=n\sum_i T_iT_i',
+\hat{\Omega}=n\sum_i T_i T_i',
 \qquad
 T_i'=\begin{pmatrix}
 \hat{u}_i m(x_i)'\hat{Q}^{-1}&
@@ -347,8 +349,9 @@ follows the description in Section 5.2 in @KoRo16.
 For the second-order Taylor smoothness class, the function `RDHonest`, with
 `kernel="optimal"`, computes finite-sample optimal estimators and confidence
 intervals, as described in Section 2.2 in @ArKo16optimal. This typically yields
-tighter CIs. Comparing the lenghts of two-sided CIs with optimally chosen
-bandwidths, using Silverman's rule of thumb to estimate the preliminary variance estimate used to compute optimal bandwidths:
+tighter CIs. Comparing the lengths of two-sided CIs with optimally chosen
+bandwidths, using Silverman's rule of thumb to estimate the preliminary variance
+estimate used to compute optimal bandwidths:
 
 ```{r}
 2*RDHonest(voteshare ~ margin, data=lee08, kern="optimal", M=0.1, opt.criterion="FLCI", se.initial="Silverman", se.method="nn")$hl
@@ -361,7 +364,7 @@ bandwidths, using Silverman's rule of thumb to estimate the preliminary variance
 # Specification testing
 
 The package also implements lower-bound estimates for the smoothness constant
-$M$ for the Taylor and Hölder smoothess class, as described in the supplements to @KoRo16 and @ArKo16optimal
+$M$ for the Taylor and Hölder smoothness class, as described in the supplements to @KoRo16 and @ArKo16optimal
 
 ```{r}
 ## Add variance estimate to the lee data so that the RDSmoothnessBound

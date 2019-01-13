@@ -6,8 +6,8 @@
 #' @keywords internal
 RDlpformula <- function(order) {
         f1 <- if (order>0) {
-                  f1 <- paste(sapply(1:order, function(p)
-                      paste0("I(x^", p, ")")), collapse="+")
+                  f1 <- paste(vapply(seq_len(order), function(p)
+                      paste0("I(x^", p, ")"), character(1)), collapse="+")
                   paste0("(", f1, ")*I(x>=0)")
               } else  {
                   paste0("I(x>=0)")
@@ -16,10 +16,11 @@ RDlpformula <- function(order) {
 }
 
 
-#' BME method to compute honest CIs in RD designs with discrete regressors
+#' CIs in RD with discrete regressors under bounded misspecification error class
 #'
-#' Computes honest CIs for local linear regression with uniform kernel as in
-#' Kolesar and Rothe
+#' Computes honest CIs for local linear regression with uniform kernel under the
+#' bounded misspecification error class of functions, as considered in Kolesár
+#' and Rothe (2018)
 #'
 #' @template RDFormula
 #' @template RDBW
@@ -39,6 +40,13 @@ RDlpformula <- function(order) {
 #' ## Equivalent to
 #' RDHonestBME(log(cghs$earnings)~yearat14, data=cghs, hp=3,
 #'             cutoff=1947, order=1, regformula="y~x*I(x>=0)")
+#' @references{
+#'
+#' \cite{Kolesár, Michal, and Christoph Rothe. 2018. "Inference in Regression
+#' Discontinuity Designs with a Discrete Running Variable." American Economic
+#' Review 108 (8): 2277–2304.}
+#'
+#' }
 #' @export
 RDHonestBME <- function(formula, data, subset, cutoff=0, na.action, hp=Inf,
                         hm=hp, alpha=0.05, order=0, regformula) {
@@ -89,8 +97,8 @@ RDHonestBME <- function(formula, data, subset, cutoff=0, na.action, hp=Inf,
     ## All possible combinations of s_+, s- and g_+, g-
     gr <- as.matrix(expand.grid(1:G.m, (G.m+1):G, c(-1, 1), c(-1, 1)))
     selvec <- matrix(0, nrow=nrow(gr), ncol=ncol(vdt))
-    selvec[cbind(1:nrow(selvec), gr[, 1])] <- gr[, 3]
-    selvec[cbind(1:nrow(selvec), gr[, 2])] <- gr[, 4]
+    selvec[cbind(seq_len(nrow(selvec)), gr[, 1])] <- gr[, 3]
+    selvec[cbind(seq_len(nrow(selvec)), gr[, 2])] <- gr[, 4]
     selvec[, ncol(selvec)] <- 1
 
     se <- sqrt(rowSums((selvec %*% vdt) * selvec))

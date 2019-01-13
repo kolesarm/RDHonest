@@ -41,7 +41,7 @@ either be a string equal to \code{"triangular"} (\eqn{k(u)=(1-|u|)_{+}}),
     estimated using a nearest neighbor estimator.}
 
 \item{bw.equal}{logical specifying whether bandwidths on either side of
-cutoff should be constrainted to equal to each other.}
+cutoff should be constrained to equal to each other.}
 
 \item{alpha}{determines confidence level, \code{1-alpha} for
 constructing/optimizing confidence intervals.}
@@ -61,15 +61,15 @@ intervals.}
 \describe{
 
 \item{"IKEHW"}{Based on residuals from a local linear regression using a
-              triangular kernel and IK bandwidth}
+              triangular kernel and Imbens and Kalyanaraman bandwidth}
 
 \item{"IKdemeaned"}{Based on sum of squared deviations of outcome from
               estimate of intercept in local linear regression with
-              triangular kernel and IK bandwidth}
+              triangular kernel and Imbens and Kalyanaraman bandwidth}
 
 \item{"Silverman"}{Use residuals from local constant regression with uniform
 kernel and bandwidth selected using Silverman's rule of thumb, as in Equation
-(14) in IK}
+(14) in Imbens and Kalyanaraman (2012)}
 \item{"SilvermanNN"}{Use nearest neighbor estimates, rather than residuals}
 
 \item{"NN"}{Use nearest neighbor estimates, without assuming homoscedasticity}
@@ -95,4 +95,11 @@ optimal bandwidth
 ## Lee data
 d <- RDData(lee08, cutoff=0)
 RDOptBW.fit(d, M=0.1, opt.criterion="MSE")[c("hp", "hm")]
+}
+\references{
+{
+\cite{Imbens, Guido, and Kalyanaraman, Karthik,
+"Optimal bandwidth choice for the regression discontinuity estimator." The
+Review of Economic Studies 79 (3): 933-959.}
+}
 }

@@ -8,9 +8,9 @@ EqKern(kernel = "uniform", boundary = TRUE, order = 0)
 }
 \arguments{
 \item{kernel}{kernel type. Can be a function supported on \eqn{[-1, 1]}
-(boundary kernel) or \eqn{[0,1]} (interior kernel), or else one of "uniform"
-(\eqn{I(|u|<1)}), "triangular" (\eqn{(1-|u|)I(|u|<1)}), or "epanechnikov"
-(k(u)=(3/4)(1-u^2)I(|u|<1)).}
+(boundary kernel) or \eqn{[0,1]} (interior kernel), or else one of
+\code{"uniform"} (\eqn{I(|u|<1)}), \code{"triangular"} (\eqn{(1-|u|)I(|u|<1)}),
+or \code{"epanechnikov"} (k(u)=(3/4)(1-u^2)I(|u|<1)).}
 
 \item{boundary}{Logical scalar, specifying whether we are at a boundary.}
 

@@ -2,8 +2,6 @@ tol <- .Machine$double.eps^0.75
 
 #' Find interval containing zero of a function, then find the zero
 #'
-#' Same function as in NPRHonest
-#'
 #' Given function \code{f} find \code{x0} such that \code{f(x0)==0}
 #' @param f function whose root we're looking for
 #' @param ival upper endpoint of initial interval in which to search
@@ -19,7 +17,7 @@ FindZero <- function(f, ival=1.1, negative=TRUE) {
 }
 
 
-#' Class Constructor for RDData
+#' Class Constructor for \code{"RDData"}
 #'
 #' Convert data to standardized format for use with low-level functions. If the
 #' cutoff for treatment is non-zero, shift the running variable so that cutoff
@@ -37,11 +35,11 @@ FindZero <- function(f, ival=1.1, negative=TRUE) {
 #'
 #'     \item{Ym}{Outcome vector for observations below cutoff}
 #'
-#'     \item{Yp}{Outcome vector for observationsabove cutoff}
+#'     \item{Yp}{Outcome vector for observations above cutoff}
 #'
 #'     \item{Xm}{Running variable for observations below cutoff}
 #'
-#'     \item{Xp}{Running variable for observationsabove cutoff}
+#'     \item{Xp}{Running variable for observations above cutoff}
 #'
 #'     \item{sigma2m}{Conditional variance of outcome for observations below
 #'     cutoff}
@@ -78,7 +76,7 @@ RDData <- function(d, cutoff) {
     structure(df, class="RDData")
 }
 
-#' Class Constructor for LPPData
+#' Class Constructor for \code{"LPPData"}
 #'
 #' Convert data to standardized format for use with low-level functions. If the
 #' point for which to do inference is non-zero, shift the independent variable so
@@ -173,5 +171,5 @@ gss <- function(f, xs) {
     }
 
     supp <- xs[a:b]
-    supp[which.min(sapply(supp, f))]
+    supp[which.min(vapply(supp, f, numeric(1)))]
 }

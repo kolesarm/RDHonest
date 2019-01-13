@@ -2,9 +2,9 @@
 #'
 #' Calculates equivalent kernel for local polynomial regression.
 #' @param kernel kernel type. Can be a function supported on \eqn{[-1, 1]}
-#' (boundary kernel) or \eqn{[0,1]} (interior kernel), or else one of "uniform"
-#' (\eqn{I(|u|<1)}), "triangular" (\eqn{(1-|u|)I(|u|<1)}), or "epanechnikov"
-#' (k(u)=(3/4)(1-u^2)I(|u|<1)).
+#'     (boundary kernel) or \eqn{[0,1]} (interior kernel), or else one of
+#'     \code{"uniform"} (\eqn{I(|u|<1)}), \code{"triangular"} (\eqn{(1-|u|)I(|u|<1)}),
+#'     or \code{"epanechnikov"} (k(u)=(3/4)(1-u^2)I(|u|<1)).
 #' @param boundary Logical scalar, specifying whether we are at a boundary.
 #' @param order Order of local polynomial: \code{0} means local constant,
 #'     \code{1} local linear, \code{2} local quadratic etc.
@@ -86,8 +86,8 @@ KernMoment <- function(K, moment = 0, boundary = TRUE, type = "raw") {
 KernM <- function(K, order = 2, boundary = boundary) {
     M <- outer(0:order, 0:order, "+")
 
-    matrix(sapply(M, function(j)
-        KernMoment(K, moment = j, boundary = boundary)),
+    matrix(vapply(M, function(j)
+        KernMoment(K, moment = j, boundary = boundary), numeric(1)),
            nrow = (order + 1))
 }
 

@@ -7,7 +7,7 @@
 RDgbC(d, b, C)
 }
 \arguments{
-\item{d}{Object of class RDData.}
+\item{d}{Object of class \code{"RDData"}.}
 
 \item{b}{Jump at zero}
 

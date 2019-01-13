@@ -7,9 +7,9 @@
 Q(d, f)
 }
 \arguments{
-\item{d}{RDData}
+\item{d}{Object of class \code{"RDData"}}
 
-\item{f}{Least favorable function of class "RDLFFunction"}
+\item{f}{Least favorable function of class \code{"RDLFFunction"}}
 }
 \description{
 Computes \eqn{\omega^{-1}(2b)^2/4=sum_{i} g(x_i)^2/sigma^2(x_i)},

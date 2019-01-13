@@ -2,7 +2,7 @@
 % Please edit documentation in R/RD_bme.R
 \name{RDHonestBME}
 \alias{RDHonestBME}
-\title{BME method to compute honest CIs in RD designs with discrete regressors}
+\title{CIs in RD with discrete regressors under bounded misspecification error class}
 \usage{
 RDHonestBME(formula, data, subset, cutoff = 0, na.action, hp = Inf,
   hm = hp, alpha = 0.05, order = 0, regformula)
@@ -44,8 +44,9 @@ linear regression (\code{order=1}) is equivalent to
 element of the design matrix}
 }
 \description{
-Computes honest CIs for local linear regression with uniform kernel as in
-Kolesar and Rothe
+Computes honest CIs for local linear regression with uniform kernel under the
+bounded misspecification error class of functions, as considered in Kolesár
+and Rothe (2018)
 }
 \section{Note}{
 
@@ -60,4 +61,13 @@ RDHonestBME(log(cghs$earnings)~yearat14, data=cghs, hp=3,
 ## Equivalent to
 RDHonestBME(log(cghs$earnings)~yearat14, data=cghs, hp=3,
             cutoff=1947, order=1, regformula="y~x*I(x>=0)")
+}
+\references{
+{
+
+\cite{Kolesár, Michal, and Christoph Rothe. 2018. "Inference in Regression
+Discontinuity Designs with a Discrete Running Variable." American Economic
+Review 108 (8): 2277–2304.}
+
+}
 }

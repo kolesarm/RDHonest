@@ -5,8 +5,8 @@
 \title{Optimal Bandwidth Selection in Regression Discontinuity}
 \usage{
 RDOptBW(formula, data, subset, cutoff = 0, M, kern = "triangular",
-  na.action, opt.criterion, bw.equal = TRUE, alpha = 0.05, beta = 0.8,
-  sclass = "H", order = 1, se.initial = "IKEHW")
+  na.action, opt.criterion, bw.equal = TRUE, alpha = 0.05,
+  beta = 0.8, sclass = "H", order = 1, se.initial = "IKEHW")
 }
 \arguments{
 \item{formula}{object of class \code{"formula"} (or one that can be coerced
@@ -57,7 +57,7 @@ contain \code{NA}s. The default is set by the \code{na.action} setting of
     estimated using a nearest neighbor estimator.}
 
 \item{bw.equal}{logical specifying whether bandwidths on either side of
-cutoff should be constrainted to equal to each other.}
+cutoff should be constrained to equal to each other.}
 
 \item{alpha}{determines confidence level, \code{1-alpha} for
 constructing/optimizing confidence intervals.}
@@ -77,15 +77,15 @@ intervals.}
 \describe{
 
 \item{"IKEHW"}{Based on residuals from a local linear regression using a
-              triangular kernel and IK bandwidth}
+              triangular kernel and Imbens and Kalyanaraman bandwidth}
 
 \item{"IKdemeaned"}{Based on sum of squared deviations of outcome from
               estimate of intercept in local linear regression with
-              triangular kernel and IK bandwidth}
+              triangular kernel and Imbens and Kalyanaraman bandwidth}
 
 \item{"Silverman"}{Use residuals from local constant regression with uniform
 kernel and bandwidth selected using Silverman's rule of thumb, as in Equation
-(14) in IK}
+(14) in Imbens and Kalyanaraman (2012)}
 \item{"SilvermanNN"}{Use nearest neighbor estimates, rather than residuals}
 
 \item{"NN"}{Use nearest neighbor estimates, without assuming homoscedasticity}
@@ -132,6 +132,13 @@ that is first in \code{data} and then in the environment of \code{formula}.
 ## Use Lee dataset
 RDOptBW(voteshare ~ margin, data = lee08, kern = "uniform",
         M = 0.1, opt.criterion = "MSE", sclass = "H")
+}
+\references{
+{
+\cite{Imbens, Guido, and Kalyanaraman, Karthik,
+"Optimal bandwidth choice for the regression discontinuity estimator." The
+Review of Economic Studies 79 (3): 933-959.}
+}
 }
 \seealso{
 \code{\link{RDHonest}}

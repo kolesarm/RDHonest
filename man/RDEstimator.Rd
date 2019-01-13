@@ -8,9 +8,9 @@ around it}
 RDEstimator(d, f, alpha = 0.05, se.method = "supplied.var", J = 3)
 }
 \arguments{
-\item{d}{RDData}
+\item{d}{Object of class \code{"RDData"}}
 
-\item{f}{RDLFFunction}
+\item{f}{Object of class \code{"RDLFFunction"}}
 
 \item{se.method}{Vector with methods for estimating standard error of
 estimate. If \code{NULL}, standard errors are not computed. The elements of

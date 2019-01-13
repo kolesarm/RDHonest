@@ -19,9 +19,16 @@ either be a string equal to \code{"triangular"} (\eqn{k(u)=(1-|u|)_{+}}),
 \item{verbose}{Print details of calculation?}
 }
 \value{
-IK bandwidth
+Imbens and Kalyanaraman bandwidth
 }
 \description{
 Calculate bandwidth for sharp RD based on local linear regression using
-method by Imbens and Kalyanaraman (2012, ReStud)
+method by Imbens and Kalyanaraman (2012)
+}
+\references{
+{
+\cite{Imbens, Guido, and Kalyanaraman, Karthik,
+"Optimal bandwidth choice for the regression discontinuity estimator." The
+Review of Economic Studies 79 (3): 933-959.}
+}
 }

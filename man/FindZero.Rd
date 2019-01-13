@@ -15,9 +15,6 @@ FindZero(f, ival = 1.1, negative = TRUE)
 root is guaranteed to be positive), or \code{-ival}?}
 }
 \description{
-Same function as in NPRHonest
-}
-\details{
 Given function \code{f} find \code{x0} such that \code{f(x0)==0}
 }
 \keyword{internal}

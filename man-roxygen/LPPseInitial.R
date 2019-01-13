@@ -8,5 +8,5 @@
 #'
 #' \item{"ROTdemeaned"}{Based on sum of squared deviations of outcome from
 #'               estimate of intercept in local linear regression with
-#'               triangular kenrel and ROT bandwidth}
+#'               triangular kernel and ROT bandwidth}
 #' }

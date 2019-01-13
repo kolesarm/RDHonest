@@ -4,8 +4,8 @@
 #' Compute inverse modulus squared divided by 4
 #'
 #' Computes \eqn{\omega^{-1}(2b)^2/4=sum_{i} g(x_i)^2/sigma^2(x_i)},
-#' @param d RDData
-#' @param f Least favorable function of class "RDLFFunction"
+#' @param d Object of class \code{"RDData"}
+#' @param f Least favorable function of class \code{"RDLFFunction"}
 #' @keywords internal
 Q <- function(d, f)
     sum(f$m(d$Xm)^2/d$sigma2m)+ sum(f$p(d$Xp)^2/d$sigma2p)
@@ -17,7 +17,7 @@ Q <- function(d, f)
 #' \eqn{omega^{-1}(2b,C)} in RD under second-order Taylor class with smoothness
 #' parameter \eqn{C} by solving for parameters \eqn{d_{+}}, \eqn{d_{-}}, and
 #' \eqn{b_{-}}
-#' @param d Object of class RDData.
+#' @param d Object of class \code{"RDData"}.
 #' @param b Jump at zero
 #' @param C smoothness parameter for Taylor class, second derivative at zero is
 #' bounded by \code{2*C}.
@@ -71,8 +71,8 @@ RDLFFunction <- function(d, C, delta)
 #' around it
 #'
 #' \eqn{hat{L}_{delta, C}}
-#' @param d RDData
-#' @param f RDLFFunction
+#' @param d Object of class \code{"RDData"}
+#' @param f Object of class \code{"RDLFFunction"}
 #' @template RDse
 #' @keywords internal
 RDEstimator <- function(d, f, alpha=0.05, se.method="supplied.var", J=3) {
@@ -208,7 +208,7 @@ RDTEfficiencyBound <- function(d, M, opt.criterion="FLCI",
         ## depending on whether t > 0 or < 0.
         deltat <- function(t) sqrt(Q(d, RDgbC(d, t, C))) # delta_t
         integrand <- function(t)
-            stats::pnorm(stats::qnorm(1-alpha)-sapply(t, deltat))
+            stats::pnorm(stats::qnorm(1-alpha)-tapply(t, deltat, numeric(1)))
 
         ## By symmetry, half-length is given by value of integral over R_+. The
         ## integrand equals 1-alpha at zero, need upper cutoff

@@ -4,8 +4,8 @@
 \alias{RDTEfficiencyBound}
 \title{Finite-sample efficiency bounds for minimax CIs}
 \usage{
-RDTEfficiencyBound(d, M, opt.criterion = "FLCI", alpha = 0.05, beta = 0.5,
-  se.initial = "IKEHW")
+RDTEfficiencyBound(d, M, opt.criterion = "FLCI", alpha = 0.05,
+  beta = 0.5, se.initial = "IKEHW")
 }
 \arguments{
 \item{d}{object of class \code{"RDData"}}
@@ -47,15 +47,15 @@ intervals.}
 \describe{
 
 \item{"IKEHW"}{Based on residuals from a local linear regression using a
-              triangular kernel and IK bandwidth}
+              triangular kernel and Imbens and Kalyanaraman bandwidth}
 
 \item{"IKdemeaned"}{Based on sum of squared deviations of outcome from
               estimate of intercept in local linear regression with
-              triangular kernel and IK bandwidth}
+              triangular kernel and Imbens and Kalyanaraman bandwidth}
 
 \item{"Silverman"}{Use residuals from local constant regression with uniform
 kernel and bandwidth selected using Silverman's rule of thumb, as in Equation
-(14) in IK}
+(14) in Imbens and Kalyanaraman (2012)}
 \item{"SilvermanNN"}{Use nearest neighbor estimates, rather than residuals}
 
 \item{"NN"}{Use nearest neighbor estimates, without assuming homoscedasticity}

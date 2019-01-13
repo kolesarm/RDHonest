@@ -60,8 +60,8 @@ list with elements:
     \item{sigma2}{Estimate of \eqn{sigma^2(X)} for values of \eqn{X}
             receiving positive kernel weight. By default, estimates are based
             on squared regression residuals, as used in \code{"EHW"}. If
-            \code{"demeaned"} or \code{"nn"} is specifed, estimates are based
-            on that method, with \code{"nn"} method used if both are
+            \code{"demeaned"} or \code{"nn"} is specified, estimates are
+            based on that method, with \code{"nn"} method used if both are
             specified.}
 
      \item{eff.obs}{Number of effective observations}

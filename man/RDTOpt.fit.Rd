@@ -73,15 +73,15 @@ the vector can consist of the following methods:
 \describe{
 
 \item{"IKEHW"}{Based on residuals from a local linear regression using a
-              triangular kernel and IK bandwidth}
+              triangular kernel and Imbens and Kalyanaraman bandwidth}
 
 \item{"IKdemeaned"}{Based on sum of squared deviations of outcome from
               estimate of intercept in local linear regression with
-              triangular kernel and IK bandwidth}
+              triangular kernel and Imbens and Kalyanaraman bandwidth}
 
 \item{"Silverman"}{Use residuals from local constant regression with uniform
 kernel and bandwidth selected using Silverman's rule of thumb, as in Equation
-(14) in IK}
+(14) in Imbens and Kalyanaraman (2012)}
 \item{"SilvermanNN"}{Use nearest neighbor estimates, rather than residuals}
 
 \item{"NN"}{Use nearest neighbor estimates, without assuming homoscedasticity}

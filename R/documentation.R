@@ -2,12 +2,12 @@
 #'
 #' Subset of Ludwig-Miller data. Counties with missing poverty rate, of with
 #' both outcomes missing (\code{hs} and \code{mortality}) were removed. In the
-#' original dataset, Yellowstone County, MT (oldcode=27056) was entered twice,
-#' here the duplicate is removed. Yellowstone National Park, MT (oldcode=27057)
-#' is also removed due to it being an outlier for both outcomes. Counties with
-#' oldcode equal to (3014, 32032, 47010, 47040, 47074, 47074, 47078, 47079,
-#' 47096) matched more than one FIPS entry, so the county labels may not be
-#' correct. Mortality data is missing for Alaska.
+#' original dataset, Yellowstone County, MT (\code{oldcode==27056}) was entered
+#' twice, here the duplicate is removed. Yellowstone National Park, MT
+#' (\code{oldcode==27057}) is also removed due to it being an outlier for both
+#' outcomes. Counties with \code{oldcode} equal to (3014, 32032, 47010, 47040,
+#' 47074, 47074, 47078, 47079, 47096) matched more than one FIPS entry, so the
+#' county labels may not be correct. Mortality data is missing for Alaska.
 #' @format A data frame with 3,127 rows and 9 variables:
 #'
 #' \describe{
@@ -37,13 +37,14 @@
 #' }
 "headst"
 
-#' Lalive (2008) Unemployment duration dataa
+#' Austrian unemployment duration data from Lalive (2008)
 #'
+#' Subset of Lalive data for individuals in the regions affected by the REBP
+#' program
 #'
-#' Subset of Lalive data for individuals in the regions affected by REBP program
 #' @format A data frame with 29,371 rows and 4 variables:
 #' \describe{
-#'   \item{age}{Age in years, at montly accuracy}
+#'   \item{age}{Age in years, at monthly accuracy}
 #'   \item{period}{Indicator for whether REBP is in place}
 #'   \item{female}{Indicator for female}
 #'   \item{duration}{unemployment duration in weeks}

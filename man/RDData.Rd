@@ -2,7 +2,7 @@
 % Please edit documentation in R/utils.R
 \name{RDData}
 \alias{RDData}
-\title{Class Constructor for RDData}
+\title{Class Constructor for \code{"RDData"}}
 \usage{
 RDData(d, cutoff)
 }
@@ -22,11 +22,11 @@ An object of class \code{"RDData"}, which is a list containing the
 
     \item{Ym}{Outcome vector for observations below cutoff}
 
-    \item{Yp}{Outcome vector for observationsabove cutoff}
+    \item{Yp}{Outcome vector for observations above cutoff}
 
     \item{Xm}{Running variable for observations below cutoff}
 
-    \item{Xp}{Running variable for observationsabove cutoff}
+    \item{Xp}{Running variable for observations above cutoff}
 
     \item{sigma2m}{Conditional variance of outcome for observations below
     cutoff}

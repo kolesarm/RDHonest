@@ -155,8 +155,7 @@ LPP_MROT.fit <- function(d) {
 
     ## STEP 1: Estimate (p+1)th derivative and sigma^2 using global polynomial
     ## regression
-    R <- outer(d$X, 0:4, "^")
-    r1 <- unname(lm(d$Y ~ 0 + R)$coefficients)
+    r1 <- unname(lm(d$Y ~ 0 + outer(d$X, 0:4, "^"))$coefficients)
     f2 <- function(x) abs(2*r1[3]+6*x*r1[4]+12*x^2*r1[5])
 
     ## maximum occurs either at endpoints, or else at the extremum,
@@ -337,8 +336,7 @@ ROTBW.fit <- function(d, kern="triangular", order=1, boundary=NULL) {
 
     ## STEP 1: Estimate (p+1)th derivative and sigma^2 using global polynomial
     ## regression
-    R <- outer(X, 0:(order+3), "^")
-    r1 <- lm(d$Y ~ 0 + R)
+    r1 <- lm(d$Y ~ 0 + outer(X, 0:(order+3), "^"))
     deriv <- unname(r1$coefficients[order+2])
     sigma2 <- stats::sigma(r1)^2
 

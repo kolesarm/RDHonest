@@ -25,9 +25,9 @@ k_{\text{U}}(u)=\frac{1}{2}I(|u|<1),\qquad k_{\text{T}}(u)=(1-|u|)I(|u|<1),
 
 We compute the following moments
 $$
-\mu_{j}(k)=\int_{\mathcal{X}} u^j k(u) \, du,\qquad
-\nu_{j}(k)=\int_{\mathcal{X}} u^j k^2(u) \, du,\qquad
-\pi_{j}(k)=\int_{\mathcal{X}} |u^j k^2(u)| \, du,
+\mu_{j}(k)=\int_{\mathcal{X}} u^j k(u) \, d u,\qquad
+\nu_{j}(k)=\int_{\mathcal{X}} u^j k^2(u) \, d u,\qquad
+\pi_{j}(k)=\int_{\mathcal{X}} |u^j k^2(u)| \, d u,
 $$
 where $\mathcal{X}$ is $[0,1]$ for boundary regression, and $[-1,1]$ for
 interior regression, and $k$ is a kernel of equivalent kernel.
@@ -35,7 +35,7 @@ interior regression, and $k$ is a kernel of equivalent kernel.
 
 # Equivalent kernels
 
-Define $M_{r}(k)=\int_{\mathcal{X}}p_{r}(u)p_{r}(u)'k(u) \, du$, where
+Define $M_{r}(k)=\int_{\mathcal{X}}p_{r}(u)p_{r}(u)'k(u) \, d u$, where
 $p_{r}(u)=(1,u,\dotsc,u^{r})$, so that $(M_{r}(k))_{i,j}=\mu_{i+j-2}(k)$. Then for
 local polynomial regression of order $r$ using a kernel $k$, the equivalent
 kernel is given by

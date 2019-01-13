@@ -4,11 +4,11 @@
 \alias{RDSmoothnessBound}
 \title{Lower bound on smoothness constant M in RD designs}
 \usage{
-RDSmoothnessBound(d, s, separate = TRUE, multiple = TRUE, alpha = 0.05,
-  sclass = "T")
+RDSmoothnessBound(d, s, separate = TRUE, multiple = TRUE,
+  alpha = 0.05, sclass = "T")
 }
 \arguments{
-\item{d}{RDData object}
+\item{d}{object of class \code{"RDData"}}
 
 \item{s}{Number of support points that curvature estimates should average
 over}

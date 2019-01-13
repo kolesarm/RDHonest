@@ -7,7 +7,7 @@
 RDLFFunction(d, C, delta)
 }
 \arguments{
-\item{d}{Object of class RDData.}
+\item{d}{Object of class \code{"RDData"}.}
 
 \item{C}{smoothness parameter for Taylor class, second derivative at zero is
 bounded by \code{2*C}.}

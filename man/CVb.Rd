@@ -17,7 +17,7 @@ Data frame with the following columns:
 
 \describe{
 
-\item{bias}{Value of bias as specfied by \code{bs}}
+\item{bias}{Value of bias as specified by \code{bs}}
 
 \item{alpha}{Value of \eqn{\alpha} as specified by \code{alpha}}
 
@@ -26,9 +26,10 @@ Data frame with the following columns:
 \item{TeXDescription}{LaTeX-friendly description of current row}}
 }
 \description{
-Computes the critical value \eqn{cv_{1-alpha}(B)} that is needed to make the
-confidence interval \eqn{X\pm cv} have coverage \eqn{1-alpha} if \eqn{X} is
-Normally distributed with variance one and maximum bias at most \eqn{B}.
+Computes the critical value \eqn{cv_{1-alpha}(B)} such that the confidence
+interval \eqn{X\pm cv_{1-alpha}(B)} will have coverage \eqn{1-alpha}, where
+\eqn{X} is Normally distributed with variance equal to \eqn{1} and maximum
+bias at most \eqn{B}.
 }
 \examples{
 # 90\% critical value:

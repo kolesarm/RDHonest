@@ -3,7 +3,7 @@
 #' Estimate a lower bound on smoothness constant M and provide a lower
 #' confidence interval.
 #'
-#' @param d RDData object
+#' @param d object of class \code{"RDData"}
 #' @param s Number of support points that curvature estimates should average
 #'     over
 #' @param sclass Smoothness class, either \code{"T"} for Taylor or \code{"H"}
@@ -65,8 +65,8 @@ RDSmoothnessBound <- function(d, s, separate=TRUE, multiple=TRUE, alpha=0.05,
     } else {
         Sp <- Sm <- 1
     }
-    Dp <- sapply(1:Sp, Dpj)
-    Dm <- sapply(1:Sm, Dmj)
+    Dp <- sapply(seq_len(Sp), Dpj)
+    Dm <- sapply(seq_len(Sm), Dmj)
 
     ## Critical value
     cv <- function(M, Z, sd, alpha) {
@@ -74,7 +74,7 @@ RDSmoothnessBound <- function(d, s, separate=TRUE, multiple=TRUE, alpha=0.05,
             return(CVb(M/sd, alpha=alpha)$cv)
         } else {
             S <- Z+M*outer(rep(1, nrow(Z)), 1/sd)
-            maxS <- abs(S[cbind(1:nrow(Z), max.col(S))])
+            maxS <- abs(S[cbind(seq_len(nrow(Z)), max.col(S))])
             return(unname(stats::quantile(maxS, 1-alpha)))
         }
     }
@@ -98,7 +98,7 @@ RDSmoothnessBound <- function(d, s, separate=TRUE, multiple=TRUE, alpha=0.05,
             }
         }
         list(hatM=hatM, lower=lower, Delta=maxt[1], sdDelta=maxt[2],
-             y1=maxt[3],y2=maxt[4], y3=maxt[5],
+             y1=maxt[3], y2=maxt[4], y3=maxt[5],
              I1=maxt[6:7], I2=maxt[8:9], I3=maxt[10:11])
     }
 
@@ -122,7 +122,8 @@ print.RDSmoothnessBound <- function(x, digits = getOption("digits"), ...) {
         cat("\nDelta: ", r$Delta, ", sd=", r$sdDelta, sep="")
         cat("\nE_n[f(x_1)]: ", r$y1, ", I1=[", r$I1[1], ", ", r$I1[2], "]\n",
             "E_n[f(x_2)]: ", r$y2, ", I2=[", r$I2[1], ", ", r$I2[2], "]\n",
-            "E_n[f(x_3)]: ", r$y3, ", I3=[", r$I3[1], ", ", r$I3[2], "]\n", sep="")
+            "E_n[f(x_3)]: ", r$y3, ", I3=[", r$I3[1], ", ", r$I3[2], "]\n",
+            sep="")
     }
     if (x$po$hatM==x$ne$hatM) {
         cat("\nSmoothness bound estimate:\n")

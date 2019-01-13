@@ -2,7 +2,7 @@
 % Please edit documentation in R/utils.R
 \name{LPPData}
 \alias{LPPData}
-\title{Class Constructor for LPPData}
+\title{Class Constructor for \code{"LPPData"}}
 \usage{
 LPPData(d, point)
 }

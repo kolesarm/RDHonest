@@ -43,7 +43,7 @@ test_that("Analytical kernel moments match numerical ones", {
             KernMoment(K, moment, kernN$boundary[j], type = type)
         }
 
-        sapply(1:nrow(kernN), NumericalMomentj)
+        vapply(seq_len(nrow(kernN)), NumericalMomentj, numeric(1))
     }
 
     for (j in 0:4) {

@@ -3,10 +3,10 @@
 \docType{data}
 \name{rebp}
 \alias{rebp}
-\title{Lalive (2008) Unemployment duration dataa}
+\title{Austrian unemployment duration data from Lalive (2008)}
 \format{A data frame with 29,371 rows and 4 variables:
 \describe{
-  \item{age}{Age in years, at montly accuracy}
+  \item{age}{Age in years, at monthly accuracy}
   \item{period}{Indicator for whether REBP is in place}
   \item{female}{Indicator for female}
   \item{duration}{unemployment duration in weeks}
@@ -18,7 +18,8 @@ Rafael Lalive's website
 rebp
 }
 \description{
-Subset of Lalive data for individuals in the regions affected by REBP program
+Subset of Lalive data for individuals in the regions affected by the REBP
+program
 }
 \references{
 {

@@ -5,8 +5,9 @@
 \title{Honest inference at a point}
 \usage{
 LPPHonest(formula, data, subset, point = 0, M, kern = "triangular",
-  na.action, opt.criterion, h, se.method = "nn", alpha = 0.05, beta = 0.8,
-  J = 3, sclass = "H", order = 1, se.initial = "ROTEHW")
+  na.action, opt.criterion, h, se.method = "nn", alpha = 0.05,
+  beta = 0.8, J = 3, sclass = "H", order = 1,
+  se.initial = "ROTEHW")
 }
 \arguments{
 \item{formula}{object of class \code{"formula"} (or one that can be coerced
@@ -107,7 +108,7 @@ intervals.}
 
 \item{"ROTdemeaned"}{Based on sum of squared deviations of outcome from
               estimate of intercept in local linear regression with
-              triangular kenrel and ROT bandwidth}
+              triangular kernel and ROT bandwidth}
 }}
 }
 \value{

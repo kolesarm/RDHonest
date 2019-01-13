@@ -2,16 +2,16 @@
 #'
 #' Scatterplot of raw observations in which each point corresponds to an binned
 #' average.
-#' @param d RDdata object
-#' @param avg is number of observations to average over. If set to \code{Inf},
-#'     then take averages for each possible value of the running variable
-#'     (convenient when the running variable is discrete)
+#' @param d Object of class \code{"RDdata"}
+#' @param avg Number of observations to average over. If set to \code{Inf}, then
+#'     take averages for each possible value of the running variable (convenient
+#'     when the running variable is discrete).
 #' @param xlab,ylab x- and y-axis labels
 #' @param window Width of a window around cutoff to which the graph should be
 #'     restricted. If not specified, full data range will be plotted
 #' @param vert Draw a vertical line at cutoff?
 #' @param propdotsize If \code{TRUE}, then size of points is proportional to
-#'     numer of observations that the point averages over (useful when
+#'     number of observations that the point averages over (useful when
 #'     \code{avg=Inf}). Otherwise the size of points is constant.
 #' @examples
 #' plot_RDscatter(RDData(lee08, cutoff=0), avg=20)
@@ -60,7 +60,7 @@ plot_RDscatter <- function(d, avg=10, xlab=NULL, ylab=NULL,
     bd$x <- bd$x+d$orig.cutoff
 
     if (propdotsize) {
-        p <- ggplot2::qplot(x=x, y=y, data=bd, size=count)
+        p <- ggplot2::qplot(x=bd$x, y=bd$y, size=bd$count)
     } else {
         p <- ggplot2::qplot(x=x, y=y, data=bd)
     }

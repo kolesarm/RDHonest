@@ -4,9 +4,9 @@
 \alias{LPPHonest.fit}
 \title{Honest inference at a point}
 \usage{
-LPPHonest.fit(d, M, kern = "triangular", h, opt.criterion, alpha = 0.05,
-  beta = 0.8, se.method = "nn", J = 3, sclass = "H", order = 1,
-  se.initial = "ROTEHW")
+LPPHonest.fit(d, M, kern = "triangular", h, opt.criterion,
+  alpha = 0.05, beta = 0.8, se.method = "nn", J = 3,
+  sclass = "H", order = 1, se.initial = "ROTEHW")
 }
 \arguments{
 \item{d}{object of class \code{"LPPData"}}
@@ -91,7 +91,7 @@ the vector can consist of the following methods:
 
 \item{"ROTdemeaned"}{Based on sum of squared deviations of outcome from
               estimate of intercept in local linear regression with
-              triangular kenrel and ROT bandwidth}
+              triangular kernel and ROT bandwidth}
 }}
 }
 \value{

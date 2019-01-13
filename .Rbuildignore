@@ -1,5 +1,9 @@
+^\.travis\.yml$
+^Meta$
+^doc$
 ^man-roxygen/*$
 .gitignore
 ^data-raw/*$
 readme.md
 notes.org
+.lintr
