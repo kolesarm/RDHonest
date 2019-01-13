@@ -1,18 +1,15 @@
-#' Local polynomial regression at a point, normalized to 0
-#'
-#' Calculate estimate of a function at a point and its variance given a
-#' bandwidth using local polynomial regression of order \code{order}.
-#'
-#' @section Note: Nearest neighbor method assumes data are sorted so that
-#'     \code{X[i] <= X[i+1]}
-#' @param Y,X Outcome variable and regressor
-#' @param h Bandwidth
-#' @param K Kernel function
-#' @param order Order of local regression 1 for linear, 2 for quadratic, etc.
-#' @param sigma2 Optionally, supply estimates of \eqn{\sigma^{2}_{i}} (for
-#'     \code{"supplied.var"} \code{se.method})
-#' @template RDse
-#' @keywords internal
+## Local polynomial regression at a point, normalized to 0
+## Calculate estimate of a function at a point and its variance given a
+## bandwidth using local polynomial regression of order \code{order}.
+## @section Note: Nearest neighbor method assumes data are sorted so that
+##     \code{X[i] <= X[i+1]}
+## @param Y,X Outcome variable and regressor
+## @param h Bandwidth
+## @param K Kernel function
+## @param order Order of local regression 1 for linear, 2 for quadratic, etc.
+## @param sigma2 Optionally, supply estimates of \eqn{\sigma^{2}_{i}} (for
+##     \code{"supplied.var"} \code{se.method})
+## @template RDse
 LPReg <- function(X, Y, h, K, order=1, se.method=NULL, sigma2, J=3) {
     R <- outer(X, 0:order, "^")
     W <- K(X/h)
@@ -139,9 +136,8 @@ RDLPreg <- function(d, hp, kern="triangular", order=1, hm=hp, se.method="nn",
 }
 
 
-#' method assumes X is sorted
-#' @param J number of nearest neighbors
-#' @keywords internal
+## method assumes X is sorted
+## @param J number of nearest neighbors
 sigmaNN <- function(X, Y, J=3) {
     n <- length(X)
     sigma2 <- vector(length=n)

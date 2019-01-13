@@ -1,7 +1,7 @@
 #' Critical values for CIs based on a biased Gaussian estimator.
 #'
-#' Computes the critical value \eqn{cv_{1-alpha}(B)} such that the confidence
-#' interval \eqn{X\pm cv_{1-alpha}(B)} will have coverage \eqn{1-alpha}, where
+#' Computes the critical value \eqn{cv_{1-\alpha}(B)} such that the confidence
+#' interval \eqn{X\pm cv_{1-\alpha}(B)} will have coverage \eqn{1-\alpha}, where
 #' \eqn{X} is Normally distributed with variance equal to \eqn{1} and maximum
 #' bias at most \eqn{B}.
 #'
@@ -12,7 +12,7 @@
 #'
 #' \describe{
 #'
-#' \item{bias}{Value of bias as specified by \code{bs}}
+#' \item{bias}{Value of bias as specified by \code{B}}
 #'
 #' \item{alpha}{Value of \eqn{\alpha} as specified by \code{alpha}}
 #'
@@ -20,8 +20,9 @@
 #'
 #' \item{TeXDescription}{LaTeX-friendly description of current row}}
 #' @examples
-#' # 90% critical value:
+#' ## 90% critical value:
 #' CVb(B = 1, alpha = 0.1)
+#' ## Returns data frame with 4 rows
 #' CVb(B = c(0, 0.5, 1), alpha = c(0.05, 0.1))
 #' @importFrom stats pnorm qnorm
 #' @export

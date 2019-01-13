@@ -1,13 +1,12 @@
 tol <- .Machine$double.eps^0.75
 
-#' Find interval containing zero of a function, then find the zero
-#'
-#' Given function \code{f} find \code{x0} such that \code{f(x0)==0}
-#' @param f function whose root we're looking for
-#' @param ival upper endpoint of initial interval in which to search
-#' @param negative logical: should the lower endpoint be \code{1/ival} (if the
-#'     root is guaranteed to be positive), or \code{-ival}?
-#' @keywords internal
+## Find interval containing zero of a function, then find the zero
+
+## Given function \code{f} find \code{x0} such that \code{f(x0)==0}
+## @param f function whose root we're looking for
+## @param ival upper endpoint of initial interval in which to search
+## @param negative logical: should the lower endpoint be \code{1/ival} (if the
+##     root is guaranteed to be positive), or \code{-ival}?
 FindZero <- function(f, ival=1.1, negative=TRUE) {
     minval <- function(ival) if (negative==TRUE) -ival else min(1/ival, 1e-3)
 
@@ -124,15 +123,13 @@ LPPData <- function(d, point) {
 }
 
 
-#' check class of object
-#' @keywords internal
+## check class of object
 CheckClass <- function(x, class)
     if(!inherits(x, class)) stop(paste0("Object ", deparse(substitute(x)),
                                         " needs to be class ", class, "!"))
 
 
-#' Split function into k bits and optimize on each bit in case not convex
-#' @keywords internal
+## Split function into k bits and optimize on each bit in case not convex
 CarefulOptim <- function(f, interval, k=10) {
     ## intervals
     s <- seq(interval[1], interval[2], length.out=k+1)
@@ -149,8 +146,7 @@ CarefulOptim <- function(f, interval, k=10) {
     list(objective=obj[jopt], minimum=arg[jopt])
 }
 
-#' Modified golden section for unimodal piecewise constant function
-#' @keywords internal
+## Modified golden section for unimodal piecewise constant function
 gss <- function(f, xs) {
     gr <- (sqrt(5) + 1) / 2
     a <- 1

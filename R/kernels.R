@@ -81,8 +81,7 @@ KernMoment <- function(K, moment = 0, boundary = TRUE, type = "raw") {
                      rel.tol = .Machine$double.eps^0.75)$value
 }
 
-#' M matrix
-#' @keywords internal
+## M matrix
 KernM <- function(K, order = 2, boundary = boundary) {
     M <- outer(0:order, 0:order, "+")
 
@@ -91,10 +90,9 @@ KernM <- function(K, order = 2, boundary = boundary) {
            nrow = (order + 1))
 }
 
-#' Compute Equivalent kernel numerically
-#' @inheritParams EqKern
-#' @param K original kernel
-#' @keywords internal
+## Compute Equivalent kernel numerically
+## @inheritParams EqKern
+## @param K original kernel
 EqKernN <- function(K, boundary = TRUE, order = 0) {
     s <- drop(solve(KernM(K, order = order, boundary = boundary))[1, ])
 

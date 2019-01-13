@@ -1,9 +1,7 @@
-#' Formula for local polynomial regression
-#'
-#' @param order order of local polynomial
-#' @return Regression formula for local polynomial regression of order
-#'     \code{order}
-#' @keywords internal
+## Formula for local polynomial regression
+## @param order order of local polynomial
+## @return Regression formula for local polynomial regression of order
+##     \code{order}
 RDlpformula <- function(order) {
         f1 <- if (order>0) {
                   f1 <- paste(vapply(seq_len(order), function(p)

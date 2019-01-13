@@ -1,28 +1,24 @@
 ## Calculate minimax optimal estimators, tests, and confidence sets for RD
 ## problem under second-order Taylor smoothness class
 
-#' Compute inverse modulus squared divided by 4
-#'
-#' Computes \eqn{\omega^{-1}(2b)^2/4=sum_{i} g(x_i)^2/sigma^2(x_i)},
-#' @param d Object of class \code{"RDData"}
-#' @param f Least favorable function of class \code{"RDLFFunction"}
-#' @keywords internal
+## Compute inverse modulus squared divided by 4,
+## \eqn{\omega^{-1}(2b)^2/4=sum_{i} g(x_i)^2/sigma^2(x_i)},
+## @param d Object of class \code{"RDData"}
+## @param f Least favorable function of class \code{"RDLFFunction"}
 Q <- function(d, f)
     sum(f$m(d$Xm)^2/d$sigma2m)+ sum(f$p(d$Xp)^2/d$sigma2p)
 
 
-#' Solution to inverse modulus problem in RD under Taylor(2) class
-#'
-#' Compute function \eqn{g_{b, C}(x)} that solves the inverse modulus problem
-#' \eqn{omega^{-1}(2b,C)} in RD under second-order Taylor class with smoothness
-#' parameter \eqn{C} by solving for parameters \eqn{d_{+}}, \eqn{d_{-}}, and
-#' \eqn{b_{-}}
-#' @param d Object of class \code{"RDData"}.
-#' @param b Jump at zero
-#' @param C smoothness parameter for Taylor class, second derivative at zero is
-#' bounded by \code{2*C}.
-#' @return Object of class \code{"RDLFFunction"}
-#' @keywords internal
+## Solution to inverse modulus problem in RD under Taylor(2) class
+## Compute function \eqn{g_{b, C}(x)} that solves the inverse modulus problem
+## \eqn{omega^{-1}(2b,C)} in RD under second-order Taylor class with smoothness
+## parameter \eqn{C} by solving for parameters \eqn{d_{+}}, \eqn{d_{-}}, and
+## \eqn{b_{-}}
+## @param d Object of class \code{"RDData"}.
+## @param b Jump at zero
+## @param C smoothness parameter for Taylor class, second derivative at zero is
+## bounded by \code{2*C}.
+## @return Object of class \code{"RDLFFunction"}
 RDgbC <- function(d, b, C) {
     ## Sacks-Ylvisaker function: g(x)=(b+dx-Cx^2)_{+} - (b+dx+Cx^2)_{-}
     SY <- function(x, b, d, C) pmax(b+d*x-C*x^2, 0) + pmin(b+d*x+C*x^2, 0)
@@ -53,28 +49,24 @@ RDgbC <- function(d, b, C) {
 }
 
 
-#' Solve modulus problem in RD under second-order Taylor class
-#'
-#' Compute function \eqn{g_{b(\delta), C}(x)} that solves the modulus problem
-#' \eqn{omega(\delta, C)} in RD under second-order Taylor class with smoothness
-#' parameter \eqn{C}.
-#' @param delta \eqn{\delta}
-#' @inheritParams RDgbC
-#' @return Object of class \code{"RDLFFunction"}
-#' @keywords internal
+## Solve modulus problem in RD under second-order Taylor class
+## Compute function \eqn{g_{b(\delta), C}(x)} that solves the modulus problem
+## \eqn{omega(\delta, C)} in RD under second-order Taylor class with smoothness
+## parameter \eqn{C}.
+## @param delta \eqn{\delta}
+## @inheritParams RDgbC
+## @return Object of class \code{"RDLFFunction"}
 RDLFFunction <- function(d, C, delta)
     RDgbC(d, FindZero(function(b) 4*Q(d, RDgbC(d, b, C)) - delta^2,
                       negative=FALSE), C)
 
 
-#' Compute optimal estimator based on solution to modulus problem, and CIs
-#' around it
-#'
-#' \eqn{hat{L}_{delta, C}}
-#' @param d Object of class \code{"RDData"}
-#' @param f Object of class \code{"RDLFFunction"}
-#' @template RDse
-#' @keywords internal
+## Compute optimal estimator based on solution to modulus problem, and CIs
+## around it
+## \eqn{hat{L}_{delta, C}}
+## @param d Object of class \code{"RDData"}
+## @param f Object of class \code{"RDLFFunction"}
+## @template RDse
 RDEstimator <- function(d, f, alpha=0.05, se.method="supplied.var", J=3) {
     den <- sum(f$p(d$Xp) / d$sigma2p) # denominator
 

@@ -5,9 +5,9 @@
 Honest and efficient confidence intervals in regression discontinuity designs
 using procedures
 from
-[Armstrong and Kolesár (2016)](https://arxiv.org/abs/1606.01200),
-[Armstrong and Kolesár (2017)](https://arxiv.org/abs/1511.06028),
-and [Kolesár and Rothe (2017)](https://arxiv.org/abs/1606.04086)
+[Armstrong and Kolesár (2018)](https://arxiv.org/abs/1606.01200),
+[Armstrong and Kolesár (2018)](https://arxiv.org/abs/1511.06028),
+and [Kolesár and Rothe (2018)](https://arxiv.org/abs/1606.04086)
 
 See vignette `RDHonest.pdf` (stored under `doc/`) for description of the
 package.
