@@ -200,7 +200,7 @@ RDTEfficiencyBound <- function(d, M, opt.criterion="FLCI",
         ## depending on whether t > 0 or < 0.
         deltat <- function(t) sqrt(Q(d, RDgbC(d, t, C))) # delta_t
         integrand <- function(t)
-            stats::pnorm(stats::qnorm(1-alpha)-tapply(t, deltat, numeric(1)))
+            stats::pnorm(stats::qnorm(1-alpha)-vapply(t, deltat, numeric(1)))
 
         ## By symmetry, half-length is given by value of integral over R_+. The
         ## integrand equals 1-alpha at zero, need upper cutoff

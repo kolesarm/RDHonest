@@ -31,7 +31,10 @@ CVb <- function(B, alpha=0.05) {
     cv <- function(B, alpha = 0.05) {
         if(is.na(B)) return(NA)
         stopifnot(B >= 0 & alpha > 0 & alpha < 1)
-        sqrt(stats::qchisq(1-alpha, df = 1, ncp = B^2))
+        if (B<10)
+            return(sqrt(stats::qchisq(1-alpha, df = 1, ncp = B^2)))
+        else
+            return(B+stats::qnorm(1-alpha))
     }
 
     d <- data.frame(expand.grid(bias=B, alpha=alpha), cv=NA)

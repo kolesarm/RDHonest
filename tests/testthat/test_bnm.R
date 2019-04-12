@@ -1,9 +1,11 @@
 context("Test bounded normal mean")
 
-test_that("Sanity check for CVb", {
+test_that("Sanity check for CVb for big and small values", {
 
     alpha <- 0.07
     expect_equal(CVb(100, alpha=alpha)$cv, qnorm(1-alpha) + 100)
+    expect_equal(CVb(10000, alpha=alpha)$cv, qnorm(1-alpha) + 10000)
+    expect_error(CVb(10000, alpha=0)$cv)
     expect_equal(CVb(0, alpha=alpha)$cv, qnorm(1-alpha/2))
 })
 
