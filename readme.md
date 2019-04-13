@@ -10,9 +10,9 @@ using procedures from [Armstrong and Kolesár
 (2018)](https://doi.org/10.1257/aer.20160945)
 ([preprint](https://arxiv.org/abs/1606.04086))
 
-See vignette `RDHonest.pdf` (stored under `doc/`) for description of the
-package, and `manual.pdf` (also stored under `doc/`) for documentation of the
-package functions.
+See vignette [RDHonest](doc/RDHonest.pdf) for description of the package
+(available through `vignette("RDHonest")` once package is installed), and the
+package [manual](doc/manual.pdf) for documentation of the package functions.
 
 This software package is based upon work supported by the National Science
 Foundation under grant numbers SES-1628939 (Armstrong) and SES-1628878
