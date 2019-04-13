@@ -13,9 +13,10 @@ KernMoment(K, moment = 0, boundary = TRUE, type = "raw")
 
 \item{boundary}{Logical scalar, specifying whether we are at a boundary.}
 
-\item{type}{Type of moment. "raw" computes \eqn{\int_X u^j k(u)}, "absolute"
-computes \eqn{\int_X |u^j k(u)|}, and "raw2" computes
-\eqn{\int_X u^j k(u)^2}.}
+\item{type}{Type of moment. "raw" computes \eqn{\int_X u^j k(u)}{integral_X
+u^j k(x)}, "absolute" computes \eqn{\int_X |u^j k(u)|}{integral_X |u^j|
+k(u)}, and "raw2" computes \eqn{\int_X u^j k(u)^2}{integral_X u^j
+k(u)^2}.}
 }
 \value{
 Integral value (a scalar).

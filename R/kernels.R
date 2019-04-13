@@ -62,9 +62,10 @@ EqKern <- function(kernel = "uniform", boundary = TRUE, order = 0) {
 #'
 #' @param K kernel function.
 #' @param moment order \eqn{j} of moment to compute.
-#' @param type Type of moment. "raw" computes \eqn{\int_X u^j k(u)}, "absolute"
-#'     computes \eqn{\int_X |u^j k(u)|}, and "raw2" computes
-#'     \eqn{\int_X u^j k(u)^2}.
+#' @param type Type of moment. "raw" computes \eqn{\int_X u^j k(u)}{integral_X
+#'     u^j k(x)}, "absolute" computes \eqn{\int_X |u^j k(u)|}{integral_X |u^j|
+#'     k(u)}, and "raw2" computes \eqn{\int_X u^j k(u)^2}{integral_X u^j
+#'     k(u)^2}.
 #' @inheritParams EqKern
 #' @return Integral value (a scalar).
 #' @examples

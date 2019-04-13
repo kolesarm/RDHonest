@@ -22,17 +22,16 @@ RDlpformula <- function(order) {
 #'
 #' @template RDFormula
 #' @template RDBW
-#' @param alpha determines confidence level, \code{1-alpha}
-#' @param order Order of local regression 1 for linear, 2 for quadratic.
+#' @param alpha determines confidence level, \eqn{1-\alpha}{1-alpha}
+#' @param order Order of local regression \code{1} for linear, \code{2} for
+#'     quadratic.
 #' @param regformula Explicitly specify regression formula as alternative to
 #'     local linear regression, with \code{y} and \code{x} denoting the outcome
 #'     and the running variable, and cutoff is normalized to \code{0}. Local
 #'     linear regression (\code{order=1}) is equivalent to
-#'     \code{regformula="y~x*I(x>0)"}. Inference is done the \code{order+2}th
+#'     \code{regformula="y~x*I(x>0)"}. Inference is done on the \code{order+2}th
 #'     element of the design matrix
-#' @importFrom stats model.matrix resid
 #' @examples
-#'
 #' RDHonestBME(log(cghs$earnings)~yearat14, data=cghs, hp=3,
 #'             order=1, cutoff=1947)
 #' ## Equivalent to
@@ -81,14 +80,16 @@ RDHonestBME <- function(formula, data, subset, cutoff=0, na.action, hp=Inf,
     ## Compute Q^{-1} manually so that sandwich package is not needed
     Q1inv <- chol2inv(qr(m1)$qr[1L:m1$rank, 1L:m1$rank, drop = FALSE])
     Q2inv <- chol2inv(qr(m2)$qr[1L:m2$rank, 1L:m2$rank, drop = FALSE])
-    v.m1m2 <- stats::var(cbind((model.matrix(m1)*resid(m1)) %*% Q1inv,
-    (model.matrix(m2)*resid(m2)) %*% Q2inv)) * length(y)
+    v.m1m2 <- stats::var(cbind((
+        stats::model.matrix(m1)*stats::resid(m1)) %*% Q1inv,
+    (stats::model.matrix(m2)*stats::resid(m2)) %*% Q2inv)) * length(y)
 
 
     df <- data.frame(x=support, y=rep(0, length(support)))
     e2 <- rep(0, G+length(coef(m1)))
     e2[order + 2] <- 1                  # inference on (p+2)th element
-    aa <- rbind(cbind(-model.matrix(regformula, data=df), diag(nrow=G)), e2)
+    aa <- rbind(cbind(-stats::model.matrix(
+                                  regformula, data=df), diag(nrow=G)), e2)
     vdt <- aa %*% v.m1m2 %*% t(aa)      # V(W) in paper, except order of m1 and
                                         # m2 swapped
 

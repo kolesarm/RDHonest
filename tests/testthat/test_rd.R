@@ -18,6 +18,9 @@ test_that("Plots", {
             RDData(data.frame(y=log(cghs$earnings),
                               x=cghs$yearat14),
                    cutoff=1947), avg=Inf, propdotsize=TRUE)))
+        expect_silent(invisible(plot_RDscatter(
+            RDData(lee08, cutoff=0), avg=50, propdotsize=FALSE,
+            window=50, xlab="margin", ylab="effect")))
         }
 })
 
@@ -126,14 +129,20 @@ test_that("Honest inference in Lee and LM data",  {
 })
 
 test_that("BME CIs match paper", {
-    ## Test IK bandwidth in Lee data, IK Table 1
     r1 <- RDHonestBME(log(earnings)~yearat14, data=cghs,
                      cutoff=1947, hp=6, order=1)
     expect_equal(r1$CI, c(-0.13218978736, 0.17499392431))
+    r2 <- capture.output(print(r1, digits=5))
+    expect_equal(r2[7], "(-0.13219, 0.17499)")
+
     r1 <- RDHonestBME(log(earnings)~yearat14, cghs, cutoff=1947,
                       regformula="y~I(x>=0)+x+I(x^2)+I(x^3)+I(x^4)")
-
     expect_equal(r1$CI, c(-0.23749230603, 0.34429708773))
+    r3 <- RDHonestBME(log(cghs$earnings)~yearat14, data=cghs, hp=3,
+                      cutoff=1947, order=0, regformula="y~I(x>=0)")
+    r4 <- RDHonestBME(log(cghs$earnings)~yearat14, data=cghs, hp=3, order=0,
+                      cutoff=1947)
+    expect_equal(r3$CI, r4$CI)
 })
 
 test_that("Optmizing bw", {

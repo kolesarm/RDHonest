@@ -32,15 +32,16 @@ not supplied, it is assumed to equal to \code{hp}. If neither bandwidth
 is supplied, optimal bandwidth is computed according to criterion given
 by \code{opt.criterion}.}
 
-\item{alpha}{determines confidence level, \code{1-alpha}}
+\item{alpha}{determines confidence level, \eqn{1-\alpha}{1-alpha}}
 
-\item{order}{Order of local regression 1 for linear, 2 for quadratic.}
+\item{order}{Order of local regression \code{1} for linear, \code{2} for
+quadratic.}
 
 \item{regformula}{Explicitly specify regression formula as alternative to
 local linear regression, with \code{y} and \code{x} denoting the outcome
 and the running variable, and cutoff is normalized to \code{0}. Local
 linear regression (\code{order=1}) is equivalent to
-\code{regformula="y~x*I(x>0)"}. Inference is done the \code{order+2}th
+\code{regformula="y~x*I(x>0)"}. Inference is done on the \code{order+2}th
 element of the design matrix}
 }
 \description{
@@ -55,7 +56,6 @@ that is first in \code{data} and then in the environment of \code{formula}.
 }
 
 \examples{
-
 RDHonestBME(log(cghs$earnings)~yearat14, data=cghs, hp=3,
             order=1, cutoff=1947)
 ## Equivalent to

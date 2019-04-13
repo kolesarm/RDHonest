@@ -1,4 +1,4 @@
-[![Travis build status](https://travis-ci.org/kolesarm/RDHonest.svg?branch=master)](https://travis-ci.org/kolesarm/RDHonest)
+[![Travis build status](https://travis-ci.org/kolesarm/RDHonest.svg?branch=master)](https://travis-ci.org/kolesarm/RDHonest) [![Coverage status](https://codecov.io/gh/kolesarm/RDHonest/branch/master/graph/badge.svg)](https://codecov.io/github/kolesarm/RDHonest?branch=master)
 
 # RDHonest
 
