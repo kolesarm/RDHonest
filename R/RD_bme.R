@@ -72,9 +72,9 @@ RDHonestBME <- function(formula, data, subset, cutoff=0, na.action, hp=Inf,
     G.m <- length(support[support>=0])
 
     ## Estimate actual and dummied out model, and calculate delta
-    m1 <- lm(regformula)
-    m2 <- lm(y ~ 0+I(as.factor(x)))
-    delta <- coef(m2)-stats::predict(m1, newdata=data.frame(x=support))
+    m1 <- stats::lm(regformula)
+    m2 <- stats::lm(y ~ 0+I(as.factor(x)))
+    delta <- stats::coef(m2)-stats::predict(m1, newdata=data.frame(x=support))
 
     ## Compute joint VCOV matrix of deltas and tau
     ## Compute Q^{-1} manually so that sandwich package is not needed
@@ -86,7 +86,7 @@ RDHonestBME <- function(formula, data, subset, cutoff=0, na.action, hp=Inf,
 
 
     df <- data.frame(x=support, y=rep(0, length(support)))
-    e2 <- rep(0, G+length(coef(m1)))
+    e2 <- rep(0, G+length(stats::coef(m1)))
     e2[order + 2] <- 1                  # inference on (p+2)th element
     aa <- rbind(cbind(-stats::model.matrix(
                                   regformula, data=df), diag(nrow=G)), e2)
@@ -104,8 +104,8 @@ RDHonestBME <- function(formula, data, subset, cutoff=0, na.action, hp=Inf,
     dev <- drop(selvec[, -ncol(selvec)] %*% delta)
 
     ## Upper and lower CIs
-    CI.l <- coef(m1)[order+2]+dev-qnorm(0.975)*se
-    CI.u <- coef(m1)[order+2]+dev+qnorm(0.975)*se
+    CI.l <- stats::coef(m1)[order+2]+dev-stats::qnorm(0.975)*se
+    CI.u <- stats::coef(m1)[order+2]+dev+stats::qnorm(0.975)*se
 
     l <- gr[which.min(CI.l), ]
     deltamin <- c(support[l[1:2]], dev[which.min(CI.l)],

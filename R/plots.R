@@ -37,7 +37,8 @@ plot_RDscatter <- function(d, avg=10, xlab=NULL, ylab=NULL,
     if (avg==Inf) {
         x <- c(d$Xm, d$Xp)
         y <- c(d$Ym, d$Yp)
-        bd <- data.frame(x=unique(x), y=unname(coef(lm(y~0+as.factor(x)))),
+        bd <- data.frame(x=unique(x),
+                         y=unname(stats::coef(stats::lm(y~0+as.factor(x)))),
                      count=as.vector(table(x)))
     } else {
         np <- length(d$Yp)

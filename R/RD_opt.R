@@ -100,8 +100,8 @@ RDEstimator <- function(d, f, alpha=0.05, se.method="supplied.var", J=3) {
         sd[4] <- sdL((d$Yp - sum(Wp*d$Yp))^2, (d$Ym - sum(Wm*d$Ym))^2)
     sd <- sd[se.method]
     maxbias <- b - q/den                # b-q/den
-    lower <- Lhat - maxbias - qnorm(1-alpha)*sd
-    upper <- Lhat + maxbias + qnorm(1-alpha)*sd
+    lower <- Lhat - maxbias - stats::qnorm(1-alpha)*sd
+    upper <- Lhat + maxbias + stats::qnorm(1-alpha)*sd
     hl <- CVb(maxbias/sd, alpha)$cv * sd # Half-length
 
     ## Effective number of observations
@@ -136,7 +136,7 @@ RDTOpt.fit <- function(d, M, opt.criterion, alpha=0.05, beta=0.5,
     C <-  M/2
     ## Find optimal delta, see Supplement to 1511.06028v2
     if (opt.criterion=="OCI") {
-        lff <- RDLFFunction(d, C, qnorm(1-alpha)+qnorm(beta))
+        lff <- RDLFFunction(d, C, stats::qnorm(1-alpha)+stats::qnorm(beta))
     } else if (opt.criterion=="MSE") {
         eq <- function(b) {
             r <- RDgbC(d, b, C)
@@ -189,7 +189,7 @@ RDTEfficiencyBound <- function(d, M, opt.criterion="FLCI",
         d <- RDPrelimVar(d, se.initial)
 
     if (opt.criterion=="OCI") {
-        delta <- qnorm(1-alpha)+qnorm(beta)
+        delta <- stats::qnorm(1-alpha)+stats::qnorm(beta)
         r1 <- RDEstimator(d, RDLFFunction(d, C, delta))
         r2 <- RDEstimator(d, RDLFFunction(d, C, 2*delta))
         return(r2$omega/(r1$delta*r1$sd+r1$omega))

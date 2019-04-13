@@ -188,7 +188,6 @@ RDOptBW <- function(formula, data, subset, cutoff=0, M, kern="triangular",
 #' @template RDseInitial
 #' @return Returns an object of class \code{"RDResults"}, see description in
 #'     \code{\link{RDHonest}}
-#' @importFrom stats pnorm qnorm
 #' @export
 RDHonest.fit <- function(d, M, kern="triangular", hp, hm=hp, opt.criterion,
                          bw.equal=TRUE, alpha=0.05, beta=0.8, se.method="nn",
@@ -234,14 +233,14 @@ RDHonest.fit <- function(d, M, kern="triangular", hp, hm=hp, opt.criterion,
                   specified sclass and order.")
         }
 
-        lower <- r1$estimate - bias - qnorm(1-alpha)*sd
-        upper <- r1$estimate + bias + qnorm(1-alpha)*sd
+        lower <- r1$estimate - bias - stats::qnorm(1-alpha)*sd
+        upper <- r1$estimate + bias + stats::qnorm(1-alpha)*sd
         hl <- CVb(bias/sd, alpha)$cv*sd
     }
 
     ## Finally, calculate coverage of naive CIs
-    z <- qnorm(1-alpha/2)
-    naive <- pnorm(z-bias/sd)-pnorm(-z- bias/sd)
+    z <- stats::qnorm(1-alpha/2)
+    naive <- stats::pnorm(z-bias/sd)-stats::pnorm(-z- bias/sd)
 
     structure(list(estimate=r1$estimate, lff=NA, maxbias=bias, sd=sd,
                    lower=lower, upper=upper, hl=hl, eff.obs=r1$eff.obs,
@@ -294,7 +293,7 @@ RDOptBW.fit <- function(d, M, kern="triangular", opt.criterion,
                           alpha=alpha, se.method="supplied.var",
                           sclass=sclass, order=order)
         if (opt.criterion=="OCI") {
-            2*r$maxbias+r$sd*(qnorm(1-alpha)+qnorm(beta))
+            2*r$maxbias+r$sd*(stats::qnorm(1-alpha)+stats::qnorm(beta))
         } else if (opt.criterion=="MSE") {
             r$maxbias^2+r$sd^2
         } else if (opt.criterion=="FLCI") {
@@ -340,7 +339,6 @@ RDOptBW.fit <- function(d, M, kern="triangular", opt.criterion,
 #' @template Kern
 #' @param verbose Print details of calculation?
 #' @return Imbens and Kalyanaraman bandwidth
-#' @importFrom stats coef lm
 #' @references{
 #' \cite{Imbens, Guido, and Kalyanaraman, Karthik,
 #' "Optimal bandwidth choice for the regression discontinuity estimator." The
@@ -378,7 +376,8 @@ IKBW.fit <- function(d, kern="triangular", order=1, verbose=FALSE) {
     ## STEP 2: Estimate second derivatives m_{+}^(2) and m_{-}^(2)
 
     ## Estimate third derivative using 3rd order polynomial: Equation (14)
-    m3 <- 6*coef(lm(I(c(d$Ym, d$Yp)) ~ I(X>=0) + X + I(X^2) + I(X^3)))[5]
+    m3 <- 6*stats::coef(stats::lm(I(c(d$Ym, d$Yp)) ~ I(X>=0) + X +
+                                      I(X^2) + I(X^3)))[5]
 
     ## Left and right bandwidths, Equation (15) and page 956.
     ## Optimal constant based on one-sided uniform Kernel, 7200^(1/7),
@@ -386,8 +385,10 @@ IKBW.fit <- function(d, kern="triangular", order=1, verbose=FALSE) {
     h2p <- 7200^(1/7) * (varp/(f0*m3^2))^(1/7) * Np^(-1/7)
 
     ## estimate second derivatives by local quadratic
-    m2m <- 2*coef(lm(d$Ym ~ d$Xm + I(d$Xm^2), subset=(d$Xm >= -h2m)))[3]
-    m2p <- 2*coef(lm(d$Yp ~ d$Xp + I(d$Xp^2), subset=(d$Xp <= h2p)))[3]
+    m2m <- 2*stats::coef(stats::lm(d$Ym ~ d$Xm + I(d$Xm^2),
+                                   subset=(d$Xm >= -h2m)))[3]
+    m2p <- 2*stats::coef(stats::lm(d$Yp ~ d$Xp + I(d$Xp^2),
+                                   subset=(d$Xp <= h2p)))[3]
 
     ## STEP 3: Calculate regularization terms, Equation (16)
     rm <- 2160*varm / (sum(d$Xm >= -h2m) * h2m^4)

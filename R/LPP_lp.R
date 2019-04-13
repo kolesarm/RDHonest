@@ -155,7 +155,7 @@ LPP_MROT.fit <- function(d) {
 
     ## STEP 1: Estimate (p+1)th derivative and sigma^2 using global polynomial
     ## regression
-    r1 <- unname(lm(d$Y ~ 0 + outer(d$X, 0:4, "^"))$coefficients)
+    r1 <- unname(stats::lm(d$Y ~ 0 + outer(d$X, 0:4, "^"))$coefficients)
     f2 <- function(x) abs(2*r1[3]+6*x*r1[4]+12*x^2*r1[5])
 
     ## maximum occurs either at endpoints, or else at the extremum,
@@ -180,7 +180,6 @@ LPP_MROT.fit <- function(d) {
 #' @template LPPseInitial
 #' @return Returns an object of class \code{"LPPResults"}, see description in
 #'     \code{\link{LPPHonest}}
-#' @importFrom stats pnorm qnorm
 #' @export
 LPPHonest.fit <- function(d, M, kern="triangular", h, opt.criterion,
                          alpha=0.05, beta=0.8, se.method="nn",
@@ -221,14 +220,14 @@ LPPHonest.fit <- function(d, M, kern="triangular", h, opt.criterion,
                   specified sclass and order.")
         }
 
-        lower <- r1$estimate - bias - qnorm(1-alpha)*sd
-        upper <- r1$estimate + bias + qnorm(1-alpha)*sd
+        lower <- r1$estimate - bias - stats::qnorm(1-alpha)*sd
+        upper <- r1$estimate + bias + stats::qnorm(1-alpha)*sd
         hl <- CVb(bias/sd, alpha)$cv*sd
     }
 
     ## Finally, calculate coverage of naive CIs
-    z <- qnorm(1-alpha/2)
-    naive <- pnorm(z-bias/sd)-pnorm(-z- bias/sd)
+    z <- stats::qnorm(1-alpha/2)
+    naive <- stats::pnorm(z-bias/sd)-stats::pnorm(-z- bias/sd)
 
     structure(list(estimate=r1$estimate, maxbias=bias, sd=sd,
                    lower=lower, upper=upper, hl=hl, eff.obs=r1$eff.obs,
@@ -270,7 +269,7 @@ LPPOptBW.fit <- function(d, M, kern="triangular", opt.criterion, alpha=0.05,
                           alpha=alpha, se.method="supplied.var",
                           sclass=sclass, order=order)
         if (opt.criterion=="OCI") {
-            2*r$maxbias+r$sd*(qnorm(1-alpha)+qnorm(beta))
+            2*r$maxbias+r$sd*(stats::qnorm(1-alpha)+stats::qnorm(beta))
         } else if (opt.criterion=="MSE") {
             r$maxbias^2+r$sd^2
         } else if (opt.criterion=="FLCI") {
@@ -307,7 +306,6 @@ LPPOptBW.fit <- function(d, M, kern="triangular", opt.criterion, alpha=0.05,
 #' @template Kern
 #' @return ROT bandwidth
 #' @param boundary Is point at a boundary?
-#' @importFrom stats lm quantile
 #' @references{
 #'
 #' \cite{Fan , J., and I. Gijbels (1996): Local Polynomial Modelling and Its
@@ -330,13 +328,14 @@ ROTBW.fit <- function(d, kern="triangular", order=1, boundary=NULL) {
     N <- length(d$X)
 
     ## STEP 0: Estimate f_X(0) using Silverman
-    h1 <- 1.843 * min(stats::sd(X),
-                      (quantile(X, 0.75) - quantile(X, 0.25))/1.349) / N^(1/5)
+    h1 <- 1.843 *
+        min(stats::sd(X), (stats::quantile(X, 0.75) -
+                           stats::quantile(X, 0.25)) / 1.349) / N^(1/5)
     f0 <- sum(abs(X) <= h1) / (2*N*h1)
 
     ## STEP 1: Estimate (p+1)th derivative and sigma^2 using global polynomial
     ## regression
-    r1 <- lm(d$Y ~ 0 + outer(X, 0:(order+3), "^"))
+    r1 <- stats::lm(d$Y ~ 0 + outer(X, 0:(order+3), "^"))
     deriv <- unname(r1$coefficients[order+2])
     sigma2 <- stats::sigma(r1)^2
 

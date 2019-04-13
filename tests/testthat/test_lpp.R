@@ -7,11 +7,27 @@ test_that("Inference at point agrees with RD", {
     dm <- LPPData(lee08[lee08$margin<0, ], point=0)
     pp <- LPPHonest.fit(dp, h=5, M=2)
     mm <- LPPHonest.fit(dm, h=5, M=2)
-
     expect_equal(pp$estimate-mm$estimate, rde$estimate)
     expect_equal(pp$sd^2+mm$sd^2, rde$sd^2)
     expect_equal(pp$maxbias+mm$maxbias, rde$maxbias)
     expect_equal(mm$eff.obs+pp$eff.obs, rde$eff.obs)
+
+    p2 <- LPPHonest(voteshare~margin, data=lee08, subset=margin>=0, h=5, M=2)
+    expect_equal(capture.output(print(pp)),
+                 capture.output(print(p2))[6:14])
+
+})
+
+test_that("MROT matches paper", {
+    ## HS Mortality
+    lumi <- headst[!is.na(headst$mortHS), c("mortHS", "povrate60")]
+    mort <- RDData(lumi, cutoff=0)
+    Mh <- RD_MROT.fit(mort)
+    dp <- LPPData(lumi[lumi$povrate>=0, ], point=0)
+    dm <- LPPData(lumi[lumi$povrate<0, ], point=0)
+
+    expect_equal(Mh, 0.29939992)
+    expect_equal(Mh, max(LPP_MROT.fit(dp), LPP_MROT.fit(dm)))
 })
 
 test_that("ROT bandwidth check", {
@@ -20,6 +36,9 @@ test_that("ROT bandwidth check", {
     b1 <- ROTBW.fit(d, kern="uniform", order=1)
     b2 <- ROTBW.fit(d, kern="uniform", order=1, boundary=FALSE)
     expect_equal(b1, b2)
+    expect_equal(ROTBW.fit(d, kern="triangular", order=1),
+                 ROTBW.fit(d, kern=function(u) pmax(1-abs(u), 0), order=1))
+
     ## f0 using Silverman:
     f0 <- 0.0089934638
     C <- 9/8                            # nu0/(4*mu_2^2)
@@ -39,6 +58,4 @@ test_that("ROT bandwidth check", {
     der <- unname(ll$coefficients[3])
     h <- (C*sigma(ll)^2/(length(dp$X)*f0*der^2))^(1/5)
     expect_equal(bp1, h)
-
-
 })
