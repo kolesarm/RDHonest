@@ -12,6 +12,16 @@ test_that("IK bandwidth calculations", {
     expect_equal(sqrt(mean(d$sigma2m)), 12.4627517531)
 })
 
+test_that("Plots", {
+    if (requireNamespace("ggplot2", quietly = TRUE)) {
+        expect_silent(invisible(plot_RDscatter(
+            RDData(data.frame(y=log(cghs$earnings),
+                              x=cghs$yearat14),
+                   cutoff=1947), avg=Inf, propdotsize=TRUE)))
+        }
+})
+
+
 test_that("Honest inference in Lee and LM data",  {
 
     ## Replicate 1606.01200v2

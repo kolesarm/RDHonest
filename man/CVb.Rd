@@ -9,8 +9,8 @@ CVb(B, alpha = 0.05)
 \arguments{
 \item{B}{Maximum bias, vector of non-negative numbers.}
 
-\item{alpha}{Determines CI level, \code{1-alpha}. Needs to be between 0 and
-1. Can be a vector of values.}
+\item{alpha}{Determines CI level, \eqn{1-\alpha}{1-alpha}. Vector of values
+between 0 and 1.}
 }
 \value{
 Data frame with the following columns:
@@ -19,17 +19,17 @@ Data frame with the following columns:
 
 \item{bias}{Value of bias as specified by \code{B}}
 
-\item{alpha}{Value of \eqn{\alpha} as specified by \code{alpha}}
+\item{alpha}{Value of \eqn{\alpha}{alpha} as specified by \code{alpha}}
 
 \item{cv}{Critical value}
 
-\item{TeXDescription}{LaTeX-friendly description of current row}}
+\item{TeXDescription}{LaTeX-friendly description of the current row}}
 }
 \description{
-Computes the critical value \eqn{cv_{1-\alpha}(B)} such that the confidence
-interval \eqn{X\pm cv_{1-\alpha}(B)} will have coverage \eqn{1-\alpha}, where
-\eqn{X} is Normally distributed with variance equal to \eqn{1} and maximum
-bias at most \eqn{B}.
+Computes the critical value \eqn{cv_{1-\alpha}(B)}{cv_{1-alpha}(B)} such that
+the confidence interval \eqn{X\pm cv_{1-\alpha}(B)}{X +/- cv_{1-alpha}(B)}
+will have coverage \eqn{1-\alpha}{1-alpha}, where \eqn{X} is normally
+distributed with variance equal to \eqn{1} and maximum bias at most \eqn{B}.
 }
 \examples{
 ## 90\% critical value:

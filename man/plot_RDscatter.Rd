@@ -31,4 +31,6 @@ average.
 }
 \examples{
 plot_RDscatter(RDData(lee08, cutoff=0), avg=20)
+plot_RDscatter(RDData(data.frame(y=log(cghs$earnings), x=cghs$yearat14),
+               cutoff=1947), avg=Inf, propdotsize=TRUE)
 }

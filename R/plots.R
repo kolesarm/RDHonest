@@ -15,6 +15,8 @@
 #'     \code{avg=Inf}). Otherwise the size of points is constant.
 #' @examples
 #' plot_RDscatter(RDData(lee08, cutoff=0), avg=20)
+#' plot_RDscatter(RDData(data.frame(y=log(cghs$earnings), x=cghs$yearat14),
+#'                cutoff=1947), avg=Inf, propdotsize=TRUE)
 #' @export
 plot_RDscatter <- function(d, avg=10, xlab=NULL, ylab=NULL,
                            window=NULL, vert=TRUE, propdotsize=FALSE) {
