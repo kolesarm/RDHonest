@@ -5,9 +5,9 @@
 \title{Honest inference in RD}
 \usage{
 RDHonest(formula, data, subset, cutoff = 0, M, kern = "triangular",
-  na.action, opt.criterion, bw.equal = TRUE, hp, hm = hp,
-  se.method = "nn", alpha = 0.05, beta = 0.8, J = 3,
-  sclass = "H", order = 1, se.initial = "IKEHW")
+  na.action, opt.criterion, bw.equal = TRUE, h, se.method = "nn",
+  alpha = 0.05, beta = 0.8, J = 3, sclass = "H", order = 1,
+  se.initial = "EHW")
 }
 \arguments{
 \item{formula}{object of class \code{"formula"} (or one that can be coerced
@@ -60,11 +60,12 @@ contain \code{NA}s. The default is set by the \code{na.action} setting of
 \item{bw.equal}{logical specifying whether bandwidths on either side of
 cutoff should be constrained to equal to each other.}
 
-\item{hp, hm}{bandwidth for treated (units with positive running variable),
-and control (units with negative running variable) units. If \code{hm} is
-not supplied, it is assumed to equal to \code{hp}. If neither bandwidth
-is supplied, optimal bandwidth is computed according to criterion given
-by \code{opt.criterion}.}
+\item{h}{bandwidth, a scalar parameter. For fuzzy or sharp RD, it can be a
+named vector of length two with names \code{"p"} and \code{"m"}, in which
+case the bandwidth \code{h["m"]} is used for observations below the
+cutoff, and the bandwidth \code{h["p"]} is used for observations above
+the cutoff. If not supplied, optimal bandwidth is computed according to
+criterion given by \code{opt.criterion}.}
 
 \item{se.method}{Vector with methods for estimating standard error of
 estimate. If \code{NULL}, standard errors are not computed. The elements of
@@ -84,7 +85,7 @@ the vector can consist of the following methods:
    \item{"plugin"}{Plug-in estimate based on asymptotic variance. Local
         polynomial estimators in RD only.}
 
-   \item{"supplied.var"}{Use conditional variance supplied by \code{sigma2} /
+   \item{"supplied.var"}{Use conditional variance supplied by \code{sigma2} or
         \code{d} instead of computing residuals}
 
 }}
@@ -172,7 +173,7 @@ The bandwidth is calculated to be optimal for a given performance criterion,
 as specified by \code{opt.criterion}. For local polynomial estimators, this
 optimal bandwidth is calculated using the function \code{\link{RDOptBW}}.
 Alternatively, for local polynomial estimators, the bandwidths above and
-below the cutoff can be specified by \code{hp} and \code{hm}.
+below the cutoff can be specified by \code{h}.
 }
 \section{Note}{
 
@@ -184,7 +185,7 @@ that is first in \code{data} and then in the environment of \code{formula}.
 
 # Lee dataset
 RDHonest(voteshare ~ margin, data = lee08, kern = "uniform", M = 0.1,
-         hp = 10, sclass = "T")
+         h = 10, sclass = "T")
 }
 \references{
 {

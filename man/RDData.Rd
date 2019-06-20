@@ -7,12 +7,13 @@
 RDData(d, cutoff)
 }
 \arguments{
-\item{d}{data frame with first column corresponding to outcome variable,
-second column corresponding to running variable and optionally a column
-called \code{"(sigma2)"} that corresponds to the conditional variance of
-the outcome (or an estimate of the conditional variance)}
+\item{d}{a data frame or a list with first column corresponding to the
+outcome variable, second column corresponding to the running variable and
+optionally a column called \code{"sigma2"} that corresponds to the
+conditional variance of the outcome (or an estimate of the conditional
+variance)}
 
-\item{cutoff}{specifies the RD cutoff in the running variable.}
+\item{cutoff}{specifies the cutoff for the running variable}
 }
 \value{
 An object of class \code{"RDData"}, which is a list containing the
@@ -28,15 +29,16 @@ An object of class \code{"RDData"}, which is a list containing the
 
     \item{Xp}{Running variable for observations above cutoff}
 
-    \item{sigma2m}{Conditional variance of outcome for observations below
+    \item{sigma2m}{Conditional variance of the outcome for observations below
     cutoff}
 
-    \item{sigma2p}{Conditional variance of outcome for observations above
+    \item{sigma2p}{Conditional variance of the outcome for observations above
     cutoff}
 
     \item{orig.cutoff}{Original cutoff}
 
-    item{var.names}{Names of outcome and running variable in supplied data frame}
+    \item{var.names}{Names of the outcome and the running variable in
+    supplied data frame}
 
     }
 }
@@ -46,7 +48,10 @@ cutoff for treatment is non-zero, shift the running variable so that cutoff
 is at zero.
 }
 \examples{
-
 ## Transform Lee data
 d <- RDData(lee08, cutoff=0)
+}
+\seealso{
+\code{\link{FRDData}} for fuzzy RD, and \code{\link{LPPData}} for
+    inference at a point
 }

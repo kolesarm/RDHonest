@@ -10,7 +10,8 @@
   \item{margin}{Democratic margin of victory}
  }}
 \source{
-Mostly Harmless Econometrics website
+Mostly Harmless Econometrics data archive,
+\url{https://economics.mit.edu/faculty/angrist/data1/mhe}
 }
 \usage{
 lee08
@@ -22,7 +23,7 @@ Lee (2008) US House elections dataset
 {
 
 \cite{Lee , D. S. (2008): "Randomized experiments from non-random selection in
-      U.S. House elections," Journal of Econometrics, 142(2), 675-697.}
+      U.S. House elections," Journal of Econometrics, 142 (2), 675-697.}
 
 }
 }

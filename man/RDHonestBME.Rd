@@ -2,10 +2,11 @@
 % Please edit documentation in R/RD_bme.R
 \name{RDHonestBME}
 \alias{RDHonestBME}
-\title{CIs in RD with discrete regressors under bounded misspecification error class}
+\title{CIs in sharp RD with discrete regressors under bounded misspecification error
+class}
 \usage{
-RDHonestBME(formula, data, subset, cutoff = 0, na.action, hp = Inf,
-  hm = hp, alpha = 0.05, order = 0, regformula)
+RDHonestBME(formula, data, subset, cutoff = 0, na.action, h = Inf,
+  alpha = 0.05, order = 0, regformula)
 }
 \arguments{
 \item{formula}{object of class \code{"formula"} (or one that can be coerced
@@ -26,11 +27,12 @@ in the fitting process.}
 contain \code{NA}s. The default is set by the \code{na.action} setting of
 \code{options} (usually \code{na.omit}).}
 
-\item{hp, hm}{bandwidth for treated (units with positive running variable),
-and control (units with negative running variable) units. If \code{hm} is
-not supplied, it is assumed to equal to \code{hp}. If neither bandwidth
-is supplied, optimal bandwidth is computed according to criterion given
-by \code{opt.criterion}.}
+\item{h}{bandwidth, a scalar parameter. For fuzzy or sharp RD, it can be a
+named vector of length two with names \code{"p"} and \code{"m"}, in which
+case the bandwidth \code{h["m"]} is used for observations below the
+cutoff, and the bandwidth \code{h["p"]} is used for observations above
+the cutoff. If not supplied, optimal bandwidth is computed according to
+criterion given by \code{opt.criterion}.}
 
 \item{alpha}{determines confidence level, \eqn{1-\alpha}{1-alpha}}
 
@@ -56,10 +58,10 @@ that is first in \code{data} and then in the environment of \code{formula}.
 }
 
 \examples{
-RDHonestBME(log(cghs$earnings)~yearat14, data=cghs, hp=3,
+RDHonestBME(log(cghs$earnings)~yearat14, data=cghs, h=3,
             order=1, cutoff=1947)
 ## Equivalent to
-RDHonestBME(log(cghs$earnings)~yearat14, data=cghs, hp=3,
+RDHonestBME(log(cghs$earnings)~yearat14, data=cghs, h=3,
             cutoff=1947, order=1, regformula="y~x*I(x>=0)")
 }
 \references{

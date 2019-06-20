@@ -11,7 +11,7 @@
 #' Alternatively, for local polynomial estimators, the bandwidths above and
 #' below the cutoff can be specified by \code{h}.
 #'
-#' @template RDFormula
+#' @template FRDFormula
 #' @template RDse
 #' @template RDoptBW
 #' @template RDBW
@@ -66,34 +66,40 @@
 #' RDHonest(voteshare ~ margin, data = lee08, kern = "uniform", M = 0.1,
 #'          h = 10, sclass = "T")
 #' @export
-RDHonest <- function(formula, data, subset, cutoff=0, M, kern="triangular",
-                     na.action, opt.criterion, bw.equal=TRUE, h,
+FRDHonest <- function(formula, data, subset, cutoff=0, M, kern="triangular",
+                     na.action, opt.criterion, bw.equal=TRUE, hp, hm=hp,
                      se.method="nn", alpha=0.05, beta=0.8, J=3, sclass="H",
-                     order=1, se.initial="EHW") {
+                     order=1, se.initial="IKEHW") {
 
     ## construct model frame
     cl <- mf <- match.call(expand.dots = FALSE)
     m <- match(c("formula", "data", "subset", "na.action"),
                names(mf), 0L)
     mf <- mf[c(1L, m)]
+    if (!requireNamespace("Formula", quietly = TRUE)) {
+        stop("Please install the Formula package;
+              it's needed for this function to work",
+             call. = FALSE)
+    }
+
+
+    formula <- Formula::as.Formula(formula)
+    stopifnot(length(formula)[1] == 1L, length(formula)[2] == 2)
+    mf$formula <- formula
+
     mf[[1L]] <- quote(stats::model.frame)
     mf <- eval(mf, parent.frame())
+    d <- FRDData(mf, cutoff)
 
-    d <- RDData(mf, cutoff)
-
-    if (kern=="optimal") {
-        ret <- RDTOpt.fit(d, M, opt.criterion=opt.criterion,
-                         alpha=alpha, beta=beta,
-                         se.method=se.method, J=J, se.initial=se.initial)
-    } else if (!missing(h)) {
-        ret <- RDHonest.fit(d, M, kern, h, alpha=alpha,
+    if (!missing(hp)) {
+        ret <- FRDHonest.fit(d, M, kern, hp, hm, alpha=alpha,
                             se.method=se.method, J=J, sclass=sclass,
                             order=order, se.initial=se.initial)
     } else {
-        ret <- RDHonest.fit(d, M, kern, opt.criterion=opt.criterion,
-                            bw.equal=bw.equal, alpha=alpha, beta=beta,
-                            se.method=se.method, J=J,
-                            sclass=sclass, order=order, se.initial=se.initial)
+        ret <- FRDHonest.fit(d, M, kern, opt.criterion=opt.criterion,
+                             bw.equal=bw.equal, alpha=alpha, beta=beta,
+                             se.method=se.method, J=J,
+                             sclass=sclass, order=order, se.initial=se.initial)
     }
 
     ret$call <- cl
@@ -150,10 +156,10 @@ RDHonest <- function(formula, data, subset, cutoff=0, M, kern="triangular",
 #' RDOptBW(voteshare ~ margin, data = lee08, kern = "uniform",
 #'         M = 0.1, opt.criterion = "MSE", sclass = "H")
 #' @export
-RDOptBW <- function(formula, data, subset, cutoff=0, M, kern="triangular",
+FRDOptBW <- function(formula, data, subset, cutoff=0, M, kern="triangular",
                     na.action, opt.criterion, bw.equal=TRUE,
                     alpha=0.05, beta=0.8, sclass="H", order=1,
-                    se.initial="EHW") {
+                    se.initial="IKEHW") {
 
     ## construct model frame
     cl <- mf <- match.call(expand.dots = FALSE)
@@ -189,26 +195,26 @@ RDOptBW <- function(formula, data, subset, cutoff=0, M, kern="triangular",
 #' @return Returns an object of class \code{"RDResults"}, see description in
 #'     \code{\link{RDHonest}}
 #' @export
-RDHonest.fit <- function(d, M, kern="triangular", h, opt.criterion,
+FRDHonest.fit <- function(d, M, kern="triangular", h, opt.criterion,
                          bw.equal=TRUE, alpha=0.05, beta=0.8, se.method="nn",
-                         J=3, sclass="H", order=1, se.initial="EHW") {
-    CheckClass(d, "RDData")
+                         J=3, sclass="H", order=1, se.initial="IKEHW") {
+    CheckClass(d, "FRDData")
 
     ## Initial se estimate
     if ((is.null(d$sigma2p) | is.null(d$sigma2m)) &
         ("supplied.var" %in% se.method | missing(h)))
-        d <- NPRPrelimVar.fit(d, se.initial=se.initial)
+        d <- FRDPrelimVar(d, se.initial=se.initial)
 
     if (missing(h)) {
-        r <- RDOptBW.fit(d, M, kern, opt.criterion, bw.equal, alpha,
-                         beta, sclass, order)
+        r <- FRDOptBW.fit(d, M, kern, opt.criterion, bw.equal, alpha,
+                          beta, sclass, order)
         h <- c(p=r$hp, m=r$hm)
     } else if (length(h)==1) {
         h <- c(p=unname(h), m=unname(h))
     }
 
     ## Suppress warnings about too few observations
-    r1 <- NPRreg.fit(d, h, kern, order, se.method, TRUE, J)
+    r1 <- NPRreg(d, h, kern, order, se.method, TRUE, J)
     wp <- r1$wp(d$Xp)
     wm <- r1$wm(d$Xm)
 
@@ -222,9 +228,11 @@ RDHonest.fit <- function(d, M, kern="triangular", h, opt.criterion,
         if(order==0) {
             bias <- Inf
         } else if (sclass=="T")  {
-            bias <- M/2 * (sum(abs(wp*d$Xp^2)) + sum(abs(wm*d$Xm^2)))
+            bias <- (M[1]+M[2]*abs(r1$estimate)) / (2*abs(r1$fs)) *
+                (sum(abs(wp*d$Xp^2)) + sum(abs(wm*d$Xm^2)))
         } else if (sclass=="H" & order==1) {
-            bias <- -M/2 * (sum(wp*d$Xp^2) + sum(wm*d$Xm^2))
+            bias <- -(M[1]+M[2]*abs(r1$estimate)) / (2*abs(r1$fs)) *
+                (sum(wp*d$Xp^2) + sum(wm*d$Xm^2))
         } else {
             ## need to find numerically
             wwp <- wp[wp>0]
@@ -237,7 +245,7 @@ RDHonest.fit <- function(d, M, kern="triangular", h, opt.criterion,
                 vapply(s, w2p, numeric(1)), 0, h["p"])$value
             bm <- integrate(function(s)
                 vapply(s, w2m, numeric(1)), -h["m"], 0)$value
-            bias <- M*(bp+bm)
+            bias <- (M[1]+M[2]*abs(r1$estimate)) / (2*abs(r1$fs)) * (bp+bm)
         }
 
         lower <- r1$estimate - bias - stats::qnorm(1-alpha)*sd
@@ -251,104 +259,93 @@ RDHonest.fit <- function(d, M, kern="triangular", h, opt.criterion,
     structure(list(estimate=r1$estimate, lff=NA, maxbias=bias, sd=sd,
                    lower=lower, upper=upper, hl=hl, eff.obs=r1$eff.obs,
                    hp=unname(h["p"]), hm=unname(h["m"]), naive=naive),
-              class="RDResults")
+              class="FRDResults")
 }
 
 
-
-
-#' Imbens and Kalyanaraman bandwidth
+#' Optimal bandwidth selection in RD
 #'
-#' Calculate bandwidth for sharp RD based on local linear regression using
-#' method by Imbens and Kalyanaraman (2012)
+#' Basic computing engine called by \code{\link{RDOptBW}} used to find
+#' optimal bandwidth
 #' @param d object of class \code{"RDData"}
+#' @template RDoptBW
+#' @template RDclass
 #' @template Kern
-#' @param verbose Print details of calculation?
-#' @return Imbens and Kalyanaraman bandwidth
+#' @template bwequal
+#' @template RDseInitial
+#' @return a list with the following elements
+#'     \describe{
+#'     \item{\code{hp}}{bandwidth for observations above cutoff}
+#'
+#'     \item{\code{hm}}{bandwidth for observations below cutoff, equal to \code{hp}
+#'     unless \code{bw.equal==FALSE}}
+#'
+#'     \item{\code{sigma2m}, \code{sigma2p}}{estimate of conditional variance
+#'      above and below cutoff, from \code{d}}
+#'    }
 #' @references{
 #' \cite{Imbens, Guido, and Kalyanaraman, Karthik,
 #' "Optimal bandwidth choice for the regression discontinuity estimator." The
 #' Review of Economic Studies 79 (3): 933-959.}
 #' }
+#' @examples
+#' ## Lee data
+#' d <- RDData(lee08, cutoff=0)
+#' RDOptBW.fit(d, M=0.1, opt.criterion="MSE")[c("hp", "hm")]
 #' @export
-IKBW.fit <- function(d, kern="triangular", order=1, verbose=FALSE) {
-    if (order!=1)
-        stop("Only works for local linear regression.")
+FRDOptBW.fit <- function(d, M, kern="triangular", opt.criterion,
+                        bw.equal=TRUE, alpha=0.05, beta=0.8,
+                        sclass="H", order=1, se.initial="IKEHW", T0=0) {
 
-    X <- c(d$Xm, d$Xp)
-    Nm <- length(d$Xm)
-    Np <- length(d$Xp)
-    N <- Nm+Np
+    ## First check if sigma2 is supplied
+    if (is.null(d$sigma2p) | is.null(d$sigma2m))
+        d <- FRDPrelimVar(d, se.initial=se.initial)
 
-    ## STEP 0: Kernel constant
-    if (is.character(kern)) {
-        s <- RDHonest::kernC[with(RDHonest::kernC,
-                        order==1 & boundary==TRUE & kernel==kern, ), ]
-    } else if (is.function(kern)) {
-        ke <- EqKern(kern, boundary=TRUE, order=1)
-        s <- list(mu2=KernMoment(ke, moment=2, boundary=TRUE, "raw"),
-                  nu0=KernMoment(ke, moment=0, boundary=TRUE, "raw2"))
+    ## Objective function for optimizing bandwidth
+    obj <- function(hp, hm) {
+        r <- FRDHonest.fit(d, M, kern, c(p=abs(hp), m=abs(hm)),
+                           alpha=alpha, se.method="supplied.var",
+                           sclass=sclass, order=order, T0=T0)
+        if (opt.criterion=="OCI") {
+            2*r$maxbias+r$sd*(stats::qnorm(1-alpha)+stats::qnorm(beta))
+        } else if (opt.criterion=="MSE") {
+            r$maxbias^2+r$sd^2
+        } else if (opt.criterion=="FLCI") {
+            r$hl
+        } else {
+            stop(sprintf("optimality criterion %s not yet implemented",
+                         opt.criterion))
+        }
     }
-    const <- (s$nu0/s$mu2^2)^(1/5)
 
-    ## STEP 1: Estimate f(0), sigma^2_(0) and sigma^2_+(0), using Silverman
-    ## pilot bandwidth for uniform kernel
-    d <- NPRPrelimVar.fit(d, se.initial="Silverman")
-    h1 <- 1.84*stats::sd(X)/N^(1/5)
-    f0 <- sum(abs(X) <= h1) / (2*N*h1)
-    varm <- d$sigma2m[1]
-    varp <- d$sigma2p[1]
-
-    ## STEP 2: Estimate second derivatives m_{+}^(2) and m_{-}^(2)
-
-    ## Estimate third derivative using 3rd order polynomial: Equation (14)
-    m3 <- 6*stats::coef(stats::lm(I(c(d$Ym, d$Yp)) ~ I(X>=0) + X +
-                                      I(X^2) + I(X^3)))[5]
-
-    ## Left and right bandwidths, Equation (15) and page 956.
-    ## Optimal constant based on one-sided uniform Kernel, 7200^(1/7),
-    h2m <- 7200^(1/7) * (varm/(f0*m3^2))^(1/7) * Nm^(-1/7)
-    h2p <- 7200^(1/7) * (varp/(f0*m3^2))^(1/7) * Np^(-1/7)
-
-    ## estimate second derivatives by local quadratic
-    m2m <- 2*stats::coef(stats::lm(d$Ym ~ d$Xm + I(d$Xm^2),
-                                   subset=(d$Xm >= -h2m)))[3]
-    m2p <- 2*stats::coef(stats::lm(d$Yp ~ d$Xp + I(d$Xp^2),
-                                   subset=(d$Xp <= h2p)))[3]
-
-    ## STEP 3: Calculate regularization terms, Equation (16)
-    rm <- 2160*varm / (sum(d$Xm >= -h2m) * h2m^4)
-    rp <- 2160*varp / (sum(d$Xp <= h2p) * h2p^4)
-
-    if(verbose)
-        cat("\n h1: ", h1, "\n N_{-}, N_{+}: ", Nm, Np, "\n f(0): ", f0,
-            "\n sigma^2_{+}(0): ", sqrt(varp),
-            "^2\n sigma^2_{+}(0):", sqrt(varm), "^2",
-            "\n m3: ", m3, "\n h_{2, +}:", h2p, "h_{2, -}:", h2m,
-            "\n m^{(2)}_{+}: ", m2p, "m^{(2)}_{-}: ", m2m,
-            "\n r_{+}:", rp, "\n r_{-}:", rm, "\n\n")
-
-    ## Final bandwidth: Equation (17)
-    unname(const * ((varp+varm) / (f0*N * ((m2p-m2m)^2+rm+rp)))^(1/5))
-}
-
-
-#' @export
-print.RDBW <- function(x, digits = getOption("digits"), ...) {
-    cat("Call:\n", deparse(x$call), "\n\n", sep = "", fill=TRUE)
-    cat("Bandwidth below cutoff: ", format(x$hm, digits=digits))
-    cat("\nBandwidth above cutoff: ", format(x$hp, digits=digits))
-    if (x$hm==x$hp) {
-        cat(" (Bandwidths are the same)\n\n")
+    if (bw.equal==FALSE) {
+        r <- stats::optim(c(max(d$Xp)/2, max(abs(d$Xm)/2)),
+                   function(h) obj(h[1], h[2]))
+        if (r$convergence!=0) warning(r$message)
+        hp <- abs(r$par[1])
+        hm <- abs(r$par[2])
     } else {
-        cat(" (Bandwidths are different)\n\n")
+        obj1 <- function(h) obj(h, h)
+        hmin <- max(unique(d$Xp)[order+1], sort(unique(abs(d$Xm)))[order+1])
+        hmax <- max(abs(c(d$Xp, d$Xm)))
+        ## Optimize piecewise constant function using modification of golden
+        ## search. In fact, the criterion may not be unimodal, so proceed with
+        ## caution. (For triangular kernel, it appears unimodal)
+        if (kern=="uniform") {
+            supp <- sort(unique(c(d$Xp, abs(d$Xm))))
+            hp <- hm <- gss(obj1, supp[supp>=hmin])
+        } else {
+            hm <- hp <- abs(stats::optimize(obj1, interval=c(hmin, hmax),
+                                        tol=.Machine$double.eps^0.75)$minimum)
+        }
+
     }
-    invisible(x)
+
+    list(hp=hp, hm=hm, sigma2p=d$sigma2p, sigma2m=d$sigma2m)
 }
 
-
 #' @export
-print.RDResults <- function(x, digits = getOption("digits"), ...) {
+print.FRDResults <- function(x, digits = getOption("digits"), ...) {
     if (!is.null(x$call))
         cat("Call:\n", deparse(x$call), "\n\n", sep = "", fill=TRUE)
     bw <- if (class(x$lff) !="RDLFFunction")

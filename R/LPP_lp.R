@@ -11,7 +11,7 @@
 #' @template LPPFormula
 #' @template RDse
 #' @template RDoptBW
-#' @template LPPBW
+#' @template RDBW
 #' @template RDclass
 #' @template Kern
 #' @template LPPseInitial
@@ -56,7 +56,7 @@
 #' @export
 LPPHonest <- function(formula, data, subset, point=0, M, kern="triangular",
                       na.action, opt.criterion, h, se.method="nn", alpha=0.05,
-                      beta=0.8, J=3, sclass="H", order=1, se.initial="ROTEHW") {
+                      beta=0.8, J=3, sclass="H", order=1, se.initial="EHW") {
 
     ## construct model frame
     cl <- mf <- match.call(expand.dots = FALSE)
@@ -120,7 +120,7 @@ LPPHonest <- function(formula, data, subset, point=0, M, kern="triangular",
 #' @export
 LPPOptBW <- function(formula, data, subset, point=0, M, kern="triangular",
                     na.action, opt.criterion, alpha=0.05, beta=0.8, sclass="H",
-                    order=1, se.initial="ROTEHW") {
+                    order=1, se.initial="EHW") {
 
     ## construct model frame
     cl <- mf <- match.call(expand.dots = FALSE)
@@ -141,32 +141,6 @@ LPPOptBW <- function(formula, data, subset, point=0, M, kern="triangular",
     ret
 }
 
-#' Rule of thumb for choosing M
-#'
-#' Use global quartic regression to estimate a bound on the second derivative
-#' for inference under under second order Hölder class.
-#'
-#' @param d object of class \code{"LPPData"}
-#' @examples
-#' LPP_MROT.fit(LPPData(lee08[lee08$margin>0, ], point=0))
-#' @export
-LPP_MROT.fit <- function(d) {
-    CheckClass(d, "LPPData")
-
-    ## STEP 1: Estimate (p+1)th derivative and sigma^2 using global polynomial
-    ## regression
-    r1 <- unname(stats::lm(d$Y ~ 0 + outer(d$X, 0:4, "^"))$coefficients)
-    f2 <- function(x) abs(2*r1[3]+6*x*r1[4]+12*x^2*r1[5])
-
-    ## maximum occurs either at endpoints, or else at the extremum,
-    ## -r1[4]/(4*r1[5]), if the extremum is in the support
-    f2e <- -r1[4]/(4*r1[5])
-    M <- max(f2(min(d$X)), f2(max(d$X)))
-    if (min(d$X) < f2e & max(d$X) > f2e) M <- max(f2(f2e), M)
-
-    M
-}
-
 #' Honest inference at a point
 #'
 #' Basic computing engine called by \code{\link{LPPHonest}} to compute honest
@@ -174,7 +148,7 @@ LPP_MROT.fit <- function(d) {
 #' @param d object of class \code{"LPPData"}
 #' @template RDse
 #' @template RDoptBW
-#' @template LPPBW
+#' @template RDBW
 #' @template RDclass
 #' @template Kern
 #' @template LPPseInitial
@@ -183,12 +157,12 @@ LPP_MROT.fit <- function(d) {
 #' @export
 LPPHonest.fit <- function(d, M, kern="triangular", h, opt.criterion,
                          alpha=0.05, beta=0.8, se.method="nn",
-                         J=3, sclass="H", order=1, se.initial="ROTEHW") {
+                         J=3, sclass="H", order=1, se.initial="EHW") {
     CheckClass(d, "LPPData")
 
     ## Initial se estimate
     if (is.null(d$sigma2) & ("supplied.var" %in% se.method | missing(h)))
-        d <- LPPPrelimVar(d, se.initial=se.initial)
+        d <- NPRPrelimVar.fit(d, se.initial=se.initial)
 
     if (missing(h)) {
         r <- LPPOptBW.fit(d, M, kern, opt.criterion, alpha,
@@ -197,7 +171,7 @@ LPPHonest.fit <- function(d, M, kern="triangular", h, opt.criterion,
     }
 
     ## Suppress warnings about too few observations
-    r1 <- LPPreg(d, h, kern, order, se.method, TRUE, J)
+    r1 <- NPRreg.fit(d, h, kern, order, se.method, TRUE, J)
     w <- r1$w(d$X)
 
     ## If bandwidths too small
@@ -207,19 +181,22 @@ LPPHonest.fit <- function(d, M, kern="triangular", h, opt.criterion,
         lower <- -upper
     } else {
         sd <- r1$se[se.method]
-        if(sclass=="T")  {
+        if(order==0) {
+            bias <- Inf
+        } else if (sclass=="T")  {
             bias <- M/2 * sum(abs(w*d$X^2))
-        } else if (sclass=="H" & order==1) {
+            ## At boundary we know form of least favorable function
+        } else if (sclass=="H" & order==1 & length(unique(d$X>=0)==1)) {
             bias <- abs(-M/2 * sum(w*d$X^2))
-        } else if (sclass=="H" & order==2) {
-            ## need to find numerically
-            bb <- function(b) -2*sum(w*(pmax(d$X-b, 0)^2))
-            bias <- -(M/2)*CarefulOptim(bb, c(0, h), k=5)$objective
         } else {
-            stop("Don't know how to compute bias for
-                  specified sclass and order.")
+            ww <- w[w>0]
+            xx <- d$X[w>0]
+            w2p <- function(s) abs(sum((ww*(xx-s))[xx>=s]))
+            w2m <- function(s) abs(sum((ww*(s-xx))[xx<=s]))
+            bp <- integrate(function(s) vapply(s, w2p, numeric(1)), 0, h)$value
+            bm <- integrate(function(s) vapply(s, w2m, numeric(1)), -h, 0)$value
+            bias <- M*(bp+bm)
         }
-
         lower <- r1$estimate - bias - stats::qnorm(1-alpha)*sd
         upper <- r1$estimate + bias + stats::qnorm(1-alpha)*sd
         hl <- CVb(bias/sd, alpha)$cv*sd
@@ -257,11 +234,11 @@ LPPHonest.fit <- function(d, M, kern="triangular", h, opt.criterion,
 #' LPPOptBW.fit(d, kern = "uniform", M = 0.1, opt.criterion = "MSE")$h
 #' @export
 LPPOptBW.fit <- function(d, M, kern="triangular", opt.criterion, alpha=0.05,
-                         beta=0.8, sclass="H", order=1, se.initial="ROTEHW") {
+                         beta=0.8, sclass="H", order=1, se.initial="EHW") {
 
     ## First check if sigma2 is supplied
     if (is.null(d$sigma2))
-        d <- LPPPrelimVar(d, se.initial=se.initial)
+        d <- NPRPrelimVar.fit(d, se.initial=se.initial)
 
     ## Objective function for optimizing bandwidth
     obj <- function(h) {
@@ -290,7 +267,7 @@ LPPOptBW.fit <- function(d, M, kern="triangular", opt.criterion, alpha=0.05,
         h <- gss(obj, supp[supp>=hmin])
     } else {
         h <- abs(stats::optimize(obj, interval=c(hmin, hmax),
-                                 tol=tol)$minimum)
+                                 tol=.Machine$double.eps^0.75)$minimum)
     }
 
     list(h=h, sigma2=d$sigma2)

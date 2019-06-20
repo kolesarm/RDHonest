@@ -59,7 +59,7 @@ the vector can consist of the following methods:
    \item{"plugin"}{Plug-in estimate based on asymptotic variance. Local
         polynomial estimators in RD only.}
 
-   \item{"supplied.var"}{Use conditional variance supplied by \code{sigma2} /
+   \item{"supplied.var"}{Use conditional variance supplied by \code{sigma2} or
         \code{d} instead of computing residuals}
 
 }}

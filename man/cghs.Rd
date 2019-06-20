@@ -10,7 +10,8 @@
   \item{yearat14}{Year individual turned 14}
  }}
 \source{
-American Economic Review data archive
+American Economic Review data archive,
+\url{https://doi.org/10.1257/000282806776157641}
 }
 \usage{
 cghs
@@ -23,7 +24,7 @@ Oreopoulos (2006) UK general household survey dataset
 
 \cite{Oreopoulos, P. (2006): "Estimating Average and Local Average Treatment
       Effects When Compulsory Education Schooling Laws Really Matter",
-      American Economic Review, 96(1), 152-175}
+      American Economic Review, 96 (1), 152-175}
 
 }
 }

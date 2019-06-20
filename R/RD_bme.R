@@ -14,7 +14,8 @@ RDlpformula <- function(order) {
 }
 
 
-#' CIs in RD with discrete regressors under bounded misspecification error class
+#' CIs in sharp RD with discrete regressors under bounded misspecification error
+#' class
 #'
 #' Computes honest CIs for local linear regression with uniform kernel under the
 #' bounded misspecification error class of functions, as considered in Kolesár
@@ -32,10 +33,10 @@ RDlpformula <- function(order) {
 #'     \code{regformula="y~x*I(x>0)"}. Inference is done on the \code{order+2}th
 #'     element of the design matrix
 #' @examples
-#' RDHonestBME(log(cghs$earnings)~yearat14, data=cghs, hp=3,
+#' RDHonestBME(log(cghs$earnings)~yearat14, data=cghs, h=3,
 #'             order=1, cutoff=1947)
 #' ## Equivalent to
-#' RDHonestBME(log(cghs$earnings)~yearat14, data=cghs, hp=3,
+#' RDHonestBME(log(cghs$earnings)~yearat14, data=cghs, h=3,
 #'             cutoff=1947, order=1, regformula="y~x*I(x>=0)")
 #' @references{
 #'
@@ -45,9 +46,9 @@ RDlpformula <- function(order) {
 #'
 #' }
 #' @export
-RDHonestBME <- function(formula, data, subset, cutoff=0, na.action, hp=Inf,
-                        hm=hp, alpha=0.05, order=0, regformula) {
-
+RDHonestBME <- function(formula, data, subset, cutoff=0, na.action, h=Inf,
+                        alpha=0.05, order=0, regformula) {
+    if (length(h)==1) h <- c(m=h, p=h)
     ## construct model frame
     cl <- mf <- match.call(expand.dots = FALSE)
     m <- match(c("formula", "data", "subset", "na.action"),
@@ -62,7 +63,7 @@ RDHonestBME <- function(formula, data, subset, cutoff=0, na.action, hp=Inf,
 
     x <- mf[, 2]-cutoff
     ## drop observations outside bw
-    ind <- (x <= hp) & (x >= -hm)
+    ind <- (x <= h["p"]) & (x >= -h["m"])
     x <- x[ind]
     y <- stats::model.response(mf, "numeric")[ind]
 

@@ -7,12 +7,14 @@
 LPPData(d, point)
 }
 \arguments{
-\item{d}{data frame with first column corresponding to outcome variable,
-second column corresponding to independent variable and optionally a column
-called \code{"(sigma2)"} that corresponds to the conditional variance of
-the outcome (or an estimate of the conditional variance)}
+\item{d}{a data frame or a list with first column corresponding to the
+outcome variable, second column corresponding to the independent variable
+and optionally a column called \code{"sigma2"} that corresponds to the
+conditional variance of the outcome (or an estimate of the conditional
+variance)}
 
-\item{point}{specifies the point at which to calculate conditional mean}
+\item{point}{specifies the point \code{x0} at which to calculate the
+conditional mean}
 }
 \value{
 An object of class \code{"LPPData"}, which is a list containing the
@@ -24,21 +26,26 @@ An object of class \code{"LPPData"}, which is a list containing the
 
     \item{X}{Independent variable}
 
-    \item{sigma2}{Conditional variance of outcome}
+    \item{sigma2}{Conditional variance of the outcome}
 
-    \item{orig.point}{Original point}
+    \item{orig.point}{Original point \code{x0}}
 
-    item{var.names}{Names of outcome and independent variable in supplied data frame}
+    \item{var.names}{Names of outcome and independent variable in supplied
+    data frame}
 
     }
 }
 \description{
 Convert data to standardized format for use with low-level functions. If the
-point for which to do inference is non-zero, shift the independent variable so
-that it is at zero.
+point for which to do inference is non-zero, shift the independent variable
+so that it is at zero.
 }
 \examples{
-
 ## Transform Lee data
-d <- RDData(lee08[lee08$margin>0, ], cutoff=0)
+d1 <- LPPData(lee08[lee08$margin>=0, ], point=0)
+d2 <- LPPData(lee08, point=50)
+}
+\seealso{
+\code{\link{FRDData}} for fuzzy RD, and \code{\link{RDData}} for
+    sharp RD
 }

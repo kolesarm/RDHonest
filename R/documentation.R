@@ -1,6 +1,6 @@
 #' Head Start data from Ludwig and Miller (2007)
 #'
-#' Subset of Ludwig-Miller data. Counties with missing poverty rate, of with
+#' Subset of Ludwig-Miller data. Counties with missing poverty rate, or with
 #' both outcomes missing (\code{hs} and \code{mortality}) were removed. In the
 #' original dataset, Yellowstone County, MT (\code{oldcode = 27056}) was entered
 #' twice, here the duplicate is removed. Yellowstone National Park, MT
@@ -17,25 +17,27 @@
 #' \item{povrate60}{Poverty rate in 1960 relative to 300th poorest county (which
 #'      had poverty rate 59.1984)}
 #'
-#' \item{mortHS}{Average Mortality rate per 100,000 for children aged 5-9
-#' over 1973--83 due to causes addressed as part of Head Start's health
-#' services.}
-#' \item{mortInj}{Average Mortality rate per 100,000 for children aged 5-9
-#' over 1973--83 due to injury.}
+#' \item{mortHS}{Average Mortality rate per 100,000 for children aged 5-9 over
+#' 1973--83 due to causes addressed as part of Head Start's health services.}
+#'
+#' \item{mortInj}{Average Mortality rate per 100,000 for children aged 5-9 over
+#' 1973--83 due to injury.}
 #'
 #' \item{highSchool}{High school completion rate in 1990 census, ages 18-24}
 #' \item{statepc}{State postal code}
 #' \item{county}{County name}
 #' }
-#' @source Douglas Miller's website
+#' @source Douglas Miller's website,
+#' \url{http://faculty.econ.ucdavis.edu/faculty/dlmiller/statafiles/}
 #' @references{
 #'
 #' \cite{Ludwig , J., and D. L. Miller (2007): "Does Head Start improve
 #'       children's life chances? Evidence from a regression discontinuity
-#'       design," Quarterly Journal of Economics, 122(1), 159-208.}
+#'       design," Quarterly Journal of Economics, 122 (1), 159-208.}
 #'
 #' }
 "headst"
+
 
 #' Austrian unemployment duration data from Lalive (2008)
 #'
@@ -53,12 +55,12 @@
 #'
 #' \cite{Lalive, R. (2008): "How Do Extended Benefits Affect Unemployment
 #'       Duration? A Regression Discontinuity Approach." Journal of Econometrics,
-#'       142(2): 785-806.}
+#'       142 (2): 785-806.}
 #'
 #' }
-#' @source Rafael Lalive's website
+#' @source Rafael Lalive's website,
+#'     \url{https://sites.google.com/site/rafaellalive/}
 "rebp"
-
 
 
 #' Lee (2008) US House elections dataset
@@ -68,11 +70,12 @@
 #'   \item{voteshare}{Vote share in next election}
 #'   \item{margin}{Democratic margin of victory}
 #'  }
-#' @source Mostly Harmless Econometrics website
+#' @source Mostly Harmless Econometrics data archive,
+#' \url{https://economics.mit.edu/faculty/angrist/data1/mhe}
 #' @references{
 #'
 #' \cite{Lee , D. S. (2008): "Randomized experiments from non-random selection in
-#'       U.S. House elections," Journal of Econometrics, 142(2), 675-697.}
+#'       U.S. House elections," Journal of Econometrics, 142 (2), 675-697.}
 #'
 #' }
 "lee08"
@@ -88,12 +91,34 @@
 #'
 #' \cite{Oreopoulos, P. (2006): "Estimating Average and Local Average Treatment
 #'       Effects When Compulsory Education Schooling Laws Really Matter",
-#'       American Economic Review, 96(1), 152-175}
+#'       American Economic Review, 96 (1), 152-175}
 #'
 #' }
-#' @source American Economic Review data archive
+#' @source American Economic Review data archive,
+#' \url{https://doi.org/10.1257/000282806776157641}
 "cghs"
 
+#' Battistin et al. (2009) retirement consumption puzzle dataset
+#'
+#' @format A data frame with 30,006 rows and 6 variables:
+#' \describe{
+#'   \item{survey_year}{Survey year}
+#'   \item{elig_year}{Years to/from eligibility (males)}
+#'   \item{retired}{Retirement status (males)}
+#'   \item{food}{Total household food expenditure}
+#'   \item{c}{Total household consumption}
+#'   \item{cn}{Total household nondurables expenditure}
+#' }
+#'
+#' @references{
+#' \cite{Battistin, Erich, Agar Brugiavini, Enrico Rettore, and
+#'     Guglielmo Weber. 2009. “The Retirement Consumption Puzzle: Evidence from
+#'     a Regression Discontinuity Approach.” American Economic Review 99 (5):
+#'     2209–26.}
+#' }
+#' @source American Economic Review data archive,
+#' \url{https://doi.org/10.1257/aer.99.5.2209}
+"rcp"
 
 #' Constants for common kernels.
 #'

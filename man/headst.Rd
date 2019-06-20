@@ -13,24 +13,25 @@
 \item{povrate60}{Poverty rate in 1960 relative to 300th poorest county (which
      had poverty rate 59.1984)}
 
-\item{mortHS}{Average Mortality rate per 100,000 for children aged 5-9
-over 1973--83 due to causes addressed as part of Head Start's health
-services.}
-\item{mortInj}{Average Mortality rate per 100,000 for children aged 5-9
-over 1973--83 due to injury.}
+\item{mortHS}{Average Mortality rate per 100,000 for children aged 5-9 over
+1973--83 due to causes addressed as part of Head Start's health services.}
+
+\item{mortInj}{Average Mortality rate per 100,000 for children aged 5-9 over
+1973--83 due to injury.}
 
 \item{highSchool}{High school completion rate in 1990 census, ages 18-24}
 \item{statepc}{State postal code}
 \item{county}{County name}
 }}
 \source{
-Douglas Miller's website
+Douglas Miller's website,
+\url{http://faculty.econ.ucdavis.edu/faculty/dlmiller/statafiles/}
 }
 \usage{
 headst
 }
 \description{
-Subset of Ludwig-Miller data. Counties with missing poverty rate, of with
+Subset of Ludwig-Miller data. Counties with missing poverty rate, or with
 both outcomes missing (\code{hs} and \code{mortality}) were removed. In the
 original dataset, Yellowstone County, MT (\code{oldcode = 27056}) was entered
 twice, here the duplicate is removed. Yellowstone National Park, MT
@@ -44,7 +45,7 @@ county labels may not be correct. Mortality data is missing for Alaska.
 
 \cite{Ludwig , J., and D. L. Miller (2007): "Does Head Start improve
       children's life chances? Evidence from a regression discontinuity
-      design," Quarterly Journal of Economics, 122(1), 159-208.}
+      design," Quarterly Journal of Economics, 122 (1), 159-208.}
 
 }
 }

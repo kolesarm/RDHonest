@@ -12,7 +12,8 @@
   \item{duration}{unemployment duration in weeks}
  }}
 \source{
-Rafael Lalive's website
+Rafael Lalive's website,
+    \url{https://sites.google.com/site/rafaellalive/}
 }
 \usage{
 rebp
@@ -26,7 +27,7 @@ program
 
 \cite{Lalive, R. (2008): "How Do Extended Benefits Affect Unemployment
       Duration? A Regression Discontinuity Approach." Journal of Econometrics,
-      142(2): 785-806.}
+      142 (2): 785-806.}
 
 }
 }

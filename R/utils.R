@@ -1,32 +1,14 @@
-tol <- .Machine$double.eps^0.75
-
-## Find interval containing zero of a function, then find the zero
-
-## Given function \code{f} find \code{x0} such that \code{f(x0)==0}
-## @param f function whose root we're looking for
-## @param ival upper endpoint of initial interval in which to search
-## @param negative logical: should the lower endpoint be \code{1/ival} (if the
-##     root is guaranteed to be positive), or \code{-ival}?
-FindZero <- function(f, ival=1.1, negative=TRUE) {
-    minval <- function(ival) if (negative==TRUE) -ival else min(1/ival, 1e-3)
-
-    while(sign(f(ival))==sign(f(minval(ival))))
-            ival <- 2*ival
-    stats::uniroot(f, c(minval(ival), ival), tol=tol)$root
-}
-
-
 #' Class Constructor for \code{"RDData"}
 #'
 #' Convert data to standardized format for use with low-level functions. If the
 #' cutoff for treatment is non-zero, shift the running variable so that cutoff
 #' is at zero.
-#'
-#' @param d data frame with first column corresponding to outcome variable,
-#'     second column corresponding to running variable and optionally a column
-#'     called \code{"(sigma2)"} that corresponds to the conditional variance of
-#'     the outcome (or an estimate of the conditional variance)
-#' @param cutoff specifies the RD cutoff in the running variable.
+#' @param d a data frame or a list with first column corresponding to the
+#'     outcome variable, second column corresponding to the running variable and
+#'     optionally a column called \code{"sigma2"} that corresponds to the
+#'     conditional variance of the outcome (or an estimate of the conditional
+#'     variance)
+#' @param cutoff specifies the cutoff for the running variable
 #' @return An object of class \code{"RDData"}, which is a list containing the
 #'     following components:
 #'
@@ -40,52 +22,115 @@ FindZero <- function(f, ival=1.1, negative=TRUE) {
 #'
 #'     \item{Xp}{Running variable for observations above cutoff}
 #'
-#'     \item{sigma2m}{Conditional variance of outcome for observations below
+#'     \item{sigma2m}{Conditional variance of the outcome for observations below
 #'     cutoff}
 #'
-#'     \item{sigma2p}{Conditional variance of outcome for observations above
+#'     \item{sigma2p}{Conditional variance of the outcome for observations above
 #'     cutoff}
 #'
 #'     \item{orig.cutoff}{Original cutoff}
 #'
-#'     item{var.names}{Names of outcome and running variable in supplied data frame}
+#'     \item{var.names}{Names of the outcome and the running variable in
+#'     supplied data frame}
 #'
 #'     }
+#' @seealso \code{\link{FRDData}} for fuzzy RD, and \code{\link{LPPData}} for
+#'     inference at a point
 #' @examples
-#'
 #' ## Transform Lee data
 #' d <- RDData(lee08, cutoff=0)
 #' @export
 RDData <- function(d, cutoff) {
 
+    if(is.unsorted(d[[2]]))
+        d <- d[sort(d[[2]], index.return=TRUE)$ix, ]
+
     X <- d[[2]] - cutoff
     df <- list(Ym=d[[1]][X<0], Yp=d[[1]][X>=0], Xm=X[X<0], Xp=X[X>=0],
                orig.cutoff=cutoff, var.names=names(d)[1:2])
-    df$sigma2m <- d$"(sigma2)"[X<0]
-    df$sigma2p <- d$"(sigma2)"[X>=0]
-
-    # Sort data
-    s <- sort(df$Xp, index.return=TRUE)
-    df$Yp <- df$Yp[s$ix]
-    df$Xp <- s$x
-    s <- sort(df$Xm, index.return=TRUE)
-    df$Ym <- df$Ym[s$ix]
-    df$Xm <- s$x
+    df$sigma2m <- d$sigma2[X<0]
+    df$sigma2p <- d$sigma2[X>=0]
 
     structure(df, class="RDData")
 }
 
+
+#' Class Constructor for \code{"FRDData"}
+#'
+#' Convert data to standardized format for use with low-level functions. If the
+#' cutoff for treatment is non-zero, shift the running variable so that cutoff
+#' is at zero.
+#' @param d list with first element corresponding to the outcome vector, second
+#'     element to the treatment vector, third element to running variable
+#'     vector, and optionally an element called \code{"sigma2"} that is a matrix
+#'     with four columns corresponding to the \code{[1, 1]}, \code{[1, 2]},
+#'     \code{[2, 1]}, and \code{[2, 2]} elements of the conditional variance
+#'     matrix of the outcome and the treatment (or an estimate of the
+#'     conditional variance matrix)
+#' @param cutoff specifies the cutoff for the running variable
+#' @return An object of class \code{"FRDData"}, which is a list containing the
+#'     following components:
+#'
+#'     \describe{
+#'
+#'     \item{Ym}{Matrix of outcomes and treatments for observations below
+#'     cutoff}
+#'
+#'     \item{Yp}{Matrix of outcomes and treatments for observations above
+#'     cutoff}
+#'
+#'     \item{Xm}{Running variable for observations below cutoff}
+#'
+#'     \item{Xp}{Running variable for observations above cutoff}
+#'
+#'     \item{sigma2m}{Matrix of conditional covariances for the outcome and the
+#'     treatment for observations below cutoff}
+#'
+#'     \item{sigma2p}{Matrix of conditional covariances for the outcome and the
+#'     treatment for observations above cutoff}
+#'
+#'     \item{orig.cutoff}{Original cutoff}
+#'
+#'     \item{var.names}{Names of the outcome, the treatment, and the running
+#'     variable in supplied data frame}
+#'
+#'     }
+#' @seealso \code{\link{RDData}} for sharp RD, and \code{\link{LPPData}} for
+#'     inference at a point
+#' @examples
+#' ## Transform retirement data
+#' d <- FRDData(rcp[, c(6, 3, 2)], cutoff=0)
+#' ## Outcome in logs
+#' d <- FRDData(cbind(logcn=log(rcp[, 6 ]), rcp[, c(3, 2)]), cutoff=0)
+#' @export
+FRDData <- function(d, cutoff) {
+    if(is.unsorted(d[[3]]))
+        d <- d[sort(d[[3]], index.return=TRUE)$ix, ]
+    X <- d[[3]] - cutoff
+    df <- list(Ym=cbind(d[[1]][X<0], d[[2]][X<0]),
+               Yp=cbind(d[[1]][X>=0], d[[2]][X>=0]),
+               Xm=X[X<0], Xp=X[X>=0], orig.cutoff=cutoff,
+               var.names=names(d)[1:3])
+
+    df$sigma2m <- d$sigma2[X<0, ]
+    df$sigma2p <- d$sigma2[X>=0, ]
+
+    structure(df, class="FRDData")
+}
+
+
 #' Class Constructor for \code{"LPPData"}
 #'
 #' Convert data to standardized format for use with low-level functions. If the
-#' point for which to do inference is non-zero, shift the independent variable so
-#' that it is at zero.
-#'
-#' @param d data frame with first column corresponding to outcome variable,
-#'     second column corresponding to independent variable and optionally a column
-#'     called \code{"(sigma2)"} that corresponds to the conditional variance of
-#'     the outcome (or an estimate of the conditional variance)
-#' @param point specifies the point at which to calculate conditional mean
+#' point for which to do inference is non-zero, shift the independent variable
+#' so that it is at zero.
+#' @param d a data frame or a list with first column corresponding to the
+#'     outcome variable, second column corresponding to the independent variable
+#'     and optionally a column called \code{"sigma2"} that corresponds to the
+#'     conditional variance of the outcome (or an estimate of the conditional
+#'     variance)
+#' @param point specifies the point \code{x0} at which to calculate the
+#'     conditional mean
 #' @return An object of class \code{"LPPData"}, which is a list containing the
 #'     following components:
 #'
@@ -95,32 +140,49 @@ RDData <- function(d, cutoff) {
 #'
 #'     \item{X}{Independent variable}
 #'
-#'     \item{sigma2}{Conditional variance of outcome}
+#'     \item{sigma2}{Conditional variance of the outcome}
 #'
-#'     \item{orig.point}{Original point}
+#'     \item{orig.point}{Original point \code{x0}}
 #'
-#'     item{var.names}{Names of outcome and independent variable in supplied data frame}
+#'     \item{var.names}{Names of outcome and independent variable in supplied
+#'     data frame}
 #'
 #'     }
+#' @seealso \code{\link{FRDData}} for fuzzy RD, and \code{\link{RDData}} for
+#'     sharp RD
 #' @examples
-#'
 #' ## Transform Lee data
-#' d <- RDData(lee08[lee08$margin>0, ], cutoff=0)
+#' d1 <- LPPData(lee08[lee08$margin>=0, ], point=0)
+#' d2 <- LPPData(lee08, point=50)
 #' @export
 LPPData <- function(d, point) {
 
-    X <- d[[2]] - point
-    df <- list(Y=d[[1]], X=X,
-               orig.point=point, var.names=names(d)[1:2])
-    df$sigma2 <- d$"(sigma2)"
+    if(is.unsorted(d[[2]]))
+        d <- d[sort(d[[2]], index.return=TRUE)$ix, ]
 
-    # Sort data
-    s <- sort(df$X, index.return=TRUE)
-    df$Y <- df$Y[s$ix]
-    df$X <- s$x
+    df <- list(Y=d[[1]], X=d[[2]] - point,
+               orig.point=point, var.names=names(d)[1:2])
+    df$sigma2 <- d$sigma2
 
     structure(df, class="LPPData")
 }
+
+
+
+## Find interval containing zero of a function, then find the zero
+## Search an interval for a root of \code{f},
+## @param f function whose root we're looking for
+## @param ival upper endpoint of initial interval in which to search
+## @param negative logical: should the lower endpoint be \code{1/ival} (if the
+##     root is guaranteed to be positive), or \code{-ival}?
+FindZero <- function(f, ival=1.1, negative=TRUE) {
+    minval <- function(ival) if (negative==TRUE) -ival else min(1/ival, 1e-3)
+
+    while(sign(f(ival))==sign(f(minval(ival))))
+            ival <- 2*ival
+    stats::uniroot(f, c(minval(ival), ival), tol=.Machine$double.eps^0.75)$root
+}
+
 
 
 ## check class of object
@@ -129,22 +191,23 @@ CheckClass <- function(x, class)
                                         " needs to be class ", class, "!"))
 
 
-## Split function into k bits and optimize on each bit in case not convex
-CarefulOptim <- function(f, interval, k=10) {
-    ## intervals
-    s <- seq(interval[1], interval[2], length.out=k+1)
-    s <- matrix(c(s[-length(s)], s[-1]), ncol=2)
+## ## Split function into k bits and optimize on each bit in case not convex
+## CarefulOptim <- function(f, interval, k=10) {
+##     ## intervals
+##     s <- seq(interval[1], interval[2], length.out=k+1)
+##     s <- matrix(c(s[-length(s)], s[-1]), ncol=2)
 
-    obj <- rep(0, k)
-    arg <- rep(0, k)
-    for (j in 1:k){
-        r <- stats::optimize(f, s[j, ])
-        arg[j] <- r$minimum
-        obj[j] <- r$objective
-    }
-    jopt <- which.min(obj)
-    list(objective=obj[jopt], minimum=arg[jopt])
-}
+##     obj <- rep(0, k)
+##     arg <- rep(0, k)
+##     for (j in 1:k){
+##         r <- stats::optimize(f, s[j, ])
+##         arg[j] <- r$minimum
+##         obj[j] <- r$objective
+##     }
+##     jopt <- which.min(obj)
+##     list(objective=obj[jopt], minimum=arg[jopt])
+## }
+
 
 ## Modified golden section for unimodal piecewise constant function
 gss <- function(f, xs) {

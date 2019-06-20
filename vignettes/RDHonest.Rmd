@@ -27,7 +27,7 @@ discontinuity parameter considered in @ArKo16optimal, @ArKo16honest, and
 intervals using datasets from @lee08 and @oreopoulos06, which are included in
 the package as a data frame `lee08` and `cghs`. The datasets from @lalive08 and
 @LuMi07 that are used in @ArKo16honest, and @KoRo16 are also included in the
-package as data frames `rebp` and `headst`.
+package as data frames `rebp` and `headst`. Also @battistin09
 
 # Sharp RD model
 
@@ -193,8 +193,8 @@ when the parameter space is given by a Taylor and Hölder smoothness class,
 respectively, with $M=0.1$:
 
 ```{r}
-RDHonest(voteshare ~ margin, data=lee08, kern="uniform", M=0.1, hp=10, sclass="T")
-RDHonest(voteshare ~ margin, data=lee08, kern="uniform", M=0.1, hp=10, sclass="H")
+RDHonest(voteshare ~ margin, data=lee08, kern="uniform", M=0.1, h=10, sclass="T")
+RDHonest(voteshare ~ margin, data=lee08, kern="uniform", M=0.1, h=10, sclass="H")
 ```
 
 The confidence intervals use the nearest-neighbor method to estimate the
@@ -251,7 +251,7 @@ no worse at the cutoff than away from the cutoff as in Section 5.2 in @KoRo16.
 ## Replicate Table 2, column (6), run local linear regression (order=1)
 ## with a uniform kernel (other kernels are not yet implemented)
 RDHonestBME(log(earnings) ~ yearat14, cutoff=1947,
-    data=cghs, hp=3, order=1)
+    data=cghs, h=3, order=1)
 ```
 
 

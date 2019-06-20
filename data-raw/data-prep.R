@@ -128,3 +128,23 @@ headst$state <- NULL
 headst <- headst[headst$oldcode!=27057, ] # Yellowstone National Park
 
 devtools::use_data(headst, overwrite=TRUE, internal=FALSE)
+
+## 4. Battistin et al data from AER website
+rcp <- readstata13::read.dta13("~/teaching/Datasets/BattistinEtAl2009/datapaper_ab.dta", generate.factors=TRUE, nonint.factors=TRUE)
+rcp <- rcp[, c(2, 29, 27, 8, 4, 6)]
+## Survey year
+names(rcp) <- c("survey_year", "elig_year", "retired", "food", "c", "cn")
+rcp$retired <- rcp$retired == "retired"
+## drop if at
+rcp <- rcp[rcp$elig_year!=0, ]
+usethis::use_data(rcp, overwrite=TRUE, internal=FALSE)
+
+## // profiles by S: collapse (mean) mc=lnc mcn=lncn mf=lncf ret=retired
+## hh=hh_size age=age minors=minors children=children mcfp=lncfp, by(time anno)
+
+## generate elig = time>=0
+## keep if abs(time)<=10 & time!=0
+
+## IV regressions with year dummies: Table 5
+## ivregress 2sls mcn (ret=elig) time c.time#c.time i.anno, robust first
+## ivregress 2sls mf (ret=elig) time c.time#c.time i.anno, robust

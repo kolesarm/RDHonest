@@ -5,7 +5,7 @@
 \title{Optimal bandwidth selection for inference at a point}
 \usage{
 LPPOptBW.fit(d, M, kern = "triangular", opt.criterion, alpha = 0.05,
-  beta = 0.8, sclass = "H", order = 1, se.initial = "ROTEHW")
+  beta = 0.8, sclass = "H", order = 1, se.initial = "EHW")
 }
 \arguments{
 \item{d}{object of class \code{"LPPData"}}

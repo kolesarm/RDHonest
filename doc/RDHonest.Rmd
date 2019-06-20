@@ -27,7 +27,7 @@ discontinuity parameter considered in @ArKo16optimal, @ArKo16honest, and
 intervals using datasets from @lee08 and @oreopoulos06, which are included in
 the package as a data frame `lee08` and `cghs`. The datasets from @lalive08 and
 @LuMi07 that are used in @ArKo16honest, and @KoRo16 are also included in the
-package as data frames `rebp` and `headst`.
+package as data frames `rebp` and `headst`. Also @battistin09
 
 # Sharp RD model
 

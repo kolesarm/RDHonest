@@ -6,7 +6,7 @@
 \usage{
 LPPHonest.fit(d, M, kern = "triangular", h, opt.criterion,
   alpha = 0.05, beta = 0.8, se.method = "nn", J = 3,
-  sclass = "H", order = 1, se.initial = "ROTEHW")
+  sclass = "H", order = 1, se.initial = "EHW")
 }
 \arguments{
 \item{d}{object of class \code{"LPPData"}}
@@ -18,8 +18,12 @@ either be a string equal to \code{"triangular"} (\eqn{k(u)=(1-|u|)_{+}}),
 \code{"epanechnikov"} (\eqn{k(u)=(3/4)(1-u^2)_{+}}), or \code{"uniform"}
 (\eqn{k(u)= (|u|<1)/2}), or else a kernel function.}
 
-\item{h}{Bandwidth. If not supplied, optimal bandwidth is computed according
-to criterion given by \code{opt.criterion}.}
+\item{h}{bandwidth, a scalar parameter. For fuzzy or sharp RD, it can be a
+named vector of length two with names \code{"p"} and \code{"m"}, in which
+case the bandwidth \code{h["m"]} is used for observations below the
+cutoff, and the bandwidth \code{h["p"]} is used for observations above
+the cutoff. If not supplied, optimal bandwidth is computed according to
+criterion given by \code{opt.criterion}.}
 
 \item{opt.criterion}{Optimality criterion that bandwidth is designed to
     optimize. It can either be based on exact finite-sample maximum bias and
@@ -68,7 +72,7 @@ the vector can consist of the following methods:
    \item{"plugin"}{Plug-in estimate based on asymptotic variance. Local
         polynomial estimators in RD only.}
 
-   \item{"supplied.var"}{Use conditional variance supplied by \code{sigma2} /
+   \item{"supplied.var"}{Use conditional variance supplied by \code{sigma2} or
         \code{d} instead of computing residuals}
 
 }}

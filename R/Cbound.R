@@ -30,7 +30,7 @@ RDSmoothnessBound <- function(d, s, separate=TRUE, multiple=TRUE, alpha=0.05,
                               sclass="T") {
     ## First estimate variance
     if (is.null(d$sigma2p) | is.null(d$sigma2m))
-        d <- RDPrelimVar(d, se.initial="NN")
+        d <- NPRPrelimVar.fit(d, se.initial="nn")
 
     ## Curvature estimate based on jth set of three points closest to zero
     Dk <- function(Y, X, xu, s2, j) {
@@ -116,14 +116,16 @@ RDSmoothnessBound <- function(d, s, separate=TRUE, multiple=TRUE, alpha=0.05,
 
 #' @export
 print.RDSmoothnessBound <- function(x, digits = getOption("digits"), ...) {
+    fmt <- function(x) format(x, digits=digits, width=digits+1)
+
     pr <- function(r) {
-        cat("Estimate: ", r$hatM, ", Lower CI: [", r$lower,
+        cat("Estimate: ", fmt(r$hatM), ", Lower CI: [", fmt(r$lower),
             ", Inf)\n", sep="")
-        cat("\nDelta: ", r$Delta, ", sd=", r$sdDelta, sep="")
-        cat("\nE_n[f(x_1)]: ", r$y1, ", I1=[", r$I1[1], ", ", r$I1[2], "]\n",
-            "E_n[f(x_2)]: ", r$y2, ", I2=[", r$I2[1], ", ", r$I2[2], "]\n",
-            "E_n[f(x_3)]: ", r$y3, ", I3=[", r$I3[1], ", ", r$I3[2], "]\n",
-            sep="")
+        cat("\nDelta: ", fmt(r$Delta), ", sd=", fmt(r$sdDelta), sep="")
+        cat("\nE_n[f(x_1)]: ", fmt(r$y1), ", I1=[", fmt(r$I1[1]), ", ",
+            fmt(r$I1[2]), "]\n", "E_n[f(x_2)]: ", fmt(r$y2), ", I2=[",
+            fmt(r$I2[1]), ", ", fmt(r$I2[2]), "]\n", "E_n[f(x_3)]: ", fmt(r$y3),
+            ", I3=[", fmt(r$I3[1]), ", ", fmt(r$I3[2]), "]\n", sep="")
     }
     if (x$po$hatM==x$ne$hatM) {
         cat("\nSmoothness bound estimate:\n")

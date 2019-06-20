@@ -21,7 +21,7 @@
 plot_RDscatter <- function(d, avg=10, xlab=NULL, ylab=NULL,
                            window=NULL, vert=TRUE, propdotsize=FALSE) {
     if (!requireNamespace("ggplot2", quietly = TRUE)) {
-        stop("Please install ggplot2 package;
+        stop("Please install the ggplot2 package;
               it's needed for this function to work",
              call. = FALSE)
     }

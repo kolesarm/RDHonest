@@ -6,7 +6,7 @@
 \usage{
 LPPOptBW(formula, data, subset, point = 0, M, kern = "triangular",
   na.action, opt.criterion, alpha = 0.05, beta = 0.8, sclass = "H",
-  order = 1, se.initial = "ROTEHW")
+  order = 1, se.initial = "EHW")
 }
 \arguments{
 \item{formula}{object of class \code{"formula"} (or one that can be coerced

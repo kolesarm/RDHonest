@@ -18,7 +18,8 @@ Suggests:
     ggplot2,
     testthat,
     knitr,
-    rmarkdown
+    rmarkdown,
+    Formula
 RoxygenNote: 6.1.1
 URL: https://github.com/kolesarm/RDHonest
 VignetteBuilder: knitr
