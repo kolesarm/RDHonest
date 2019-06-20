@@ -1,3 +1,94 @@
+NPRHonest.fit <- function(d, M, kern="triangular", h, opt.criterion,
+                         bw.equal=TRUE, alpha=0.05, beta=0.8, se.method="nn",
+                         J=3, sclass="H", order=1, se.initial="EHW") {
+    ## Initial se estimate
+    if (is.null(d$sigma2) & (is.null(d$sigma2p) | is.null(d$sigma2m)) &
+        ("supplied.var" %in% se.method | missing(h)))
+        d <- NPRPrelimVar.fit(d, se.initial=se.initial)
+
+    if (missing(h)) {
+        if (inherits(d, "RDData")) {
+            r <- RDOptBW.fit(d, M, kern, opt.criterion, bw.equal, alpha,
+                         beta, sclass, order)
+            h <- c(p=r$hp, m=r$hm)
+        } else if (inherits(d, "LPPData")) {
+            r <- LPPOptBW.fit(d, M, kern, opt.criterion, alpha,
+                              beta, sclass, order)
+            h <- r$h
+        }
+    } else if (length(h)==1) {
+        h <- c(p=unname(h), m=unname(h))
+    }
+
+    ## Suppress warnings about too few observations
+    r1 <- NPRreg.fit(d, h, kern, order, se.method, TRUE, J)
+    if (inherits(d, "LPPData")) {
+        w <- r1$w(d$X)
+        wt <- w[w!=0]
+        xx <- d$X[w!=0]
+        nobs <- length(wt)
+        ## test for boundary
+        bd <- length(unique(d$X>=0)==1)
+    } else {
+        wp <- r1$wp(d$Xp)
+        wm <- r1$wm(d$Xm)
+        wt <- c(wm[wm!=0], wp[wp!=0])
+        xx <-  c(d$Xm[wm!=0], d$Xp[wp!=0])
+        nobs <- min(sum(wp!=0), sum(wm!=0))
+        bd <- TRUE
+    }
+
+    ## If bandwidths too small
+    if (nobs==0) {
+        ## big bias / sd
+        bias <- sd <- upper <- hl <- sqrt(.Machine$double.xmax/10)
+        lower <- -upper
+    } else {
+        sd <- r1$se[se.method]
+        M0 <- if (inherits(d, "FRDData")) (M[1]+M[2]*abs(r1$estimate)) else M
+        if(order==0) {
+            bias <- Inf
+        } else if (sclass=="T")  {
+            bias <- M0/2 * (sum(abs(wt*xx^2)))
+        } else if (sclass=="H" & order==1 & bd) {
+            ## At boundary we know form of least favorable function
+            bias <- -M0/2 * (sum(wt*xx^2))
+        } else {
+            ## Else need to find numerically
+
+            w2p <- function(s) abs(sum((wt*(xx-s))[xx>=s]))
+            w2m <- function(s) abs(sum((wt*(s-xx))[xx<=s]))
+            bp <- integrate(function(s)
+                vapply(s, w2p, numeric(1)), 0, h["p"])$value
+            bm <- integrate(function(s)
+                vapply(s, w2m, numeric(1)), -h["m"], 0)$value
+            bias <- M0*(bp+bm)
+        }
+        lower <- r1$estimate - bias - stats::qnorm(1-alpha)*sd
+        upper <- r1$estimate + bias + stats::qnorm(1-alpha)*sd
+        hl <- CVb(bias/sd, alpha)$cv*sd
+    }
+
+    ## Finally, calculate coverage of naive CIs
+    z <- stats::qnorm(1-alpha/2)
+    naive <- stats::pnorm(z-bias/sd)-stats::pnorm(-z- bias/sd)
+    if (inherits(d, "RDData")) {
+        structure(list(estimate=r1$estimate, lff=NA, maxbias=bias, sd=sd,
+                   lower=lower, upper=upper, hl=hl, eff.obs=r1$eff.obs,
+                   hp=unname(h["p"]), hm=unname(h["m"]), naive=naive),
+              class="RDResults")
+    } else if (inherits(d, "LPPData")) {
+        structure(list(estimate=r1$estimate, maxbias=bias, sd=sd,
+                       lower=lower, upper=upper, hl=hl, eff.obs=r1$eff.obs,
+                       h=h, naive=naive),
+                  class="LPPResults")
+    }
+}
+
+
+
+
+
 #' Optimal bandwidth selection in RD
 #'
 #' Basic computing engine called by \code{\link{RDOptBW}} used to find
@@ -38,7 +129,7 @@ RDOptBW.fit <- function(d, M, kern="triangular", opt.criterion, bw.equal=TRUE,
 
     ## Objective function for optimizing bandwidth
     obj <- function(hp, hm) {
-        r <- RDHonest.fit(d, M, kern, c(p=abs(hp), m=abs(hm)),
+        r <- NPRHonest.fit(d, M, kern, c(p=abs(hp), m=abs(hm)),
                           alpha=alpha, se.method="supplied.var",
                           sclass=sclass, order=order)
         if (opt.criterion=="OCI") {

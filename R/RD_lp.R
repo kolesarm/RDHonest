@@ -86,11 +86,11 @@ RDHonest <- function(formula, data, subset, cutoff=0, M, kern="triangular",
                          alpha=alpha, beta=beta,
                          se.method=se.method, J=J, se.initial=se.initial)
     } else if (!missing(h)) {
-        ret <- RDHonest.fit(d, M, kern, h, alpha=alpha,
+        ret <- NPRHonest.fit(d, M, kern, h, alpha=alpha,
                             se.method=se.method, J=J, sclass=sclass,
                             order=order, se.initial=se.initial)
     } else {
-        ret <- RDHonest.fit(d, M, kern, opt.criterion=opt.criterion,
+        ret <- NPRHonest.fit(d, M, kern, opt.criterion=opt.criterion,
                             bw.equal=bw.equal, alpha=alpha, beta=beta,
                             se.method=se.method, J=J,
                             sclass=sclass, order=order, se.initial=se.initial)
@@ -189,70 +189,70 @@ RDOptBW <- function(formula, data, subset, cutoff=0, M, kern="triangular",
 #' @return Returns an object of class \code{"RDResults"}, see description in
 #'     \code{\link{RDHonest}}
 #' @export
-RDHonest.fit <- function(d, M, kern="triangular", h, opt.criterion,
-                         bw.equal=TRUE, alpha=0.05, beta=0.8, se.method="nn",
-                         J=3, sclass="H", order=1, se.initial="EHW") {
-    CheckClass(d, "RDData")
+## RDHonest.fit <- function(d, M, kern="triangular", h, opt.criterion,
+##                          bw.equal=TRUE, alpha=0.05, beta=0.8, se.method="nn",
+##                          J=3, sclass="H", order=1, se.initial="EHW") {
+##     CheckClass(d, "RDData")
 
-    ## Initial se estimate
-    if ((is.null(d$sigma2p) | is.null(d$sigma2m)) &
-        ("supplied.var" %in% se.method | missing(h)))
-        d <- NPRPrelimVar.fit(d, se.initial=se.initial)
+##     ## Initial se estimate
+##     if ((is.null(d$sigma2p) | is.null(d$sigma2m)) &
+##         ("supplied.var" %in% se.method | missing(h)))
+##         d <- NPRPrelimVar.fit(d, se.initial=se.initial)
 
-    if (missing(h)) {
-        r <- RDOptBW.fit(d, M, kern, opt.criterion, bw.equal, alpha,
-                         beta, sclass, order)
-        h <- c(p=r$hp, m=r$hm)
-    } else if (length(h)==1) {
-        h <- c(p=unname(h), m=unname(h))
-    }
+##     if (missing(h)) {
+##         r <- RDOptBW.fit(d, M, kern, opt.criterion, bw.equal, alpha,
+##                          beta, sclass, order)
+##         h <- c(p=r$hp, m=r$hm)
+##     } else if (length(h)==1) {
+##         h <- c(p=unname(h), m=unname(h))
+##     }
 
-    ## Suppress warnings about too few observations
-    r1 <- NPRreg.fit(d, h, kern, order, se.method, TRUE, J)
-    wp <- r1$wp(d$Xp)
-    wm <- r1$wm(d$Xm)
+##     ## Suppress warnings about too few observations
+##     r1 <- NPRreg.fit(d, h, kern, order, se.method, TRUE, J)
+##     wp <- r1$wp(d$Xp)
+##     wm <- r1$wm(d$Xm)
 
-    ## If bandwidths too small
-    if (sum(wp>0)==0 | sum(wm>0)==0) {
-        ## big bias / sd
-        bias <- sd <- upper <- hl <- sqrt(.Machine$double.xmax/10)
-        lower <- -upper
-    } else {
-        sd <- r1$se[se.method]
-        if(order==0) {
-            bias <- Inf
-        } else if (sclass=="T")  {
-            bias <- M/2 * (sum(abs(wp*d$Xp^2)) + sum(abs(wm*d$Xm^2)))
-        } else if (sclass=="H" & order==1) {
-            bias <- -M/2 * (sum(wp*d$Xp^2) + sum(wm*d$Xm^2))
-        } else {
-            ## need to find numerically
-            wwp <- wp[wp>0]
-            xxp <- d$Xp[wp>0]
-            wwm <- wm[wm>0]
-            xxm <- d$Xm[wm>0]
-            w2p <- function(s) abs(sum((wwp*(xxp-s))[xxp>=s]))
-            w2m <- function(s) abs(sum((wwm*(s-xxm))[xxm<=s]))
-            bp <- integrate(function(s)
-                vapply(s, w2p, numeric(1)), 0, h["p"])$value
-            bm <- integrate(function(s)
-                vapply(s, w2m, numeric(1)), -h["m"], 0)$value
-            bias <- M*(bp+bm)
-        }
+##     ## If bandwidths too small
+##     if (sum(wp>0)==0 | sum(wm>0)==0) {
+##         ## big bias / sd
+##         bias <- sd <- upper <- hl <- sqrt(.Machine$double.xmax/10)
+##         lower <- -upper
+##     } else {
+##         sd <- r1$se[se.method]
+##         if(order==0) {
+##             bias <- Inf
+##         } else if (sclass=="T")  {
+##             bias <- M/2 * (sum(abs(wp*d$Xp^2)) + sum(abs(wm*d$Xm^2)))
+##         } else if (sclass=="H" & order==1) {
+##             bias <- -M/2 * (sum(wp*d$Xp^2) + sum(wm*d$Xm^2))
+##         } else {
+##             ## need to find numerically
+##             wwp <- wp[wp>0]
+##             xxp <- d$Xp[wp>0]
+##             wwm <- wm[wm>0]
+##             xxm <- d$Xm[wm>0]
+##             w2p <- function(s) abs(sum((wwp*(xxp-s))[xxp>=s]))
+##             w2m <- function(s) abs(sum((wwm*(s-xxm))[xxm<=s]))
+##             bp <- integrate(function(s)
+##                 vapply(s, w2p, numeric(1)), 0, h["p"])$value
+##             bm <- integrate(function(s)
+##                 vapply(s, w2m, numeric(1)), -h["m"], 0)$value
+##             bias <- M*(bp+bm)
+##         }
 
-        lower <- r1$estimate - bias - stats::qnorm(1-alpha)*sd
-        upper <- r1$estimate + bias + stats::qnorm(1-alpha)*sd
-        hl <- CVb(bias/sd, alpha)$cv*sd
-    }
+##         lower <- r1$estimate - bias - stats::qnorm(1-alpha)*sd
+##         upper <- r1$estimate + bias + stats::qnorm(1-alpha)*sd
+##         hl <- CVb(bias/sd, alpha)$cv*sd
+##     }
 
-    ## Finally, calculate coverage of naive CIs
-    z <- stats::qnorm(1-alpha/2)
-    naive <- stats::pnorm(z-bias/sd)-stats::pnorm(-z- bias/sd)
-    structure(list(estimate=r1$estimate, lff=NA, maxbias=bias, sd=sd,
-                   lower=lower, upper=upper, hl=hl, eff.obs=r1$eff.obs,
-                   hp=unname(h["p"]), hm=unname(h["m"]), naive=naive),
-              class="RDResults")
-}
+##     ## Finally, calculate coverage of naive CIs
+##     z <- stats::qnorm(1-alpha/2)
+##     naive <- stats::pnorm(z-bias/sd)-stats::pnorm(-z- bias/sd)
+##     structure(list(estimate=r1$estimate, lff=NA, maxbias=bias, sd=sd,
+##                    lower=lower, upper=upper, hl=hl, eff.obs=r1$eff.obs,
+##                    hp=unname(h["p"]), hm=unname(h["m"]), naive=naive),
+##               class="RDResults")
+## }
 
 
 

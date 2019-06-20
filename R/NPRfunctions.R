@@ -123,7 +123,7 @@ NPRreg.fit <- function(d, h, kern="triangular", order=1, se.method="nn",
          }
     if (inherits(d, "LPPData")) {
         ## Keep only positive kernel weights
-        W <- if (h<=0) 0*d$X else K(d$X/h) # kernel weights
+        W <- if (h[1]<=0) 0*d$X else K(d$X/h[1]) # kernel weights
         d$X <- d$X[W>0]
     } else {
         if (length(h)==1) h <- c(m=unname(h), p=unname(h))
@@ -148,7 +148,7 @@ NPRreg.fit <- function(d, h, kern="triangular", order=1, se.method="nn",
     }
 
     if (inherits(d, "LPPData")) {
-        r <- LPReg(d$X, d$Y[W>0], h, K, order, se.method, d$sigma2[W>0], J)
+        r <- LPReg(d$X, d$Y[W>0], h[1], K, order, se.method, d$sigma2[W>0], J)
         return(list(estimate=r$theta, se=c(sqrt(r$var), plugin=NA), w=r$w,
                     sigma2=r$sigma2, eff.obs=r$eff.obs))
     }

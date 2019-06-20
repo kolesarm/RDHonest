@@ -2,11 +2,11 @@ context("Test Inference at a point")
 
 test_that("Inference at point agrees with RD", {
     d <- RDData(lee08, cutoff=0)
-    rde <- RDHonest.fit(d, h=5, M=2)
+    rde <- NPRHonest.fit(d, h=5, M=2)
     dp <- LPPData(lee08[lee08$margin>0, ], point=0)
     dm <- LPPData(lee08[lee08$margin<0, ], point=0)
-    pp <- LPPHonest.fit(dp, h=5, M=2)
-    mm <- LPPHonest.fit(dm, h=5, M=2)
+    pp <- NPRHonest.fit(dp, h=5, M=2)
+    mm <- NPRHonest.fit(dm, h=5, M=2)
     expect_equal(pp$estimate-mm$estimate, rde$estimate)
     expect_equal(pp$sd^2+mm$sd^2, rde$sd^2)
     expect_equal(pp$maxbias+mm$maxbias, rde$maxbias)
@@ -16,13 +16,13 @@ test_that("Inference at point agrees with RD", {
     expect_equal(capture.output(print(pp)),
                  capture.output(print(p2))[6:14])
     ## Local constant yields infinite bias
-    expect_equal(RDHonest.fit(d, h=5, M=2, order=0)$maxbias, Inf)
-    expect_equal(LPPHonest.fit(dp, h=10, M=0.1, order=0)$maxbias, Inf)
+    expect_equal(NPRHonest.fit(d, h=5, M=2, order=0)$maxbias, Inf)
+    expect_equal(NPRHonest.fit(dp, h=10, M=0.1, order=0)$maxbias, Inf)
 
     ## Compare RDHonest and LPPHonest when order=2
-    r <- RDHonest.fit(d, h=7, M=2, order=2)
-    rm <- LPPHonest.fit(dp, h=7, M=2, order=2)
-    rp <- LPPHonest.fit(dm, h=7, M=2, order=2)
+    r <- NPRHonest.fit(d, h=7, M=2, order=2)
+    rm <- NPRHonest.fit(dp, h=7, M=2, order=2)
+    rp <- NPRHonest.fit(dm, h=7, M=2, order=2)
     expect_equal(r$maxbias, rm$maxbias+rp$maxbias)
     expect_equal(sqrt(rp$sd^2+rm$sd^2), r$sd)
 })
@@ -80,7 +80,7 @@ test_that("Optimal bandwidth calculations", {
         LPPOptBW(voteshare~margin, data=lee08, subset=margin>0, point=0, M=2*Mh,
                  opt.criterion="MSE"), digits=8))
     expect_equal(r1[6],  "Bandwidth:  13.410914 ")
-    expect_equal(unname(LPPHonest.fit(dp, M=Mh, kern="uniform",
+    expect_equal(unname(NPRHonest.fit(dp, M=Mh, kern="uniform",
                                       opt.criterion="FLCI")$upper),
                  55.24963853)
 })

@@ -69,11 +69,11 @@ LPPHonest <- function(formula, data, subset, point=0, M, kern="triangular",
     d <- LPPData(mf, point)
 
     if (!missing(h)) {
-        ret <- LPPHonest.fit(d, M, kern, h, alpha=alpha,
+        ret <- NPRHonest.fit(d, M, kern, h, alpha=alpha,
                              se.method=se.method, J=J, sclass=sclass,
                              order=order, se.initial=se.initial)
     } else {
-        ret <- LPPHonest.fit(d, M, kern, opt.criterion=opt.criterion,
+        ret <- NPRHonest.fit(d, M, kern, opt.criterion=opt.criterion,
                              alpha=alpha, beta=beta, se.method=se.method, J=J,
                              sclass=sclass, order=order, se.initial=se.initial)
     }
@@ -154,63 +154,63 @@ LPPOptBW <- function(formula, data, subset, point=0, M, kern="triangular",
 #' @template LPPseInitial
 #' @return Returns an object of class \code{"LPPResults"}, see description in
 #'     \code{\link{LPPHonest}}
-#' @export
-LPPHonest.fit <- function(d, M, kern="triangular", h, opt.criterion,
-                         alpha=0.05, beta=0.8, se.method="nn",
-                         J=3, sclass="H", order=1, se.initial="EHW") {
-    CheckClass(d, "LPPData")
+## #' export
+## LPPHonest.fit <- function(d, M, kern="triangular", h, opt.criterion,
+##                          alpha=0.05, beta=0.8, se.method="nn",
+##                          J=3, sclass="H", order=1, se.initial="EHW") {
+##     CheckClass(d, "LPPData")
 
-    ## Initial se estimate
-    if (is.null(d$sigma2) & ("supplied.var" %in% se.method | missing(h)))
-        d <- NPRPrelimVar.fit(d, se.initial=se.initial)
+##     ## Initial se estimate
+##     if (is.null(d$sigma2) & ("supplied.var" %in% se.method | missing(h)))
+##         d <- NPRPrelimVar.fit(d, se.initial=se.initial)
 
-    if (missing(h)) {
-        r <- LPPOptBW.fit(d, M, kern, opt.criterion, alpha,
-                          beta, sclass, order)
-        h <- r$h
-    }
+##     if (missing(h)) {
+##         r <- LPPOptBW.fit(d, M, kern, opt.criterion, alpha,
+##                           beta, sclass, order)
+##         h <- r$h
+##     }
 
-    ## Suppress warnings about too few observations
-    r1 <- NPRreg.fit(d, h, kern, order, se.method, TRUE, J)
-    w <- r1$w(d$X)
+##     ## Suppress warnings about too few observations
+##     r1 <- NPRreg.fit(d, h, kern, order, se.method, TRUE, J)
+##     w <- r1$w(d$X)
 
-    ## If bandwidths too small
-    if (sum(w>0)==0) {
-        ## big bias / sd
-        bias <- sd <- upper <- hl <- sqrt(.Machine$double.xmax/10)
-        lower <- -upper
-    } else {
-        sd <- r1$se[se.method]
-        if(order==0) {
-            bias <- Inf
-        } else if (sclass=="T")  {
-            bias <- M/2 * sum(abs(w*d$X^2))
-            ## At boundary we know form of least favorable function
-        } else if (sclass=="H" & order==1 & length(unique(d$X>=0)==1)) {
-            bias <- abs(-M/2 * sum(w*d$X^2))
-        } else {
-            ww <- w[w>0]
-            xx <- d$X[w>0]
-            w2p <- function(s) abs(sum((ww*(xx-s))[xx>=s]))
-            w2m <- function(s) abs(sum((ww*(s-xx))[xx<=s]))
-            bp <- integrate(function(s) vapply(s, w2p, numeric(1)), 0, h)$value
-            bm <- integrate(function(s) vapply(s, w2m, numeric(1)), -h, 0)$value
-            bias <- M*(bp+bm)
-        }
-        lower <- r1$estimate - bias - stats::qnorm(1-alpha)*sd
-        upper <- r1$estimate + bias + stats::qnorm(1-alpha)*sd
-        hl <- CVb(bias/sd, alpha)$cv*sd
-    }
+##     ## If bandwidths too small
+##     if (sum(w>0)==0) {
+##         ## big bias / sd
+##         bias <- sd <- upper <- hl <- sqrt(.Machine$double.xmax/10)
+##         lower <- -upper
+##     } else {
+##         sd <- r1$se[se.method]
+##         if(order==0) {
+##             bias <- Inf
+##         } else if (sclass=="T")  {
+##             bias <- M/2 * sum(abs(w*d$X^2))
+##             ## At boundary we know form of least favorable function
+##         } else if (sclass=="H" & order==1 & length(unique(d$X>=0)==1)) {
+##             bias <- abs(-M/2 * sum(w*d$X^2))
+##         } else {
+##             ww <- w[w>0]
+##             xx <- d$X[w>0]
+##             w2p <- function(s) abs(sum((ww*(xx-s))[xx>=s]))
+##             w2m <- function(s) abs(sum((ww*(s-xx))[xx<=s]))
+##             bp <- integrate(function(s) vapply(s, w2p, numeric(1)), 0, h)$value
+##             bm <- integrate(function(s) vapply(s, w2m, numeric(1)), -h, 0)$value
+##             bias <- M*(bp+bm)
+##         }
+##         lower <- r1$estimate - bias - stats::qnorm(1-alpha)*sd
+##         upper <- r1$estimate + bias + stats::qnorm(1-alpha)*sd
+##         hl <- CVb(bias/sd, alpha)$cv*sd
+##     }
 
-    ## Finally, calculate coverage of naive CIs
-    z <- stats::qnorm(1-alpha/2)
-    naive <- stats::pnorm(z-bias/sd)-stats::pnorm(-z- bias/sd)
+##     ## Finally, calculate coverage of naive CIs
+##     z <- stats::qnorm(1-alpha/2)
+##     naive <- stats::pnorm(z-bias/sd)-stats::pnorm(-z- bias/sd)
 
-    structure(list(estimate=r1$estimate, maxbias=bias, sd=sd,
-                   lower=lower, upper=upper, hl=hl, eff.obs=r1$eff.obs,
-                   h=h, naive=naive),
-              class="LPPResults")
-}
+##     structure(list(estimate=r1$estimate, maxbias=bias, sd=sd,
+##                    lower=lower, upper=upper, hl=hl, eff.obs=r1$eff.obs,
+##                    h=h, naive=naive),
+##               class="LPPResults")
+## }
 
 
 #' Optimal bandwidth selection for inference at a point
@@ -242,7 +242,7 @@ LPPOptBW.fit <- function(d, M, kern="triangular", opt.criterion, alpha=0.05,
 
     ## Objective function for optimizing bandwidth
     obj <- function(h) {
-        r <- LPPHonest.fit(d, M, kern, abs(h),
+        r <- NPRHonest.fit(d, M, kern, abs(h),
                           alpha=alpha, se.method="supplied.var",
                           sclass=sclass, order=order)
         if (opt.criterion=="OCI") {

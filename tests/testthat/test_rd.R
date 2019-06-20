@@ -67,13 +67,13 @@ test_that("Honest inference in Lee and LM data",  {
     d <- RDData(headst[!is.na(headst$mortHS), c("mortHS", "povrate60")],
                 cutoff=0)
     es <- function(kern, se.method) {
-        RDHonest.fit(d, M=0.0076085544, kern=kern, sclass="H",
+        NPRHonest.fit(d, M=0.0076085544, kern=kern, sclass="H",
                      se.method=se.method,
                      J=3, alpha=0.05, opt.criterion="MSE", bw.equal=TRUE,
                      se.initial="SilvermanNN")
     }
     ff <- function(h, kern, se.method) {
-        RDHonest.fit(d, M=0.0076085544, kern=kern, sclass="H",
+        NPRHonest.fit(d, M=0.0076085544, kern=kern, sclass="H",
                      se.method=se.method,
                      J=3, alpha=0.05, h=h, bw.equal=TRUE,
                      se.initial="SilvermanNN")
