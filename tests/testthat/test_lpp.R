@@ -79,7 +79,7 @@ test_that("Optimal bandwidth calculations", {
     r1 <- capture.output(print(
         LPPOptBW(voteshare~margin, data=lee08, subset=margin>0, point=0, M=2*Mh,
                  opt.criterion="MSE"), digits=7))
-    expect_equal(r1[6],  "Bandwidth: 13.41091")
+    expect_equal(r1[6],  "Bandwidth: 13.41383")
     expect_equal(unname(NPRHonest.fit(dp, M=Mh, kern="uniform",
                                       opt.criterion="FLCI")$upper),
                  55.24963853)

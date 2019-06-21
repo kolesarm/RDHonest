@@ -132,7 +132,7 @@ LPPOptBW <- function(formula, data, subset, point=0, M, kern="triangular",
 
     d <- LPPData(mf, point)
 
-    ret <- LPPOptBW.fit(d, M, kern, opt.criterion, alpha, beta, sclass,
+    ret <- NPROptBW.fit(d, M, kern, opt.criterion, alpha, beta, sclass,
                        order, se.initial=se.initial)
     ret$call <- cl
     ret$na.action <- attr(mf, "na.action")
@@ -140,66 +140,63 @@ LPPOptBW <- function(formula, data, subset, point=0, M, kern="triangular",
     ret
 }
 
-#' Optimal bandwidth selection for inference at a point
-#'
-#' Basic computing engine called by \code{\link{LPPOptBW}} used to find
-#' optimal bandwidth
-#' @param d object of class \code{"LPPData"}
-#' @template RDoptBW
-#' @template RDclass
-#' @template Kern
-#' @template LPPseInitial
-#' @return a list with the following elements
-#'     \describe{
-#'     \item{\code{h}}{Bandwidth}
-#'
-#'     \item{\code{sigma2}}{estimate of conditional variance, from \code{d}}
-#'    }
-#' @examples
-#' # Lee dataset
-#' d <- LPPData(lee08[lee08$margin>0, ], point=0)
-#' LPPOptBW.fit(d, kern = "uniform", M = 0.1, opt.criterion = "MSE")$h
-#' @export
-LPPOptBW.fit <- function(d, M, kern="triangular", opt.criterion, alpha=0.05,
-                         beta=0.8, sclass="H", order=1, se.initial="EHW") {
+## ' Optimal bandwidth selection for inference at a point
+## '
+## ' Basic computing engine called by \code{\link{LPPOptBW}} used to find
+## ' optimal bandwidth
+## ' @param d object of class \code{"LPPData"}
+## ' @template RDoptBW
+## ' @template RDclass
+## ' @template Kern
+## ' @template LPPseInitial
+## ' @return a list with the following elements
+## '     \describe{
+## '     \item{\code{h}}{Bandwidth}
+## '
+## '     \item{\code{sigma2}}{estimate of conditional variance, from \code{d}}
+## '    }
+## ' @examples
+## ' # Lee dataset
+## ' d <- LPPData(lee08[lee08$margin>0, ], point=0)
+## ' LPPOptBW.fit(d, kern = "uniform", M = 0.1, opt.criterion = "MSE")$h
+## LPPOptBW.fit <- function(d, M, kern="triangular", opt.criterion, alpha=0.05,
+##                          beta=0.8, sclass="H", order=1, se.initial="EHW") {
+##     ## First check if sigma2 is supplied
+##     if (is.null(d$sigma2))
+##         d <- NPRPrelimVar.fit(d, se.initial=se.initial)
 
+##     ## Objective function for optimizing bandwidth
+##     obj <- function(h) {
+##         r <- NPRHonest.fit(d, M, kern, abs(h),
+##                           alpha=alpha, se.method="supplied.var",
+##                           sclass=sclass, order=order)
+##         if (opt.criterion=="OCI") {
+##             2*r$maxbias+r$sd*(stats::qnorm(1-alpha)+stats::qnorm(beta))
+##         } else if (opt.criterion=="MSE") {
+##             r$maxbias^2+r$sd^2
+##         } else if (opt.criterion=="FLCI") {
+##             r$hl
+##         } else {
+##             stop(sprintf("optimality criterion %s not yet implemented",
+##                          opt.criterion))
+##         }
+##     }
 
-    ## First check if sigma2 is supplied
-    if (is.null(d$sigma2))
-        d <- NPRPrelimVar.fit(d, se.initial=se.initial)
+##     hmin <- sort(unique(abs(d$X)))[order+1]
+##     hmax <- max(abs(d$X))
+##     ## Optimize piecewise constant function using modification of golden
+##     ## search. In fact, the criterion may not be unimodal, so proceed with
+##     ## caution. (For triangular kernel, it appears unimodal)
+##     if (kern=="uniform") {
+##         supp <- sort(unique(abs(d$X)))
+##         h <- gss(obj, supp[supp>=hmin])
+##     } else {
+##         h <- abs(stats::optimize(obj, interval=c(hmin, hmax),
+##                                  tol=.Machine$double.eps^0.75)$minimum)
+##     }
 
-    ## Objective function for optimizing bandwidth
-    obj <- function(h) {
-        r <- NPRHonest.fit(d, M, kern, abs(h),
-                          alpha=alpha, se.method="supplied.var",
-                          sclass=sclass, order=order)
-        if (opt.criterion=="OCI") {
-            2*r$maxbias+r$sd*(stats::qnorm(1-alpha)+stats::qnorm(beta))
-        } else if (opt.criterion=="MSE") {
-            r$maxbias^2+r$sd^2
-        } else if (opt.criterion=="FLCI") {
-            r$hl
-        } else {
-            stop(sprintf("optimality criterion %s not yet implemented",
-                         opt.criterion))
-        }
-    }
-
-    hmin <- sort(unique(abs(d$X)))[order+1]
-    hmax <- max(abs(d$X))
-    ## Optimize piecewise constant function using modification of golden
-    ## search. In fact, the criterion may not be unimodal, so proceed with
-    ## caution. (For triangular kernel, it appears unimodal)
-    if (kern=="uniform") {
-        supp <- sort(unique(abs(d$X)))
-        h <- gss(obj, supp[supp>=hmin])
-    } else {
-        h <- abs(stats::optimize(obj, interval=c(hmin, hmax),
-                                 tol=.Machine$double.eps^0.75)$minimum)
-    }
-
-    structure(list(h=c(p=h, m=h), sigma2=d$sigma2), class="NPRBW")
-}
+##     structure(list(h=c(p=h, m=h), sigma2=d$sigma2), class="NPRBW")
+## }
 
 
 #' Rule of thumb bandwidth for inference at a point

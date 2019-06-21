@@ -165,7 +165,7 @@ RDOptBW <- function(formula, data, subset, cutoff=0, M, kern="triangular",
 
     d <- RDData(mf, cutoff)
 
-    ret <- RDOptBW.fit(d, M, kern, opt.criterion, bw.equal, alpha, beta, sclass,
+    ret <- NPROptBW.fit(d, M, kern, opt.criterion, bw.equal, alpha, beta, sclass,
                        order, se.initial=se.initial)
     ret$call <- cl
     ret$na.action <- attr(mf, "na.action")
