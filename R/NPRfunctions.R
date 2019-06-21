@@ -190,7 +190,15 @@ NPRreg.fit <- function(d, h, kern="triangular", order=1, se.method="nn",
     ret
 }
 
-
+#' Compute preliminary estimate of variance
+#'
+#' Compute estimate of variance, which can then be used in optimal bandwidth
+#' calculations.
+#'
+#' @param d object of class \code{"RDData"}
+#' @template RDseInitial
+#' @return object of class \code{"RDData"} containing estimated variances.
+#' @export
 NPRPrelimVar.fit <- function(d, se.initial="EHW") {
     if (se.initial == "NN") {
         if (inherits(d, "LPPData")) {

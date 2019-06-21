@@ -119,7 +119,7 @@ test_that("Honest inference in Lee and LM data",  {
     expect_equal(r$estimate, 5.9545948946)
     r1 <- capture.output(print(r, digits=6))
     expect_equal(r1[15],
-                 "Bandwidth above cutoff: 10.6765 (Bandwidths are different)")
+                 "Bandwidth above cutoff: 10.6765")
     ## End replication
 
     ## Vignette replication Version: 0.1.2
@@ -156,10 +156,10 @@ test_that("Honest inference in Lee and LM data",  {
                  M = 0.1, opt.criterion = "MSE", sclass = "T",
                  se.initial="Silverman")
     r4 <- capture.output(print(r3, digits=8))
-    expect_equal(r1$hp, 12.6576125622)
+    expect_equal(unname(r1$h["p"]), 12.6576125622)
     expect_equal(unname(r2$lower), 6.0484981004)
-    expect_equal(r3$hp, 5.0866454840)
-    expect_equal(r4[7], "Bandwidth below cutoff:  5.0866455")
+    expect_equal(unname(r3$h["p"]), 5.0866454840)
+    expect_equal(r4[7], "Bandwidth: 5.0866455")
 })
 
 test_that("BME CIs match paper", {

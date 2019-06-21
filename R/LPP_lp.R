@@ -134,84 +134,11 @@ LPPOptBW <- function(formula, data, subset, point=0, M, kern="triangular",
 
     ret <- LPPOptBW.fit(d, M, kern, opt.criterion, alpha, beta, sclass,
                        order, se.initial=se.initial)
-    class(ret) <- "LPPBW"
     ret$call <- cl
     ret$na.action <- attr(mf, "na.action")
 
     ret
 }
-
-#' Honest inference at a point
-#'
-#' Basic computing engine called by \code{\link{LPPHonest}} to compute honest
-#' confidence intervals for local polynomial estimators.
-#' @param d object of class \code{"LPPData"}
-#' @template RDse
-#' @template RDoptBW
-#' @template RDBW
-#' @template RDclass
-#' @template Kern
-#' @template LPPseInitial
-#' @return Returns an object of class \code{"LPPResults"}, see description in
-#'     \code{\link{LPPHonest}}
-## #' export
-## LPPHonest.fit <- function(d, M, kern="triangular", h, opt.criterion,
-##                          alpha=0.05, beta=0.8, se.method="nn",
-##                          J=3, sclass="H", order=1, se.initial="EHW") {
-##     CheckClass(d, "LPPData")
-
-##     ## Initial se estimate
-##     if (is.null(d$sigma2) & ("supplied.var" %in% se.method | missing(h)))
-##         d <- NPRPrelimVar.fit(d, se.initial=se.initial)
-
-##     if (missing(h)) {
-##         r <- LPPOptBW.fit(d, M, kern, opt.criterion, alpha,
-##                           beta, sclass, order)
-##         h <- r$h
-##     }
-
-##     ## Suppress warnings about too few observations
-##     r1 <- NPRreg.fit(d, h, kern, order, se.method, TRUE, J)
-##     w <- r1$w(d$X)
-
-##     ## If bandwidths too small
-##     if (sum(w>0)==0) {
-##         ## big bias / sd
-##         bias <- sd <- upper <- hl <- sqrt(.Machine$double.xmax/10)
-##         lower <- -upper
-##     } else {
-##         sd <- r1$se[se.method]
-##         if(order==0) {
-##             bias <- Inf
-##         } else if (sclass=="T")  {
-##             bias <- M/2 * sum(abs(w*d$X^2))
-##             ## At boundary we know form of least favorable function
-##         } else if (sclass=="H" & order==1 & length(unique(d$X>=0)==1)) {
-##             bias <- abs(-M/2 * sum(w*d$X^2))
-##         } else {
-##             ww <- w[w>0]
-##             xx <- d$X[w>0]
-##             w2p <- function(s) abs(sum((ww*(xx-s))[xx>=s]))
-##             w2m <- function(s) abs(sum((ww*(s-xx))[xx<=s]))
-##             bp <- integrate(function(s) vapply(s, w2p, numeric(1)), 0, h)$value
-##             bm <- integrate(function(s) vapply(s, w2m, numeric(1)), -h, 0)$value
-##             bias <- M*(bp+bm)
-##         }
-##         lower <- r1$estimate - bias - stats::qnorm(1-alpha)*sd
-##         upper <- r1$estimate + bias + stats::qnorm(1-alpha)*sd
-##         hl <- CVb(bias/sd, alpha)$cv*sd
-##     }
-
-##     ## Finally, calculate coverage of naive CIs
-##     z <- stats::qnorm(1-alpha/2)
-##     naive <- stats::pnorm(z-bias/sd)-stats::pnorm(-z- bias/sd)
-
-##     structure(list(estimate=r1$estimate, maxbias=bias, sd=sd,
-##                    lower=lower, upper=upper, hl=hl, eff.obs=r1$eff.obs,
-##                    h=h, naive=naive),
-##               class="LPPResults")
-## }
-
 
 #' Optimal bandwidth selection for inference at a point
 #'
@@ -235,6 +162,7 @@ LPPOptBW <- function(formula, data, subset, point=0, M, kern="triangular",
 #' @export
 LPPOptBW.fit <- function(d, M, kern="triangular", opt.criterion, alpha=0.05,
                          beta=0.8, sclass="H", order=1, se.initial="EHW") {
+
 
     ## First check if sigma2 is supplied
     if (is.null(d$sigma2))
@@ -270,7 +198,7 @@ LPPOptBW.fit <- function(d, M, kern="triangular", opt.criterion, alpha=0.05,
                                  tol=.Machine$double.eps^0.75)$minimum)
     }
 
-    list(h=h, sigma2=d$sigma2)
+    structure(list(h=c(p=h, m=h), sigma2=d$sigma2), class="NPRBW")
 }
 
 
@@ -295,6 +223,7 @@ LPPOptBW.fit <- function(d, M, kern="triangular", opt.criterion, alpha=0.05,
 #' bp1 <- ROTBW.fit(dp, kern="uniform", order=1)
 #' @export
 ROTBW.fit <- function(d, kern="triangular", order=1, boundary=NULL) {
+    CheckClass(d, "LPPData")
     X <- d$X
 
     if(is.null(boundary))
@@ -334,39 +263,4 @@ ROTBW.fit <- function(d, kern="triangular", order=1, boundary=NULL) {
     V <- sigma2 * nu0 /f0
 
     (V/(B^2 * 2 * (order+1) * N))^(1/(2*order+3))
-}
-
-
-#' @export
-print.LPPBW <- function(x, digits = getOption("digits"), ...) {
-    cat("Call:\n", deparse(x$call), "\n\n", sep = "", fill=TRUE)
-    cat("Bandwidth: ", format(x$h, digits=digits), "\n\n")
-    invisible(x)
-}
-
-
-#' @export
-print.LPPResults <- function(x, digits = getOption("digits"), ...) {
-    if (!is.null(x$call))
-        cat("Call:\n", deparse(x$call), "\n\n", sep = "", fill=TRUE)
-
-    cat("Inference by se.method:\n")
-    r <- as.data.frame(x[c("estimate", "maxbias", "sd",
-                           "lower", "upper", "hl")])
-    names(r)[1:3] <- c("Estimate", "Maximum Bias", "Std. Error")
-    r$name <- rownames(r)
-    print.data.frame(as.data.frame(r[, 1:3]), digits=digits)
-    cat("\nConfidence intervals:\n")
-    fmt <- function(x) format(x, digits=digits, width=digits+1)
-
-    for (j in seq_len(nrow(r)))
-        cat(format(r[j, 7], width=5), " (", fmt(r[j, 1]-r[j, 6]),
-            ", ", fmt(r[j, 1]+r[j, 6]), "), (", fmt(r[j, 4]),
-            ", Inf), (-Inf, ", fmt(r[j, 5]), ")\n", sep="")
-
-    cat("\nBandwidth: ", format(x$h, digits=digits), sep="")
-    cat("\nNumber of effective observations:",
-        format(x$eff.obs, digits=digits), "\n")
-
-    invisible(x)
 }

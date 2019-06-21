@@ -167,95 +167,11 @@ RDOptBW <- function(formula, data, subset, cutoff=0, M, kern="triangular",
 
     ret <- RDOptBW.fit(d, M, kern, opt.criterion, bw.equal, alpha, beta, sclass,
                        order, se.initial=se.initial)
-    class(ret) <- "RDBW"
     ret$call <- cl
     ret$na.action <- attr(mf, "na.action")
 
     ret
 }
-
-#' Honest inference in RD
-#'
-#' Basic computing engine called by \code{\link{RDHonest}} to compute honest
-#' confidence intervals for local polynomial estimators.
-#' @param d object of class \code{"RDData"}
-#' @template RDse
-#' @template RDoptBW
-#' @template RDBW
-#' @template RDclass
-#' @template Kern
-#' @template bwequal
-#' @template RDseInitial
-#' @return Returns an object of class \code{"RDResults"}, see description in
-#'     \code{\link{RDHonest}}
-#' @export
-## RDHonest.fit <- function(d, M, kern="triangular", h, opt.criterion,
-##                          bw.equal=TRUE, alpha=0.05, beta=0.8, se.method="nn",
-##                          J=3, sclass="H", order=1, se.initial="EHW") {
-##     CheckClass(d, "RDData")
-
-##     ## Initial se estimate
-##     if ((is.null(d$sigma2p) | is.null(d$sigma2m)) &
-##         ("supplied.var" %in% se.method | missing(h)))
-##         d <- NPRPrelimVar.fit(d, se.initial=se.initial)
-
-##     if (missing(h)) {
-##         r <- RDOptBW.fit(d, M, kern, opt.criterion, bw.equal, alpha,
-##                          beta, sclass, order)
-##         h <- c(p=r$hp, m=r$hm)
-##     } else if (length(h)==1) {
-##         h <- c(p=unname(h), m=unname(h))
-##     }
-
-##     ## Suppress warnings about too few observations
-##     r1 <- NPRreg.fit(d, h, kern, order, se.method, TRUE, J)
-##     wp <- r1$wp(d$Xp)
-##     wm <- r1$wm(d$Xm)
-
-##     ## If bandwidths too small
-##     if (sum(wp>0)==0 | sum(wm>0)==0) {
-##         ## big bias / sd
-##         bias <- sd <- upper <- hl <- sqrt(.Machine$double.xmax/10)
-##         lower <- -upper
-##     } else {
-##         sd <- r1$se[se.method]
-##         if(order==0) {
-##             bias <- Inf
-##         } else if (sclass=="T")  {
-##             bias <- M/2 * (sum(abs(wp*d$Xp^2)) + sum(abs(wm*d$Xm^2)))
-##         } else if (sclass=="H" & order==1) {
-##             bias <- -M/2 * (sum(wp*d$Xp^2) + sum(wm*d$Xm^2))
-##         } else {
-##             ## need to find numerically
-##             wwp <- wp[wp>0]
-##             xxp <- d$Xp[wp>0]
-##             wwm <- wm[wm>0]
-##             xxm <- d$Xm[wm>0]
-##             w2p <- function(s) abs(sum((wwp*(xxp-s))[xxp>=s]))
-##             w2m <- function(s) abs(sum((wwm*(s-xxm))[xxm<=s]))
-##             bp <- integrate(function(s)
-##                 vapply(s, w2p, numeric(1)), 0, h["p"])$value
-##             bm <- integrate(function(s)
-##                 vapply(s, w2m, numeric(1)), -h["m"], 0)$value
-##             bias <- M*(bp+bm)
-##         }
-
-##         lower <- r1$estimate - bias - stats::qnorm(1-alpha)*sd
-##         upper <- r1$estimate + bias + stats::qnorm(1-alpha)*sd
-##         hl <- CVb(bias/sd, alpha)$cv*sd
-##     }
-
-##     ## Finally, calculate coverage of naive CIs
-##     z <- stats::qnorm(1-alpha/2)
-##     naive <- stats::pnorm(z-bias/sd)-stats::pnorm(-z- bias/sd)
-##     structure(list(estimate=r1$estimate, lff=NA, maxbias=bias, sd=sd,
-##                    lower=lower, upper=upper, hl=hl, eff.obs=r1$eff.obs,
-##                    hp=unname(h["p"]), hm=unname(h["m"]), naive=naive),
-##               class="RDResults")
-## }
-
-
-
 
 #' Imbens and Kalyanaraman bandwidth
 #'
@@ -274,6 +190,7 @@ RDOptBW <- function(formula, data, subset, cutoff=0, M, kern="triangular",
 IKBW.fit <- function(d, kern="triangular", order=1, verbose=FALSE) {
     if (order!=1)
         stop("Only works for local linear regression.")
+    CheckClass(d, "RDData")
 
     X <- c(d$Xm, d$Xp)
     Nm <- length(d$Xm)
@@ -330,53 +247,4 @@ IKBW.fit <- function(d, kern="triangular", order=1, verbose=FALSE) {
 
     ## Final bandwidth: Equation (17)
     unname(const * ((varp+varm) / (f0*N * ((m2p-m2m)^2+rm+rp)))^(1/5))
-}
-
-
-#' @export
-print.RDBW <- function(x, digits = getOption("digits"), ...) {
-    cat("Call:\n", deparse(x$call), "\n\n", sep = "", fill=TRUE)
-    cat("Bandwidth below cutoff: ", format(x$hm, digits=digits))
-    cat("\nBandwidth above cutoff: ", format(x$hp, digits=digits))
-    if (x$hm==x$hp) {
-        cat(" (Bandwidths are the same)\n\n")
-    } else {
-        cat(" (Bandwidths are different)\n\n")
-    }
-    invisible(x)
-}
-
-
-#' @export
-print.RDResults <- function(x, digits = getOption("digits"), ...) {
-    if (!is.null(x$call))
-        cat("Call:\n", deparse(x$call), "\n\n", sep = "", fill=TRUE)
-    bw <- if (class(x$lff) !="RDLFFunction")
-              "Bandwidth" else "Smoothing parameter"
-
-    cat("Inference by se.method:\n")
-    r <- as.data.frame(x[c("estimate", "maxbias", "sd",
-                           "lower", "upper", "hl")])
-    names(r)[1:3] <- c("Estimate", "Maximum Bias", "Std. Error")
-    r$name <- rownames(r)
-    print.data.frame(as.data.frame(r[, 1:3]), digits=digits)
-    cat("\nConfidence intervals:\n")
-    fmt <- function(x) format(x, digits=digits, width=digits+1)
-
-    for (j in seq_len(nrow(r)))
-        cat(format(r[j, 7], width=5), " (", fmt(r[j, 1]-r[j, 6]),
-            ", ", fmt(r[j, 1]+r[j, 6]), "), (", fmt(r[j, 4]),
-            ", Inf), (-Inf, ", fmt(r[j, 5]), ")\n", sep="")
-
-    cat("\n", bw, " below cutoff: ", format(x$hm, digits=digits), sep="")
-    cat("\n", bw, " above cutoff: ", format(x$hp, digits=digits), sep="")
-    if (x$hm==x$hp) {
-        cat(" (", bw, "s are the same)\n", sep="")
-    } else {
-        cat(" (", bw, "s are different)\n", sep="")
-    }
-    cat("Number of effective observations:",
-        format(x$eff.obs, digits=digits), "\n")
-
-    invisible(x)
 }

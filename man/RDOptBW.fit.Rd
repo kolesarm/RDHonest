@@ -6,7 +6,7 @@
 \usage{
 RDOptBW.fit(d, M, kern = "triangular", opt.criterion, bw.equal = TRUE,
   alpha = 0.05, beta = 0.8, sclass = "H", order = 1,
-  se.initial = "IKEHW", T0 = 0)
+  se.initial = "EHW", T0 = 0)
 }
 \arguments{
 \item{d}{object of class \code{"RDData"}}
@@ -74,6 +74,8 @@ kernel and bandwidth selected using Silverman's rule of thumb, as in Equation
 
 \item{"NN"}{Use nearest neighbor estimates, without assuming homoscedasticity}
 }}
+
+\item{T0}{Inital estimate of beta, for FRD only}
 }
 \value{
 a list with the following elements
