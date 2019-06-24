@@ -33,7 +33,7 @@ test_that("FRD data example check", {
                         T0=r1$estimate)
     ## With positive T0, expect greater effective M, and thus smaller bandwidth
     expect_lt(r2$hp, r1$hp)
-    expect_equal(r2$estimate, -0.18813375)
+    expect_equal(round(r2$estimate, 6), -0.188134)
 })
 
 test_that("FRD with almost perfect first stage", {

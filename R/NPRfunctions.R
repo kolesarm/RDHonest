@@ -111,7 +111,7 @@ LPReg <- function(X, Y, h, K, order=1, se.method=NULL, sigma2, J=3) {
 #' NPRreg.fit(RDData(lee08, cutoff=0), h=5, order=2, se.method=c("nn", "plugin", "EHW"))
 #' NPRreg.fit(LPPData(lee08[lee08$margin>=0, ], point=0), h=5, order=1)
 #' d <- FRDData(cbind(logcn=log(rcp[, 6]), rcp[, c(3, 2)]), cutoff=0)
-#' NPRreg.fit(d, h=10, order=1)
+#' r <- NPRreg.fit(d, h=10, order=1)
 #' @export
 NPRreg.fit <- function(d, h, kern="triangular", order=1, se.method="nn",
                        no.warning=FALSE, J=3) {

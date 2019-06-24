@@ -14,7 +14,7 @@
 #' @template RDseInitial
 #' @param T0 Initial estimate of the treatment effect for calculating the
 #'     optimal bandwidth. Only relevant for Fuzzy RD.
-#' @param T0bias When evaluting the maximum bias of the estimate, use the
+#' @param T0bias When evaluating the maximum bias of the estimate, use the
 #'     estimate itself (if \code{T0bias==FALSE}), or use the preliminary
 #'     estimate \code{T0} (if \code{T0bias==TRUE}). Only relevant for Fuzzy RD.
 #' @return Returns an object of class \code{"NPRResults"}, see descriptions in

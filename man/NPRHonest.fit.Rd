@@ -113,13 +113,13 @@ kernel and bandwidth selected using Silverman's rule of thumb, as in Equation
 \item{"SilvermanNN"}{Use Silverman's rule of thumb to pick the bandwidth, but
 use nearest neighbor estimates, rather than the residuals.}
 
-\item{"nn"}{Use nearest neighbor estimates, without assuming homoscedasticity}
+\item{"nn"}{Use nearest neighbor estimates, without assuming homoskedasticity}
 }}
 
 \item{T0}{Initial estimate of the treatment effect for calculating the
 optimal bandwidth. Only relevant for Fuzzy RD.}
 
-\item{T0bias}{When evaluting the maximum bias of the estimate, use the
+\item{T0bias}{When evaluating the maximum bias of the estimate, use the
 estimate itself (if \code{T0bias==FALSE}), or use the preliminary
 estimate \code{T0} (if \code{T0bias==TRUE}). Only relevant for Fuzzy RD.}
 }

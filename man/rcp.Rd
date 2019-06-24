@@ -11,7 +11,7 @@
   \item{retired}{Retirement status (males)}
   \item{food}{Total household food expenditure}
   \item{c}{Total household consumption}
-  \item{cn}{Total household nondurables expenditure}
+  \item{cn}{Total household expenditure on non-durable goods}
 }}
 \source{
 American Economic Review data archive,

@@ -369,7 +369,7 @@ M <- NPR_MROT.fit(dl)
 RDHonest(voteshare ~ margin, data=lee08, kern="uniform", M=M, sclass="H", opt.criterion="MSE")
 ```
 See @ArKo16honest for a discussion of the restrictions on the
-paramter space under which this method yields honest inference.
+parameter space under which this method yields honest inference.
 
 ## Optimal inference
 
@@ -485,7 +485,7 @@ print(M)
 FRDHonest(log(cn) ~ retired | elig_year, data=rcp, kern="triangular", M=M, opt.criterion="MSE", sclass="H", T0=r$estimate)
 ```
 See @ArKo16honest for a discussion of the restrictions on the
-paramter space under which this method yields honest inference.
+parameter space under which this method yields honest inference.
 
 # Inference at a point
 
@@ -501,13 +501,6 @@ M <- NPR_MROT.fit(LPPData(leep, point = 20))
 print(M)
 LPPHonest(voteshare ~ margin, data=leep, point=20, kern="uniform", M=M, opt.criterion="MSE", sclass="H")
 ```
-
-
-
-
-<!-- export(EqKern) --> <!-- export(IKBW.fit) --> <!-- export(KernMoment) -->
-<!-- export(RDLPreg) --> <!-- export(RDPrelimVar) --> <!--
-export(RDTEfficiencyBound) --> <!-- export(RDTOpt.fit) -->
 
 
 # References

@@ -24,5 +24,5 @@
 #' \item{"SilvermanNN"}{Use Silverman's rule of thumb to pick the bandwidth, but
 #' use nearest neighbor estimates, rather than the residuals.}
 #'
-#' \item{"nn"}{Use nearest neighbor estimates, without assuming homoscedasticity}
+#' \item{"nn"}{Use nearest neighbor estimates, without assuming homoskedasticity}
 #' }
