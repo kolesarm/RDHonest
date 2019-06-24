@@ -6,7 +6,8 @@
 \usage{
 FRDOptBW(formula, data, subset, cutoff = 0, M, kern = "triangular",
   na.action, opt.criterion, bw.equal = TRUE, alpha = 0.05,
-  beta = 0.8, sclass = "H", order = 1, se.initial = "EHW")
+  beta = 0.8, sclass = "H", order = 1, se.initial = "EHW",
+  T0 = 0)
 }
 \arguments{
 \item{formula}{object of class \code{"formula"} (or one that can be coerced
@@ -96,6 +97,9 @@ use nearest neighbor estimates, rather than the residuals.}
 
 \item{"nn"}{Use nearest neighbor estimates, without assuming homoscedasticity}
 }}
+
+\item{T0}{Initial estimate of the treatment effect for calculating the
+optimal bandwidth. Only relevant for Fuzzy RD.}
 }
 \value{
 Returns an object of class \code{"RDBW"}. The function \code{print}

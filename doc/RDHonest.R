@@ -37,8 +37,8 @@ CVb(1/2, alpha=0.05)$cv # extract critical value
 knitr::kable(CVb(1/4, alpha=c(0.01, 0.05, 0.1)), caption="Critical values")
 
 ## ------------------------------------------------------------------------
-RDHonest(voteshare ~ margin, data=lee08, kern="uniform", M=0.1, hp=10, sclass="T")
-RDHonest(voteshare ~ margin, data=lee08, kern="uniform", M=0.1, hp=10, sclass="H")
+RDHonest(voteshare ~ margin, data=lee08, kern="uniform", M=0.1, h=10, sclass="T")
+RDHonest(voteshare ~ margin, data=lee08, kern="uniform", M=0.1, h=10, sclass="H")
 
 ## ------------------------------------------------------------------------
 RDHonest(voteshare ~ margin, data=lee08, kern="triangular",
@@ -64,7 +64,12 @@ RDHonest(log(earnings) ~ yearat14, cutoff=1947,
 ## Replicate Table 2, column (6), run local linear regression (order=1)
 ## with a uniform kernel (other kernels are not yet implemented)
 RDHonestBME(log(earnings) ~ yearat14, cutoff=1947,
-    data=cghs, hp=3, order=1)
+    data=cghs, h=3, order=1)
+
+## ------------------------------------------------------------------------
+## Data-driven choice of M
+M <- NPR_MROT.fit(dl)
+RDHonest(voteshare ~ margin, data=lee08, kern="uniform", M=M, sclass="H", opt.criterion="MSE")
 
 ## ------------------------------------------------------------------------
 2*RDHonest(voteshare ~ margin, data=lee08, kern="optimal", M=0.1, opt.criterion="FLCI", se.initial="Silverman", se.method="nn")$hl
@@ -75,7 +80,7 @@ RDHonestBME(log(earnings) ~ yearat14, cutoff=1947,
 ## ------------------------------------------------------------------------
 ## Add variance estimate to the lee data so that the RDSmoothnessBound
 ## function doesn't have to compute them each time
-dl <- RDHonest::RDPrelimVar(dl, se.initial="NN")
+dl <- NPRPrelimVar.fit(dl, se.initial="nn")
 
 ### Only use three point-average for averages of a 100 points closest to cutoff,
 ### and report results separately for points above and below cutoff
@@ -84,4 +89,33 @@ RDSmoothnessBound(dl, s=100, separate=TRUE, multiple=FALSE, sclass="T")
 ### Pool estimates based on observations below and above cutoff, and
 ### use three-point averages over the entire support of the running variable
 RDSmoothnessBound(dl, s=100, separate=FALSE, multiple=TRUE, sclass="H")
+
+## ------------------------------------------------------------------------
+## Assumes first column in the data frame corresponds to outcome,
+##  second to the treatment variable, and third to the running variable
+## Outcome here is log of non-durables consumption
+dr <- FRDData(cbind(logf=log(rcp[, 6]), rcp[, c(3, 2)]), cutoff=0)
+
+## ------------------------------------------------------------------------
+## Initial estimate of treatment effect for optimal bandwidth calculations
+r <- FRDHonest(log(cn) ~ retired | elig_year, data=rcp, kern="triangular", M=c(0.001, 0.002), opt.criterion="MSE", sclass="H", T0=0)
+## Use it to compute optimal bandwidth
+FRDHonest(log(cn) ~ retired | elig_year, data=rcp, kern="triangular", M=c(0.001, 0.002), opt.criterion="MSE", sclass="H", T0=r$estimate)
+
+## ------------------------------------------------------------------------
+FRDOptBW(log(cn) ~ retired | elig_year, data=rcp, kern="triangular", M=c(0.001, 0.002), opt.criterion="MSE", sclass="H", T0=r$estimate)
+
+## ------------------------------------------------------------------------
+## Data-driven choice of M
+M <- NPR_MROT.fit(dr)
+print(M)
+FRDHonest(log(cn) ~ retired | elig_year, data=rcp, kern="triangular", M=M, opt.criterion="MSE", sclass="H", T0=r$estimate)
+
+## ------------------------------------------------------------------------
+## Transform data, specify we're interested in inference at x0=20, and drop observations below cutoff
+leep <- lee08[lee08$margin>0, ]
+## Data-driven choice of M
+M <- NPR_MROT.fit(LPPData(leep, point = 20))
+print(M)
+LPPHonest(voteshare ~ margin, data=leep, point=20, kern="uniform", M=M, opt.criterion="MSE", sclass="H")
 

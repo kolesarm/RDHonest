@@ -16,6 +16,8 @@
 #' @template Kern
 #' @template bwequal
 #' @template RDseInitial
+#' @param T0 Initial estimate of the treatment effect for calculating the
+#'     optimal bandwidth. Only relevant for Fuzzy RD.
 #' @return Returns an object of class \code{"NPRResults"}. The function
 #'     \code{print} can be used to obtain and print a summary of the results. An
 #'     object of class \code{"NPRResults"} is a list containing the following
@@ -60,12 +62,12 @@
 #' }
 #' @examples
 #' FRDHonest(cn~retired | elig_year, data=rcp, cutoff=0, M=c(1, 0.1),
-#'           kern="triangular", opt.criterion="MSE")
+#'           kern="triangular", opt.criterion="MSE", T0=0)
 #' @export
 FRDHonest <- function(formula, data, subset, cutoff=0, M, kern="triangular",
                      na.action, opt.criterion, bw.equal=TRUE, h,
                      se.method="nn", alpha=0.05, beta=0.8, J=3, sclass="H",
-                     order=1, se.initial="EHW", T0=T0) {
+                     order=1, se.initial="EHW", T0=0) {
 
     ## construct model frame
     cl <- mf <- match.call(expand.dots = FALSE)
@@ -112,6 +114,8 @@ FRDHonest <- function(formula, data, subset, cutoff=0, M, kern="triangular",
 #' @template Kern
 #' @template bwequal
 #' @template RDseInitial
+#' @param T0 Initial estimate of the treatment effect for calculating the
+#'     optimal bandwidth. Only relevant for Fuzzy RD.
 #' @return Returns an object of class \code{"RDBW"}. The function \code{print}
 #'     can be used to obtain and print a summary of the results. An object of
 #'     class \code{"RDBW"} is a list containing the following components:

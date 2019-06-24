@@ -1,13 +1,21 @@
 ---
-title: "Honest inference in Sharp Regression Discontinuity"
-author: "Michal Kolesár"
-date: "`r Sys.Date()`"
-
-bibliography: np-testing-library.bib
 output:
   pdf_document:
+    citation_package: natbib
+    latex_engine: pdflatex
+    template: mk_Rpackage_template.tex
     toc: true
     toc_depth: 2
+    includes:
+        in_header: vignette_head.tex
+    keep_tex: true
+title: "Honest inference in Regression Discontinuity Designs"
+author: "Michal Kolesár"
+date: "`r format(Sys.time(), '%B %d, %Y')`"
+geometry: margin=1in
+fontfamily: mathpazo
+fontsize: 10pt
+bibliography: np-testing-library.bib
 vignette: >
   %\VignetteIndexEntry{Honest inference in Sharp Regression Discontinuity}
   %\VignetteEngine{knitr::rmarkdown}
@@ -21,15 +29,19 @@ knitr::opts_chunk$set(tidy = TRUE, collapse=TRUE, comment = "#>",
                       tidy.opts=list(blank=FALSE, width.cutoff=55))
 ```
 
+# Introduction
+
 The package `RDHonest` implements confidence intervals for the regression
 discontinuity parameter considered in @ArKo16optimal, @ArKo16honest, and
 @KoRo16. In this vignette, we demonstrate the implementation of these confidence
-intervals using datasets from @lee08 and @oreopoulos06, which are included in
-the package as a data frame `lee08` and `cghs`. The datasets from @lalive08 and
-@LuMi07 that are used in @ArKo16honest, and @KoRo16 are also included in the
-package as data frames `rebp` and `headst`. Also @battistin09
+intervals using datasets from @lee08, @oreopoulos06, and @battistin09, which are
+included in the package as a data frame `lee08`, `cghs`, and `rcp`. The datasets
+from @lalive08 and @LuMi07 that are used in @ArKo16honest, and @KoRo16 are also
+included in the package as data frames `rebp` and `headst`.
 
-# Sharp RD model
+# Sharp RD
+
+## Model
 
 In the sharp regression discontinuity model, we observe units $i=1,\dotsc,n$,
 with the outcome $y_i$ for the $i$th unit given by $$ y_i = f(x_i) + u_i, $$
@@ -64,7 +76,7 @@ do <- RDData(data.frame(logearn=log(cghs$earnings),
                         year14=cghs$yearat14), cutoff = 1947)
 ```
 
-# Plots
+## Plots
 
 The package provides a function `plot_RDscatter` to plot the raw data. To remove
 some noise, the function plots averages over `avg` number of observations. The
@@ -91,8 +103,7 @@ f2 <- plot_RDscatter(do, avg=Inf, xlab="Year aged 14", ylab="Log earnings",
 f2 + ggplot2::scale_size_area(max_size = 4)
 ```
 
-
-# Inference based on local polynomial estimates
+## Inference based on local polynomial estimates
 
 The function `RDHonest` constructs one- and two-sided confidence intervals (CIs)
 around local linear and local quadratic estimators using either a user-supplied
@@ -156,7 +167,7 @@ knitr::kable(CVb(1/4, alpha=c(0.01, 0.05, 0.1)), caption="Critical values")
 The field `TeXDescription` is useful for plotting, or for exporting to \LaTeX,
 as in the table above.
 
-## Parameter space
+### Parameter space
 
 To implement the honest CIs, one needs to specify the parameter space
 $\mathcal{F}$. The function `RDHonest` computes honest CIs when the parameter
@@ -193,14 +204,14 @@ when the parameter space is given by a Taylor and Hölder smoothness class,
 respectively, with $M=0.1$:
 
 ```{r}
-RDHonest(voteshare ~ margin, data=lee08, kern="uniform", M=0.1, hp=10, sclass="T")
-RDHonest(voteshare ~ margin, data=lee08, kern="uniform", M=0.1, hp=10, sclass="H")
+RDHonest(voteshare ~ margin, data=lee08, kern="uniform", M=0.1, h=10, sclass="T")
+RDHonest(voteshare ~ margin, data=lee08, kern="uniform", M=0.1, h=10, sclass="H")
 ```
 
 The confidence intervals use the nearest-neighbor method to estimate the
 standard error by default (this can be changed using the option `se.method`, see
-help file). The package reports two-sided as well one-sided CIs (with lower as
-well as upper limit) by default.
+help file for `RDHonest`). The package reports two-sided as well one-sided CIs
+(with lower as well as upper limit) by default.
 
 Instead of specifying a bandwidth, one can just specify the smoothness class and
 smoothness constant $M$, and the bandwidth will be chosen optimally for a given
@@ -223,10 +234,7 @@ RDOptBW(voteshare ~ margin, data=lee08, kern="triangular",
     M=0.1, opt.criterion="MSE", sclass="H")
 ```
 
-
-
-
-## Inference when running variable is discrete
+### Inference when running variable is discrete
 
 The confidence intervals described above can also be used when the running
 variable is discrete, with $G$ support points: their construction makes no
@@ -251,7 +259,7 @@ no worse at the cutoff than away from the cutoff as in Section 5.2 in @KoRo16.
 ## Replicate Table 2, column (6), run local linear regression (order=1)
 ## with a uniform kernel (other kernels are not yet implemented)
 RDHonestBME(log(earnings) ~ yearat14, cutoff=1947,
-    data=cghs, hp=3, order=1)
+    data=cghs, h=3, order=1)
 ```
 
 
@@ -344,7 +352,26 @@ $(G_{h}^{-}+g_{+})$th element equal to $s^{+}$, the last element equal to one,
 and the remaining elements equal to zero. The rest of the construction then
 follows the description in Section 5.2 in @KoRo16.
 
-# Optimal inference
+## Data-driven choice of smoothness constant
+
+Without further restrictions, the smoothness constant $M$ cannot be data-driven:
+to maintain honesty over the whole function class, a researcher must choose
+$M$ a priori, rather than attempting to use a data-driven method. Therefore,
+one should, whenever possible, use problem-specific knowledge to decide what
+choice of $M$ is reasonable a priori.
+
+For cases in which this is difficult, the function `NPR_MROT.fit` implements the method
+considered in Section 3.4.1 in @ArKo16honest based on a global polynomial
+approximation:
+```{r}
+## Data-driven choice of M
+M <- NPR_MROT.fit(dl)
+RDHonest(voteshare ~ margin, data=lee08, kern="uniform", M=M, sclass="H", opt.criterion="MSE")
+```
+See @ArKo16honest for a discussion of the restrictions on the
+paramter space under which this method yields honest inference.
+
+## Optimal inference
 
 For the second-order Taylor smoothness class, the function `RDHonest`, with
 `kernel="optimal"`, computes finite-sample optimal estimators and confidence
@@ -360,8 +387,7 @@ estimate used to compute optimal bandwidths:
 
 ```
 
-
-# Specification testing
+## Specification testing
 
 The package also implements lower-bound estimates for the smoothness constant
 $M$ for the Taylor and Hölder smoothness class, as described in the supplements to @KoRo16 and @ArKo16optimal
@@ -369,7 +395,7 @@ $M$ for the Taylor and Hölder smoothness class, as described in the supplements
 ```{r}
 ## Add variance estimate to the lee data so that the RDSmoothnessBound
 ## function doesn't have to compute them each time
-dl <- RDHonest::RDPrelimVar(dl, se.initial="NN")
+dl <- NPRPrelimVar.fit(dl, se.initial="nn")
 
 ### Only use three point-average for averages of a 100 points closest to cutoff,
 ### and report results separately for points above and below cutoff
@@ -380,13 +406,108 @@ RDSmoothnessBound(dl, s=100, separate=TRUE, multiple=FALSE, sclass="T")
 RDSmoothnessBound(dl, s=100, separate=FALSE, multiple=TRUE, sclass="H")
 ```
 
-<!-- export(EqKern) -->
-<!-- export(IKBW.fit) -->
-<!-- export(KernMoment) -->
-<!-- export(RDLPreg) -->
-<!-- export(RDPrelimVar) -->
-<!-- export(RDTEfficiencyBound) -->
-<!-- export(RDTOpt.fit) -->
+# Fuzzy RD
+
+## Model
+
+In a fuzzy RD design, the treatment $d_{i}$ is not entirely determined by
+whether the running variable $x_{i}$ exceeds a cutoff. Instead, the cutoff
+induces a jump in the treatment probability. The resulting reduced-form and
+first-stage regressions are given by
+\begin{align*}
+  y_{i}&=f_{1}(x_{i})+u_{i1}, &  d_{i}&=f_{2}(d_{i})+u_{i2},
+\end{align*}
+See Section 3.3 in @ArKo16honest for a more detailed description.
+
+In the Battistin et al dataset, the treatment variable is an indicator for
+retirement, and the running variable is number of years since being eligible to
+retire. The cutoff is $0$. (individuals exactly at the cutoff are dropped).
+Similarly to the `RDData` function, the `FRDData` function transforms the data into an appropriate format:
+
+```{r}
+## Assumes first column in the data frame corresponds to outcome,
+##  second to the treatment variable, and third to the running variable
+## Outcome here is log of non-durables consumption
+dr <- FRDData(cbind(logf=log(rcp[, 6]), rcp[, c(3, 2)]), cutoff=0)
+```
+
+## Inference based on local polynomial estimates
+
+The function `FRDHonest` constructs one- and two-sided confidence intervals
+(CIs) around local linear and local quadratic estimators using either a
+user-supplied bandwidth (which is allowed to differ on either side of the
+cutoff), or bandwidth that is optimized for a given performance criterion.
+
+### Parameter space and initial estimate
+
+To implement the honest CIs, one needs to specify the parameter space
+$\mathcal{F}$ for $f_1$ and $f_2$. The function `FRDHonest` computes honest CIs
+when $f_1$ and $f_2$ both lie in a second-order Taylor or second-order Hölder
+smoothness class, $\mathcal{F}_{T}(M_1, M_2)$ and
+$\mathcal{F}_{\text{Hölder}}(M_1, M_2)$, where the smoothness constants $M_1$
+and $M_2$ for the reduced form and the first stage are allowed to differ. Also,
+since the worst-case bias calculation requires an estimate of the treatment
+effect, for optimal bandwidth calculations, the user needs to supply an initial
+estimator of the treatment effect
+
+
+```{r}
+## Initial estimate of treatment effect for optimal bandwidth calculations
+r <- FRDHonest(log(cn) ~ retired | elig_year, data=rcp, kern="triangular", M=c(0.001, 0.002), opt.criterion="MSE", sclass="H", T0=0)
+## Use it to compute optimal bandwidth
+FRDHonest(log(cn) ~ retired | elig_year, data=rcp, kern="triangular", M=c(0.001, 0.002), opt.criterion="MSE", sclass="H", T0=r$estimate)
+```
+
+
+It is also possible to compute the optimal bandwidths directly using the function
+`RDOptBW`
+
+```{r}
+FRDOptBW(log(cn) ~ retired | elig_year, data=rcp, kern="triangular", M=c(0.001, 0.002), opt.criterion="MSE", sclass="H", T0=r$estimate)
+```
+
+## Data-driven choice of smoothness constant
+
+Like in the sharp RD case, Without further restrictions, the smoothness
+constants $M_1$ and $M_2$ cannot be data-driven: to maintain honesty over the
+whole function class, a researcher must choose them a priori, rather than
+attempting to use a data-driven method. Therefore, one should, whenever
+possible, use problem-specific knowledge to decide what choices of $M_1$ and
+$M_2$ are reasonable a priori.
+
+For cases in which this is difficult, the function `NPR_MROT.fit` implements the method
+considered in Section 3.4.1 in @ArKo16honest based on a global polynomial
+approximation:
+```{r}
+## Data-driven choice of M
+M <- NPR_MROT.fit(dr)
+print(M)
+FRDHonest(log(cn) ~ retired | elig_year, data=rcp, kern="triangular", M=M, opt.criterion="MSE", sclass="H", T0=r$estimate)
+```
+See @ArKo16honest for a discussion of the restrictions on the
+paramter space under which this method yields honest inference.
+
+# Inference at a point
+
+The package also contains functions `LPPHonest` and `LPPOptBW` for inference at
+a point, and optimal bandwidth selection for inference at a point. Suppose, for example, one
+was interested in the vote share for candidates with margin of victory equal to
+20 points:
+```{r}
+## Transform data, specify we're interested in inference at x0=20, and drop observations below cutoff
+leep <- lee08[lee08$margin>0, ]
+## Data-driven choice of M
+M <- NPR_MROT.fit(LPPData(leep, point = 20))
+print(M)
+LPPHonest(voteshare ~ margin, data=leep, point=20, kern="uniform", M=M, opt.criterion="MSE", sclass="H")
+```
+
+
+
+
+<!-- export(EqKern) --> <!-- export(IKBW.fit) --> <!-- export(KernMoment) -->
+<!-- export(RDLPreg) --> <!-- export(RDPrelimVar) --> <!--
+export(RDTEfficiencyBound) --> <!-- export(RDTOpt.fit) -->
 
 
 # References

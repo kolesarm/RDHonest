@@ -48,7 +48,7 @@ NPRHonest.fit <- function(d, M, kern="triangular", h, opt.criterion,
         xx <- d$X[w!=0]
         nobs <- length(wt)
         ## Are we at a boundary?
-        bd <- length(unique(d$X>=0)==1)
+        bd <- length(unique(d$X>=0))==1
     } else {
         wp <- r1$wp(d$Xp)
         wm <- r1$wm(d$Xm)
