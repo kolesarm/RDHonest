@@ -25,6 +25,10 @@ Imbens and Kalyanaraman bandwidth
 Calculate bandwidth for sharp RD based on local linear regression using
 method by Imbens and Kalyanaraman (2012)
 }
+\examples{
+## Reproduce bandwidth from Section 6.2 in Imbens and Kalyanaraman (2012)
+IKBW.fit(RDData(lee08, cutoff=0))
+}
 \references{
 {
 \cite{Imbens, Guido, and Kalyanaraman, Karthik,

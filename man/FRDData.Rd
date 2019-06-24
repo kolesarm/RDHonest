@@ -47,15 +47,15 @@ An object of class \code{"FRDData"}, which is a list containing the
     }
 }
 \description{
-Convert data to standardized format for use with low-level functions. If the
-cutoff for treatment is non-zero, shift the running variable so that cutoff
-is at zero.
+Convert data to a standardized format for use with low-level functions. If
+the cutoff for treatment is non-zero, shift the running variable so that the
+cutoff is at zero.
 }
 \examples{
 ## Transform retirement data
 d <- FRDData(rcp[, c(6, 3, 2)], cutoff=0)
 ## Outcome in logs
-d <- FRDData(cbind(logcn=log(rcp[, 6 ]), rcp[, c(3, 2)]), cutoff=0)
+d <- FRDData(cbind(logcn=log(rcp[, 6]), rcp[, c(3, 2)]), cutoff=0)
 }
 \seealso{
 \code{\link{RDData}} for sharp RD, and \code{\link{LPPData}} for

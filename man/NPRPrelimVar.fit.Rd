@@ -7,30 +7,39 @@
 NPRPrelimVar.fit(d, se.initial = "EHW")
 }
 \arguments{
-\item{d}{object of class \code{"RDData"}}
+\item{d}{object of class \code{"RDData"}, \code{"FRDData"}, or
+\code{"LPPData"}}
 
 \item{se.initial}{Method for estimating initial variance for computing
-    optimal bandwidth. Ignored if data already contains estimate of variance.
+    optimal bandwidth. Except for \code{"nn"}, all methods assume
+    homoskedasticity on either side of cutoff (for RD), or for all data (for
+    inference at a point).
 
 \describe{
 
-\item{"IKEHW"}{Based on residuals from a local linear regression using a
-              triangular kernel and Imbens and Kalyanaraman bandwidth}
+\item{"EHW"}{Based on residuals from a local linear regression using a
+            triangular kernel, and and bandwidth given by a rule-of-thumb
+            bandwidth (for inference at a point, see \code{\link{ROTBW.fit}}),
+            or IK bandwidth (for fuzzy and sharp RD, see
+            \code{\link{IKBW.fit}}). For fuzzy RD, the IK bandwidth is based
+            on the reduced-form regression.}
 
-\item{"IKdemeaned"}{Based on sum of squared deviations of outcome from
-              estimate of intercept in local linear regression with
-              triangular kernel and Imbens and Kalyanaraman bandwidth}
+\item{"demeaned"}{Like EHW, but instead of using the regression residuals,
+            estimate \eqn{\sigma^2_i}{sigma^2_i} by subtracting the estimated
+            intercept from the outcome (and not subtracting the estimated
+            slope). }
 
 \item{"Silverman"}{Use residuals from local constant regression with uniform
 kernel and bandwidth selected using Silverman's rule of thumb, as in Equation
 (14) in Imbens and Kalyanaraman (2012)}
-\item{"SilvermanNN"}{Use nearest neighbor estimates, rather than residuals}
+\item{"SilvermanNN"}{Use Silverman's rule of thumb to pick the bandwidth, but
+use nearest neighbor estimates, rather than the residuals.}
 
-\item{"NN"}{Use nearest neighbor estimates, without assuming homoscedasticity}
+\item{"nn"}{Use nearest neighbor estimates, without assuming homoscedasticity}
 }}
 }
 \value{
-object of class \code{"RDData"} containing estimated variances.
+object of the same class as \code{d} containing estimated variances.
 }
 \description{
 Compute estimate of variance, which can then be used in optimal bandwidth

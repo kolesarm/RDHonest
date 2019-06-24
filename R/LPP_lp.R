@@ -1,7 +1,8 @@
 #' Honest inference at a point
 #'
-#' Calculate estimators and one- and two-sided CIs based on local polynomial
-#' estimator under second-order Taylor or Hölder smoothness class.
+#' Calculate estimators and one- and two-sided honest CIs for value of
+#' conditional mean at a point based on a local polynomial estimator under
+#' second-order Taylor or Hölder smoothness class.
 #'
 #' The bandwidth is calculated to be optimal for a given performance criterion,
 #' as specified by \code{opt.criterion}. It is calculated using the function
@@ -14,15 +15,17 @@
 #' @template RDBW
 #' @template RDclass
 #' @template Kern
-#' @template LPPseInitial
-#' @return Returns an object of class \code{"LPPResults"}. The function
+#' @template RDseInitial
+#' @return Returns an object of class \code{"NPResults"}. The function
 #'     \code{print} can be used to obtain and print a summary of the results. An
-#'     object of class \code{"LPPResults"} is a list containing the following
+#'     object of class \code{"NPRResults"} is a list containing the following
 #'     components
 #'
 #'     \describe{
 #'   \item{\code{estimate}}{Point estimate. This estimate is MSE-optimal if
 #'                   \code{opt.criterion="MSE"}}
+#'
+#'   \item{\code{lff}}{Not relevant for inference at a point}
 #'
 #'   \item{\code{maxbias}}{Maximum bias of \code{estimate}}
 #'
@@ -32,22 +35,31 @@
 #'         based on \code{estimate}. This CI is optimal if
 #'         \code{opt.criterion="OCI"}}
 #'
-#'   \item{\code{hl}}{Half-length of a two-sided CI based on \code{estimate}, so
-#'             that the CI is given by \code{c(estimate-hl, estimate+hl)}. The
-#'             CI is optimal if \code{opt.criterion="FLCI"}}
+#'   \item{\code{hl}}{Half-length of a two-sided CI based on \code{estimate}, so the CI is
+#'          \code{c(estimate-hl, estimate+hl)}. The CI is optimal if \code{opt.criterion="FLCI"}}
 #'
 #'   \item{\code{eff.obs}}{Effective number of observations used by
 #'             \code{estimate}}
 #'
-#'   \item{\code{h}}{Bandwidth used}
+#'   \item{\code{hp}, \code{hm}}{Bandwidth used, both numbers are equal (i.e.
+#'   \code{hp=hm})}
 #'
 #'   \item{\code{naive}}{Coverage of CI that ignores bias and uses
 #'                \code{qnorm(1-alpha/2)} as critical value}
 #'
-#'   \item{\code{call}}{the matched call}
+#'   \item{\code{call}}{The matched call}
+#'
+#'   \item{\code{fs}}{Not relevant for inference at a point}
 #'
 #' }
 #' @seealso \code{\link{LPPOptBW}}
+#' @references{
+#'
+#' \cite{Armstrong, Timothy B., and Michal Kolesár. 2019.
+#' "Simple and Honest Confidence Intervals in Nonparametric Regression", arXiv:
+#' 1606.01200.}
+#'
+#' }
 #' @examples
 #'
 #' # Lee dataset
@@ -95,10 +107,10 @@ LPPHonest <- function(formula, data, subset, point=0, M, kern="triangular",
 #' @template RDoptBW
 #' @template RDclass
 #' @template Kern
-#' @template LPPseInitial
-#' @return Returns an object of class \code{"LPPBW"}. The function \code{print}
+#' @template RDseInitial
+#' @return Returns an object of class \code{"NPRBW"}. The function \code{print}
 #'     can be used to obtain and print a summary of the results. An object of
-#'     class \code{"LPPBW"} is a list containing the following components:
+#'     class \code{"NPRBW"} is a list containing the following components:
 #'
 #'     \describe{
 #'     \item{\code{h}}{Bandwidth}
@@ -112,6 +124,13 @@ LPPHonest <- function(formula, data, subset, point=0, M, kern="triangular",
 #'
 #'    }
 #' @seealso \code{\link{LPPHonest}}
+#' @references{
+#'
+#' \cite{Armstrong, Timothy B., and Michal Kolesár. 2019.
+#' "Simple and Honest Confidence Intervals in Nonparametric Regression", arXiv:
+#' 1606.01200.}
+#'
+#' }
 #' @examples
 #'
 #' # Lee dataset
@@ -140,69 +159,11 @@ LPPOptBW <- function(formula, data, subset, point=0, M, kern="triangular",
     ret
 }
 
-## ' Optimal bandwidth selection for inference at a point
-## '
-## ' Basic computing engine called by \code{\link{LPPOptBW}} used to find
-## ' optimal bandwidth
-## ' @param d object of class \code{"LPPData"}
-## ' @template RDoptBW
-## ' @template RDclass
-## ' @template Kern
-## ' @template LPPseInitial
-## ' @return a list with the following elements
-## '     \describe{
-## '     \item{\code{h}}{Bandwidth}
-## '
-## '     \item{\code{sigma2}}{estimate of conditional variance, from \code{d}}
-## '    }
-## ' @examples
-## ' # Lee dataset
-## ' d <- LPPData(lee08[lee08$margin>0, ], point=0)
-## ' LPPOptBW.fit(d, kern = "uniform", M = 0.1, opt.criterion = "MSE")$h
-## LPPOptBW.fit <- function(d, M, kern="triangular", opt.criterion, alpha=0.05,
-##                          beta=0.8, sclass="H", order=1, se.initial="EHW") {
-##     ## First check if sigma2 is supplied
-##     if (is.null(d$sigma2))
-##         d <- NPRPrelimVar.fit(d, se.initial=se.initial)
-
-##     ## Objective function for optimizing bandwidth
-##     obj <- function(h) {
-##         r <- NPRHonest.fit(d, M, kern, abs(h),
-##                           alpha=alpha, se.method="supplied.var",
-##                           sclass=sclass, order=order)
-##         if (opt.criterion=="OCI") {
-##             2*r$maxbias+r$sd*(stats::qnorm(1-alpha)+stats::qnorm(beta))
-##         } else if (opt.criterion=="MSE") {
-##             r$maxbias^2+r$sd^2
-##         } else if (opt.criterion=="FLCI") {
-##             r$hl
-##         } else {
-##             stop(sprintf("optimality criterion %s not yet implemented",
-##                          opt.criterion))
-##         }
-##     }
-
-##     hmin <- sort(unique(abs(d$X)))[order+1]
-##     hmax <- max(abs(d$X))
-##     ## Optimize piecewise constant function using modification of golden
-##     ## search. In fact, the criterion may not be unimodal, so proceed with
-##     ## caution. (For triangular kernel, it appears unimodal)
-##     if (kern=="uniform") {
-##         supp <- sort(unique(abs(d$X)))
-##         h <- gss(obj, supp[supp>=hmin])
-##     } else {
-##         h <- abs(stats::optimize(obj, interval=c(hmin, hmax),
-##                                  tol=.Machine$double.eps^0.75)$minimum)
-##     }
-
-##     structure(list(h=c(p=h, m=h), sigma2=d$sigma2), class="NPRBW")
-## }
-
 
 #' Rule of thumb bandwidth for inference at a point
 #'
-#' Calculate bandwidth for inference at a point on local linear regression using
-#' method in Fan and Gijbels (1996, Chapter 4.2).
+#' Calculate bandwidth for inference at a point with local linear regression
+#' using method in Fan and Gijbels (1996, Chapter 4.2).
 #'
 #' @param d object of class \code{"LPPData"}
 #' @template Kern

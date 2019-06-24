@@ -35,9 +35,7 @@ contain \code{NA}s. The default is set by the \code{na.action} setting of
 \code{options} (usually \code{na.omit}).}
 
 \item{opt.criterion}{Optimality criterion that bandwidth is designed to
-    optimize. It can either be based on exact finite-sample maximum bias and
-    finite-sample estimate of variance, or asymptotic approximations to the
-    bias and variance. The options are:
+    optimize. The options are:
 
    \describe{
 
@@ -51,10 +49,10 @@ contain \code{NA}s. The default is set by the \code{na.action} setting of
 
     }
 
-    The finite-sample methods use conditional variance given by
-    \code{sigma2}, if supplied. Otherwise, for the purpose of estimating the
-    optimal bandwidth, conditional variance is assumed homoscedastic, and
-    estimated using a nearest neighbor estimator.}
+    The methods use conditional variance given by \code{sigma2}, if supplied.
+    Otherwise, for the purpose of estimating the optimal bandwidth,
+    conditional variance is estimated using the method specified by
+    \code{se.initial}.}
 
 \item{bw.equal}{logical specifying whether bandwidths on either side of
 cutoff should be constrained to equal to each other.}
@@ -64,7 +62,7 @@ constructing/optimizing confidence intervals.}
 
 \item{beta}{Determines quantile of excess length to optimize, if bandwidth
 optimizes given quantile of excess length of one-sided confidence
-intervals.}
+intervals; otherwise ignored.}
 
 \item{sclass}{Smoothness class, either \code{"T"} for Taylor or
 \code{"H"} for Hölder class.}
@@ -72,23 +70,31 @@ intervals.}
 \item{order}{Order of local regression 1 for linear, 2 for quadratic.}
 
 \item{se.initial}{Method for estimating initial variance for computing
-    optimal bandwidth. Ignored if data already contains estimate of variance.
+    optimal bandwidth. Except for \code{"nn"}, all methods assume
+    homoskedasticity on either side of cutoff (for RD), or for all data (for
+    inference at a point).
 
 \describe{
 
-\item{"IKEHW"}{Based on residuals from a local linear regression using a
-              triangular kernel and Imbens and Kalyanaraman bandwidth}
+\item{"EHW"}{Based on residuals from a local linear regression using a
+            triangular kernel, and and bandwidth given by a rule-of-thumb
+            bandwidth (for inference at a point, see \code{\link{ROTBW.fit}}),
+            or IK bandwidth (for fuzzy and sharp RD, see
+            \code{\link{IKBW.fit}}). For fuzzy RD, the IK bandwidth is based
+            on the reduced-form regression.}
 
-\item{"IKdemeaned"}{Based on sum of squared deviations of outcome from
-              estimate of intercept in local linear regression with
-              triangular kernel and Imbens and Kalyanaraman bandwidth}
+\item{"demeaned"}{Like EHW, but instead of using the regression residuals,
+            estimate \eqn{\sigma^2_i}{sigma^2_i} by subtracting the estimated
+            intercept from the outcome (and not subtracting the estimated
+            slope). }
 
 \item{"Silverman"}{Use residuals from local constant regression with uniform
 kernel and bandwidth selected using Silverman's rule of thumb, as in Equation
 (14) in Imbens and Kalyanaraman (2012)}
-\item{"SilvermanNN"}{Use nearest neighbor estimates, rather than residuals}
+\item{"SilvermanNN"}{Use Silverman's rule of thumb to pick the bandwidth, but
+use nearest neighbor estimates, rather than the residuals.}
 
-\item{"NN"}{Use nearest neighbor estimates, without assuming homoscedasticity}
+\item{"nn"}{Use nearest neighbor estimates, without assuming homoscedasticity}
 }}
 }
 \value{
@@ -135,9 +141,20 @@ RDOptBW(voteshare ~ margin, data = lee08, kern = "uniform",
 }
 \references{
 {
+\cite{Armstrong, Tim, and Michal Kolesár. 2018. "Optimal Inference in a Class
+of Regression Models." Econometrica 86 (2): 655–83.}
+
+\cite{Armstrong, Timothy B., and Michal Kolesár. 2019.
+"Simple and Honest Confidence Intervals in Nonparametric Regression", arXiv:
+1606.01200.}
+
 \cite{Imbens, Guido, and Kalyanaraman, Karthik,
 "Optimal bandwidth choice for the regression discontinuity estimator." The
 Review of Economic Studies 79 (3): 933-959.}
+
+\cite{Kolesár, Michal, and Christoph Rothe. 2018. "Inference in Regression
+Discontinuity Designs with a Discrete Running Variable." American Economic
+Review 108 (8): 2277–2304.}
 }
 }
 \seealso{

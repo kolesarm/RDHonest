@@ -2,7 +2,7 @@
 % Please edit documentation in R/NPRfunctions.R
 \name{NPRreg.fit}
 \alias{NPRreg.fit}
-\title{Local Polynomial Regression}
+\title{Nonparametric Regression}
 \usage{
 NPRreg.fit(d, h, kern = "triangular", order = 1, se.method = "nn",
   no.warning = FALSE, J = 3)
@@ -35,13 +35,13 @@ the vector can consist of the following methods:
     \item{"EHW"}{Eicker-Huber-White, with residuals from local regression
     (local polynomial estimators only).}
 
-    \item{"demeaned"}{Use EHW, but instead of using residuals, estimate
-        \eqn{sigma^2_i} by subtracting the estimated intercept from the
-        outcome (and not subtracting the estimated slope). Local
-        polynomial estimators only.}
+    \item{"demeaned"}{Like EHW, but instead of using the regression
+        residuals, estimate \eqn{\sigma^2_i}{sigma^2_i} by subtracting the
+        estimated intercept from the outcome (and not subtracting the
+        estimated slope). Local polynomial estimators only.}
 
    \item{"plugin"}{Plug-in estimate based on asymptotic variance. Local
-        polynomial estimators in RD only.}
+        polynomial estimators in sharp RD only.}
 
    \item{"supplied.var"}{Use conditional variance supplied by \code{sigma2} or
         \code{d} instead of computing residuals}
@@ -62,12 +62,12 @@ list with elements:
               by \code{se.method}.}
     \item{w}{Implicit weight function used}
 
-    \item{sigma2}{Estimate of \eqn{sigma^2(X)} for values of \eqn{X}
-            receiving positive kernel weight. By default, estimates are based
-            on squared regression residuals, as used in \code{"EHW"}. If
-            \code{"demeaned"} or \code{"nn"} is specified, estimates are
-            based on that method, with \code{"nn"} method used if both are
-            specified.}
+    \item{sigma2}{Estimate of \eqn{\sigma^2(X)}{sigma^2(X)} for values of
+            \eqn{X} receiving positive kernel weight. By default, estimates
+            are based on squared regression residuals, as used in
+            \code{"EHW"}. If \code{se.method="demeaned"} or
+            \code{se.method="nn"} is specified, estimates are based on that
+            method, with \code{"nn"} method used if both are specified.}
 
      \item{eff.obs}{Number of effective observations}
 
@@ -81,6 +81,6 @@ polynomial regression of order \code{order}.
 \examples{
 NPRreg.fit(RDData(lee08, cutoff=0), h=5, order=2, se.method=c("nn", "plugin", "EHW"))
 NPRreg.fit(LPPData(lee08[lee08$margin>=0, ], point=0), h=5, order=1)
-d <- FRDData(cbind(logcn=log(rcp[, 6 ]), rcp[, c(3, 2)]), cutoff=0)
+d <- FRDData(cbind(logcn=log(rcp[, 6]), rcp[, c(3, 2)]), cutoff=0)
 NPRreg.fit(d, h=10, order=1)
 }

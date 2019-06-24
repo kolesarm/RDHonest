@@ -13,9 +13,7 @@ RDTOpt.fit(d, M, opt.criterion, alpha = 0.05, beta = 0.5,
 \item{M}{Bound on second derivative of the conditional mean function.}
 
 \item{opt.criterion}{Optimality criterion that bandwidth is designed to
-    optimize. It can either be based on exact finite-sample maximum bias and
-    finite-sample estimate of variance, or asymptotic approximations to the
-    bias and variance. The options are:
+    optimize. The options are:
 
    \describe{
 
@@ -29,17 +27,17 @@ RDTOpt.fit(d, M, opt.criterion, alpha = 0.05, beta = 0.5,
 
     }
 
-    The finite-sample methods use conditional variance given by
-    \code{sigma2}, if supplied. Otherwise, for the purpose of estimating the
-    optimal bandwidth, conditional variance is assumed homoscedastic, and
-    estimated using a nearest neighbor estimator.}
+    The methods use conditional variance given by \code{sigma2}, if supplied.
+    Otherwise, for the purpose of estimating the optimal bandwidth,
+    conditional variance is estimated using the method specified by
+    \code{se.initial}.}
 
 \item{alpha}{determines confidence level, \code{1-alpha} for
 constructing/optimizing confidence intervals.}
 
 \item{beta}{Determines quantile of excess length to optimize, if bandwidth
 optimizes given quantile of excess length of one-sided confidence
-intervals.}
+intervals; otherwise ignored.}
 
 \item{se.method}{Vector with methods for estimating standard error of
 estimate. If \code{NULL}, standard errors are not computed. The elements of
@@ -51,13 +49,13 @@ the vector can consist of the following methods:
     \item{"EHW"}{Eicker-Huber-White, with residuals from local regression
     (local polynomial estimators only).}
 
-    \item{"demeaned"}{Use EHW, but instead of using residuals, estimate
-        \eqn{sigma^2_i} by subtracting the estimated intercept from the
-        outcome (and not subtracting the estimated slope). Local
-        polynomial estimators only.}
+    \item{"demeaned"}{Like EHW, but instead of using the regression
+        residuals, estimate \eqn{\sigma^2_i}{sigma^2_i} by subtracting the
+        estimated intercept from the outcome (and not subtracting the
+        estimated slope). Local polynomial estimators only.}
 
    \item{"plugin"}{Plug-in estimate based on asymptotic variance. Local
-        polynomial estimators in RD only.}
+        polynomial estimators in sharp RD only.}
 
    \item{"supplied.var"}{Use conditional variance supplied by \code{sigma2} or
         \code{d} instead of computing residuals}
@@ -68,23 +66,31 @@ the vector can consist of the following methods:
 \code{se.method}.}
 
 \item{se.initial}{Method for estimating initial variance for computing
-    optimal bandwidth. Ignored if data already contains estimate of variance.
+    optimal bandwidth. Except for \code{"nn"}, all methods assume
+    homoskedasticity on either side of cutoff (for RD), or for all data (for
+    inference at a point).
 
 \describe{
 
-\item{"IKEHW"}{Based on residuals from a local linear regression using a
-              triangular kernel and Imbens and Kalyanaraman bandwidth}
+\item{"EHW"}{Based on residuals from a local linear regression using a
+            triangular kernel, and and bandwidth given by a rule-of-thumb
+            bandwidth (for inference at a point, see \code{\link{ROTBW.fit}}),
+            or IK bandwidth (for fuzzy and sharp RD, see
+            \code{\link{IKBW.fit}}). For fuzzy RD, the IK bandwidth is based
+            on the reduced-form regression.}
 
-\item{"IKdemeaned"}{Based on sum of squared deviations of outcome from
-              estimate of intercept in local linear regression with
-              triangular kernel and Imbens and Kalyanaraman bandwidth}
+\item{"demeaned"}{Like EHW, but instead of using the regression residuals,
+            estimate \eqn{\sigma^2_i}{sigma^2_i} by subtracting the estimated
+            intercept from the outcome (and not subtracting the estimated
+            slope). }
 
 \item{"Silverman"}{Use residuals from local constant regression with uniform
 kernel and bandwidth selected using Silverman's rule of thumb, as in Equation
 (14) in Imbens and Kalyanaraman (2012)}
-\item{"SilvermanNN"}{Use nearest neighbor estimates, rather than residuals}
+\item{"SilvermanNN"}{Use Silverman's rule of thumb to pick the bandwidth, but
+use nearest neighbor estimates, rather than the residuals.}
 
-\item{"NN"}{Use nearest neighbor estimates, without assuming homoscedasticity}
+\item{"nn"}{Use nearest neighbor estimates, without assuming homoscedasticity}
 }}
 }
 \value{
@@ -93,6 +99,6 @@ Returns an object of class \code{"RDResults"}, see description in
 }
 \description{
 Basic computing engine called by \code{\link{RDHonest}} to compute honest
-confidence intervals for local optimal estimators in RD under second-order
-Taylor class.
+confidence intervals for optimal estimators in RD under second-order Taylor
+class.
 }

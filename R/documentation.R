@@ -137,7 +137,14 @@
 #'   \item{pi0, pi1, pi2, pi3, pi4}{\eqn{\int_X |u^j k(u)| d u}, absolute moments}
 #'   \item{pMSE}{constant for pointwise MSE optimal bandwidth,
 #'        \eqn{((p+1)!^2\nu_0 / (2(p+1)\mu_{p+1}^2))^{1/(2p+3)}}, see page 67 in
-#'        Fan and Gijbels}
+#'        Fan and Gijbels (1996)}
 #'  }
 #' @source Computed analytically using symbolic math software
+#' @references{
+#'
+#' \cite{Fan , J., and I. Gijbels (1996): Local Polynomial Modelling and Its
+#' Applications, Monographs on Statistics and Applied Probability. Chapman &
+#' Hall/CRC, New York, NY.}
+#'
+#' }
 "kernC"

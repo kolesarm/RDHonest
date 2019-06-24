@@ -26,11 +26,11 @@ RDlpformula <- function(order) {
 #' @param alpha determines confidence level, \eqn{1-\alpha}{1-alpha}
 #' @param order Order of local regression \code{1} for linear, \code{2} for
 #'     quadratic.
-#' @param regformula Explicitly specify regression formula as alternative to
+#' @param regformula Explicitly specify regression formula to use instead of running a
 #'     local linear regression, with \code{y} and \code{x} denoting the outcome
 #'     and the running variable, and cutoff is normalized to \code{0}. Local
-#'     linear regression (\code{order=1}) is equivalent to
-#'     \code{regformula="y~x*I(x>0)"}. Inference is done on the \code{order+2}th
+#'     linear regression (\code{order = 1}) is equivalent to
+#'     \code{regformula = "y~x*I(x>0)"}. Inference is done on the \code{order+2}th
 #'     element of the design matrix
 #' @examples
 #' RDHonestBME(log(cghs$earnings)~yearat14, data=cghs, h=3,

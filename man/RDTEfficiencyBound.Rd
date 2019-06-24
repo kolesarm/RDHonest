@@ -12,56 +12,54 @@ RDTEfficiencyBound(d, M, opt.criterion = "FLCI", alpha = 0.05,
 
 \item{M}{Bound on second derivative of the conditional mean function.}
 
-\item{opt.criterion}{Optimality criterion that bandwidth is designed to
-    optimize. It can either be based on exact finite-sample maximum bias and
-    finite-sample estimate of variance, or asymptotic approximations to the
-    bias and variance. The options are:
-
-   \describe{
-
-   \item{\code{"MSE"}}{Finite-sample maximum MSE}
-
-   \item{\code{"FLCI"}}{Length of (fixed-length) two-sided
-       confidence intervals.}
-
-   \item{\code{"OCI"}}{Given quantile of excess length of one-sided
-       confidence intervals}
-
-    }
-
-    The finite-sample methods use conditional variance given by
-    \code{sigma2}, if supplied. Otherwise, for the purpose of estimating the
-    optimal bandwidth, conditional variance is assumed homoscedastic, and
-    estimated using a nearest neighbor estimator.}
+\item{opt.criterion}{\code{"FLCI"} for computing efficiency of two-sided CIs,
+and \code{"OCI"} for minimax one-sided CIs.}
 
 \item{alpha}{determines confidence level, \code{1-alpha} for
 constructing/optimizing confidence intervals.}
 
 \item{beta}{Determines quantile of excess length to optimize, if bandwidth
 optimizes given quantile of excess length of one-sided confidence
-intervals.}
+intervals; otherwise ignored.}
 
 \item{se.initial}{Method for estimating initial variance for computing
-    optimal bandwidth. Ignored if data already contains estimate of variance.
+    optimal bandwidth. Except for \code{"nn"}, all methods assume
+    homoskedasticity on either side of cutoff (for RD), or for all data (for
+    inference at a point).
 
 \describe{
 
-\item{"IKEHW"}{Based on residuals from a local linear regression using a
-              triangular kernel and Imbens and Kalyanaraman bandwidth}
+\item{"EHW"}{Based on residuals from a local linear regression using a
+            triangular kernel, and and bandwidth given by a rule-of-thumb
+            bandwidth (for inference at a point, see \code{\link{ROTBW.fit}}),
+            or IK bandwidth (for fuzzy and sharp RD, see
+            \code{\link{IKBW.fit}}). For fuzzy RD, the IK bandwidth is based
+            on the reduced-form regression.}
 
-\item{"IKdemeaned"}{Based on sum of squared deviations of outcome from
-              estimate of intercept in local linear regression with
-              triangular kernel and Imbens and Kalyanaraman bandwidth}
+\item{"demeaned"}{Like EHW, but instead of using the regression residuals,
+            estimate \eqn{\sigma^2_i}{sigma^2_i} by subtracting the estimated
+            intercept from the outcome (and not subtracting the estimated
+            slope). }
 
 \item{"Silverman"}{Use residuals from local constant regression with uniform
 kernel and bandwidth selected using Silverman's rule of thumb, as in Equation
 (14) in Imbens and Kalyanaraman (2012)}
-\item{"SilvermanNN"}{Use nearest neighbor estimates, rather than residuals}
+\item{"SilvermanNN"}{Use Silverman's rule of thumb to pick the bandwidth, but
+use nearest neighbor estimates, rather than the residuals.}
 
-\item{"NN"}{Use nearest neighbor estimates, without assuming homoscedasticity}
+\item{"nn"}{Use nearest neighbor estimates, without assuming homoscedasticity}
 }}
 }
 \description{
-Compute efficiency of minimax one-sided CIs at constant functions and
-half-length of Pratt CIs.
+Compute efficiency of minimax one-sided CIs at constant functions, or
+efficiency of two-sided fixed-length CIs at constant functions under
+second-order Taylor smoothness class.
+}
+\references{
+{
+
+\cite{Armstrong, Tim, and Michal Kolesár. 2018. "Optimal Inference in a Class
+of Regression Models." Econometrica 86 (2): 655–83.}
+
+}
 }

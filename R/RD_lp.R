@@ -19,16 +19,16 @@
 #' @template Kern
 #' @template bwequal
 #' @template RDseInitial
-#' @return Returns an object of class \code{"RDResults"}. The function
+#' @return Returns an object of class \code{"NPRResults"}. The function
 #'     \code{print} can be used to obtain and print a summary of the results. An
-#'     object of class \code{"RDResults"} is a list containing the following
+#'     object of class \code{"NPRResults"} is a list containing the following
 #'     components
 #'
 #'     \describe{
 #'   \item{\code{estimate}}{Point estimate. This estimate is MSE-optimal if
 #'                   \code{opt.criterion="MSE"}}
 #'
-#'   \item{lff}{Least favorable function, only relevant for optimal estimator
+#'   \item{\code{lff}}{Least favorable function, only relevant for optimal estimator
 #'              under Taylor class.}
 #'
 #'   \item{\code{maxbias}}{Maximum bias of \code{estimate}}
@@ -46,19 +46,33 @@
 #'   \item{\code{eff.obs}}{Effective number of observations used by
 #'             \code{estimate}}
 #'
-#'   \item{\code{hp}, \code{hm}}{Bandwidths used}
+#'   \item{\code{hp}, \code{hm}}{Bandwidths used above and below the cutoff}
 #'
 #'   \item{\code{naive}}{Coverage of CI that ignores bias and uses
 #'                \code{qnorm(1-alpha/2)} as critical value}
 #'
 #'   \item{\code{call}}{the matched call}
 #'
+#'   \item{\code{fs}}{Not relevant for sharp RD}
+#'
 #' }
 #' @seealso \code{\link{RDOptBW}}
 #' @references{
+#'
+#' \cite{Armstrong, Tim, and Michal Kolesár. 2018. "Optimal Inference in a Class
+#' of Regression Models." Econometrica 86 (2): 655–83.}
+#'
+#' \cite{Armstrong, Timothy B., and Michal Kolesár. 2019.
+#' "Simple and Honest Confidence Intervals in Nonparametric Regression", arXiv:
+#' 1606.01200.}
+#'
 #' \cite{Imbens, Guido, and Kalyanaraman, Karthik,
 #' "Optimal bandwidth choice for the regression discontinuity estimator." The
 #' Review of Economic Studies 79 (3): 933-959.}
+#'
+#' \cite{Kolesár, Michal, and Christoph Rothe. 2018. "Inference in Regression
+#' Discontinuity Designs with a Discrete Running Variable." American Economic
+#' Review 108 (8): 2277–2304.}
 #' }
 #' @examples
 #'
@@ -140,9 +154,20 @@ RDHonest <- function(formula, data, subset, cutoff=0, M, kern="triangular",
 #'    }
 #' @seealso \code{\link{RDHonest}}
 #' @references{
+#' \cite{Armstrong, Tim, and Michal Kolesár. 2018. "Optimal Inference in a Class
+#' of Regression Models." Econometrica 86 (2): 655–83.}
+#'
+#' \cite{Armstrong, Timothy B., and Michal Kolesár. 2019.
+#' "Simple and Honest Confidence Intervals in Nonparametric Regression", arXiv:
+#' 1606.01200.}
+#'
 #' \cite{Imbens, Guido, and Kalyanaraman, Karthik,
 #' "Optimal bandwidth choice for the regression discontinuity estimator." The
 #' Review of Economic Studies 79 (3): 933-959.}
+#'
+#' \cite{Kolesár, Michal, and Christoph Rothe. 2018. "Inference in Regression
+#' Discontinuity Designs with a Discrete Running Variable." American Economic
+#' Review 108 (8): 2277–2304.}
 #' }
 #' @examples
 #'
@@ -186,6 +211,9 @@ RDOptBW <- function(formula, data, subset, cutoff=0, M, kern="triangular",
 #' "Optimal bandwidth choice for the regression discontinuity estimator." The
 #' Review of Economic Studies 79 (3): 933-959.}
 #' }
+#' @examples
+#' ## Reproduce bandwidth from Section 6.2 in Imbens and Kalyanaraman (2012)
+#' IKBW.fit(RDData(lee08, cutoff=0))
 #' @export
 IKBW.fit <- function(d, kern="triangular", order=1, verbose=FALSE) {
     if (order!=1)

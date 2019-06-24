@@ -26,7 +26,6 @@ Computes moments of a kernel over \eqn{X=[0, 1]} (boundary case), or
 \eqn{X=[-1, 1]} (interior case),
 }
 \examples{
-KernMoment(function(u) u<1, moment = 3, boundary = FALSE)
-KernMoment(EqKern(kernel = "triangular", order = 2),
-           moment = 3)
+KernMoment(function(u) abs(u) < 1, moment = 3, boundary = FALSE)
+KernMoment(EqKern(kernel = "triangular", order = 2), moment = 3)
 }

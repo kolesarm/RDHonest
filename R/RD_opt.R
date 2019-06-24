@@ -110,14 +110,14 @@ RDEstimator <- function(d, f, alpha=0.05, se.method="supplied.var", J=3) {
     structure(list(estimate=Lhat, lff=f, maxbias=maxbias, sd=sd, lower=lower,
                    upper=upper, hl=hl, delta=sqrt(4*q), omega=2*b,
                    eff.obs=eff.obs),
-              class="RDResults")
+              class="NPRResults")
 }
 
 #' Optimal inference in RD under Taylor class
 #'
 #' Basic computing engine called by \code{\link{RDHonest}} to compute honest
-#' confidence intervals for local optimal estimators in RD under second-order
-#' Taylor class.
+#' confidence intervals for optimal estimators in RD under second-order Taylor
+#' class.
 #'
 #' @param d object of class \code{"RDData"}
 #' @template RDoptBW
@@ -173,13 +173,26 @@ RDTOpt.fit <- function(d, M, opt.criterion, alpha=0.05, beta=0.5,
 
 #' Finite-sample efficiency bounds for minimax CIs
 #'
-#' Compute efficiency of minimax one-sided CIs at constant functions and
-#' half-length of Pratt CIs.
+#' Compute efficiency of minimax one-sided CIs at constant functions, or
+#' efficiency of two-sided fixed-length CIs at constant functions under
+#' second-order Taylor smoothness class.
 #'
 #' @param d object of class \code{"RDData"}
-#' @template RDoptBW
+#' @param opt.criterion \code{"FLCI"} for computing efficiency of two-sided CIs,
+#'     and \code{"OCI"} for minimax one-sided CIs.
+#' @param beta Determines quantile of excess length to optimize, if bandwidth
+#'     optimizes given quantile of excess length of one-sided confidence
+#'     intervals; otherwise ignored.
+#' @param alpha determines confidence level, \code{1-alpha} for
+#'     constructing/optimizing confidence intervals.
 #' @param M Bound on second derivative of the conditional mean function.
 #' @template RDseInitial
+#' @references{
+#'
+#' \cite{Armstrong, Tim, and Michal Kolesár. 2018. "Optimal Inference in a Class
+#' of Regression Models." Econometrica 86 (2): 655–83.}
+#'
+#' }
 #' @export
 RDTEfficiencyBound <- function(d, M, opt.criterion="FLCI",
                                alpha=0.05, beta=0.5, se.initial="EHW") {

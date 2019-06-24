@@ -25,6 +25,15 @@
 #'
 #' \item{\code{sd+,sd-}}{Standard deviations of point estimates}
 #' }
+#' @references{
+#'
+#' \cite{Armstrong, Tim, and Michal Kolesár. 2018. "Optimal Inference in a Class
+#' of Regression Models." Econometrica 86 (2): 655–83.}
+#'
+#' \cite{Kolesár, Michal, and Christoph Rothe. 2018. "Inference in Regression
+#' Discontinuity Designs with a Discrete Running Variable." American Economic
+#' Review 108 (8): 2277–2304.}
+#' }
 #' @export
 RDSmoothnessBound <- function(d, s, separate=TRUE, multiple=TRUE, alpha=0.05,
                               sclass="T") {

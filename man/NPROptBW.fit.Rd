@@ -2,14 +2,15 @@
 % Please edit documentation in R/NPR_lp.R
 \name{NPROptBW.fit}
 \alias{NPROptBW.fit}
-\title{Optimal bandwidth selection in RD}
+\title{Optimal bandwidth selection in nonparametric regression}
 \usage{
 NPROptBW.fit(d, M, kern = "triangular", opt.criterion, bw.equal = TRUE,
   alpha = 0.05, beta = 0.8, sclass = "H", order = 1,
   se.initial = "EHW", T0 = 0)
 }
 \arguments{
-\item{d}{object of class \code{"RDData"}}
+\item{d}{object of class \code{"RDData"}, \code{"FRDData"}, or
+\code{"LPPData"}}
 
 \item{M}{Bound on second derivative of the conditional mean function.}
 
@@ -19,9 +20,7 @@ either be a string equal to \code{"triangular"} (\eqn{k(u)=(1-|u|)_{+}}),
 (\eqn{k(u)= (|u|<1)/2}), or else a kernel function.}
 
 \item{opt.criterion}{Optimality criterion that bandwidth is designed to
-    optimize. It can either be based on exact finite-sample maximum bias and
-    finite-sample estimate of variance, or asymptotic approximations to the
-    bias and variance. The options are:
+    optimize. The options are:
 
    \describe{
 
@@ -35,10 +34,10 @@ either be a string equal to \code{"triangular"} (\eqn{k(u)=(1-|u|)_{+}}),
 
     }
 
-    The finite-sample methods use conditional variance given by
-    \code{sigma2}, if supplied. Otherwise, for the purpose of estimating the
-    optimal bandwidth, conditional variance is assumed homoscedastic, and
-    estimated using a nearest neighbor estimator.}
+    The methods use conditional variance given by \code{sigma2}, if supplied.
+    Otherwise, for the purpose of estimating the optimal bandwidth,
+    conditional variance is estimated using the method specified by
+    \code{se.initial}.}
 
 \item{bw.equal}{logical specifying whether bandwidths on either side of
 cutoff should be constrained to equal to each other.}
@@ -48,7 +47,7 @@ constructing/optimizing confidence intervals.}
 
 \item{beta}{Determines quantile of excess length to optimize, if bandwidth
 optimizes given quantile of excess length of one-sided confidence
-intervals.}
+intervals; otherwise ignored.}
 
 \item{sclass}{Smoothness class, either \code{"T"} for Taylor or
 \code{"H"} for Hölder class.}
@@ -56,42 +55,45 @@ intervals.}
 \item{order}{Order of local regression 1 for linear, 2 for quadratic.}
 
 \item{se.initial}{Method for estimating initial variance for computing
-    optimal bandwidth. Ignored if data already contains estimate of variance.
+    optimal bandwidth. Except for \code{"nn"}, all methods assume
+    homoskedasticity on either side of cutoff (for RD), or for all data (for
+    inference at a point).
 
 \describe{
 
-\item{"IKEHW"}{Based on residuals from a local linear regression using a
-              triangular kernel and Imbens and Kalyanaraman bandwidth}
+\item{"EHW"}{Based on residuals from a local linear regression using a
+            triangular kernel, and and bandwidth given by a rule-of-thumb
+            bandwidth (for inference at a point, see \code{\link{ROTBW.fit}}),
+            or IK bandwidth (for fuzzy and sharp RD, see
+            \code{\link{IKBW.fit}}). For fuzzy RD, the IK bandwidth is based
+            on the reduced-form regression.}
 
-\item{"IKdemeaned"}{Based on sum of squared deviations of outcome from
-              estimate of intercept in local linear regression with
-              triangular kernel and Imbens and Kalyanaraman bandwidth}
+\item{"demeaned"}{Like EHW, but instead of using the regression residuals,
+            estimate \eqn{\sigma^2_i}{sigma^2_i} by subtracting the estimated
+            intercept from the outcome (and not subtracting the estimated
+            slope). }
 
 \item{"Silverman"}{Use residuals from local constant regression with uniform
 kernel and bandwidth selected using Silverman's rule of thumb, as in Equation
 (14) in Imbens and Kalyanaraman (2012)}
-\item{"SilvermanNN"}{Use nearest neighbor estimates, rather than residuals}
+\item{"SilvermanNN"}{Use Silverman's rule of thumb to pick the bandwidth, but
+use nearest neighbor estimates, rather than the residuals.}
 
-\item{"NN"}{Use nearest neighbor estimates, without assuming homoscedasticity}
+\item{"nn"}{Use nearest neighbor estimates, without assuming homoscedasticity}
 }}
 
-\item{T0}{Inital estimate of beta, for FRD only}
+\item{T0}{Initial estimate of the treatment effect for calculating the
+optimal bandwidth. Only relevant for Fuzzy RD.}
 }
 \value{
-a list with the following elements
-    \describe{
-    \item{\code{hp}}{bandwidth for observations above cutoff}
-
-    \item{\code{hm}}{bandwidth for observations below cutoff, equal to \code{hp}
-    unless \code{bw.equal==FALSE}}
-
-    \item{\code{sigma2m}, \code{sigma2p}}{estimate of conditional variance
-     above and below cutoff, from \code{d}}
-   }
+Returns an object of class \code{"NPRBW"}, see descriptions in
+    \code{\link{RDOptBW}}, \code{\link{FRDOptBW}}, and
+    \code{\link{LPPOptBW}}.
 }
 \description{
-Basic computing engine called by \code{\link{RDOptBW}} used to find
-optimal bandwidth
+Basic computing engine called by \code{\link{RDOptBW}},
+\code{\link{FRDOptBW}}, and \code{\link{LPPOptBW}} to compute the optimal
+bandwidth
 }
 \examples{
 ## Lee data
@@ -99,9 +101,7 @@ d <- RDData(lee08, cutoff=0)
 NPROptBW.fit(d, M=0.1, opt.criterion="MSE")[c("hp", "hm")]
 }
 \references{
-{
-\cite{Imbens, Guido, and Kalyanaraman, Karthik,
-"Optimal bandwidth choice for the regression discontinuity estimator." The
-Review of Economic Studies 79 (3): 933-959.}
-}
+{ \cite{Imbens, Guido, and Kalyanaraman, Karthik,
+    "Optimal bandwidth choice for the regression discontinuity estimator."
+    The Review of Economic Studies 79 (3): 933-959.} }
 }

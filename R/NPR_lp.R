@@ -1,8 +1,10 @@
-#' Honest inference in RD
+#' Honest inference in nonparametric regression
 #'
-#' Basic computing engine called by \code{\link{RDHonest}} to compute honest
+#' Basic computing engine called by \code{\link{RDHonest}},
+#' \code{\link{LPPHonest}}, and \code{\link{FRDHonest}} to compute honest
 #' confidence intervals for local polynomial estimators.
-#' @param d object of class \code{"RDData"}
+#' @param d object of class \code{"RDData"}, \code{"FRDData"}, or
+#'     \code{"LPPData"}
 #' @template RDse
 #' @template RDoptBW
 #' @template RDBW
@@ -10,12 +12,22 @@
 #' @template Kern
 #' @template bwequal
 #' @template RDseInitial
-#' @return Returns an object of class \code{"RDResults"}, see description in
-#'     \code{\link{RDHonest}}
+#' @param T0 Initial estimate of the treatment effect for calculating the
+#'     optimal bandwidth. Only relevant for Fuzzy RD.
+#' @param T0bias When evaluting the maximum bias of the estimate, use the
+#'     estimate itself (if \code{T0bias==FALSE}), or use the preliminary
+#'     estimate \code{T0} (if \code{T0bias==TRUE}). Only relevant for Fuzzy RD.
+#' @return Returns an object of class \code{"NPRResults"}, see descriptions in
+#'     \code{\link{RDHonest}}, \code{\link{LPPHonest}}, and
+#'     \code{\link{FRDHonest}}.
+#' @examples
+#' d <- RDData(lee08, cutoff=0)
+#' NPRHonest.fit(d, opt.criterion="MSE", M=NPR_MROT.fit(d))
 #' @export
 NPRHonest.fit <- function(d, M, kern="triangular", h, opt.criterion,
                          bw.equal=TRUE, alpha=0.05, beta=0.8, se.method="nn",
-                         J=3, sclass="H", order=1, se.initial="EHW") {
+                         J=3, sclass="H", order=1, se.initial="EHW", T0=0,
+                         T0bias=FALSE) {
     ## Initial se estimate
     if (is.null(d$sigma2) & (is.null(d$sigma2p) | is.null(d$sigma2m)) &
         ("supplied.var" %in% se.method | missing(h)))
@@ -23,7 +35,7 @@ NPRHonest.fit <- function(d, M, kern="triangular", h, opt.criterion,
 
     if (missing(h)) {
         h <- NPROptBW.fit(d, M, kern, opt.criterion, bw.equal, alpha,
-                         beta, sclass, order)$h
+                         beta, sclass, order, se.initial, T0)$h
     } else if (length(h)==1) {
         h <- c(p=unname(h), m=unname(h))
     }
@@ -35,7 +47,7 @@ NPRHonest.fit <- function(d, M, kern="triangular", h, opt.criterion,
         wt <- w[w!=0]
         xx <- d$X[w!=0]
         nobs <- length(wt)
-        ## test for boundary
+        ## Are we at a boundary?
         bd <- length(unique(d$X>=0)==1)
     } else {
         wp <- r1$wp(d$Xp)
@@ -53,24 +65,30 @@ NPRHonest.fit <- function(d, M, kern="triangular", h, opt.criterion,
         lower <- -upper
     } else {
         sd <- r1$se[se.method]
-        M0 <- if (inherits(d, "FRDData")) (M[1]+M[2]*abs(r1$estimate)) else M
+        if (T0bias==TRUE & inherits(d, "FRDData")) {
+            ## rescale bias and sd to make it free of r1$fs, use T0
+            sd <- sd*abs(r1$fs)
+            M <- unname((M[1]+M[2]*abs(T0)))
+        } else if (T0bias==FALSE & inherits(d, "FRDData")) {
+            M <- unname(M[1]+M[2]*abs(r1$estimate)) / abs(r1$fs)
+        }
+
         if(order==0) {
             bias <- Inf
         } else if (sclass=="T")  {
-            bias <- M0/2 * (sum(abs(wt*xx^2)))
+            bias <- M/2 * (sum(abs(wt*xx^2)))
         } else if (sclass=="H" & order==1 & bd) {
             ## At boundary we know form of least favorable function
-            bias <- -M0/2 * (sum(wt*xx^2))
+            bias <- -M/2 * (sum(wt*xx^2))
         } else {
             ## Else need to find numerically
-
             w2p <- function(s) abs(sum((wt*(xx-s))[xx>=s]))
             w2m <- function(s) abs(sum((wt*(s-xx))[xx<=s]))
             bp <- stats::integrate(function(s)
                 vapply(s, w2p, numeric(1)), 0, h["p"])$value
             bm <- stats::integrate(function(s)
                 vapply(s, w2m, numeric(1)), -h["m"], 0)$value
-            bias <- M0*(bp+bm)
+            bias <- M*(bp+bm)
         }
         lower <- r1$estimate - bias - stats::qnorm(1-alpha)*sd
         upper <- r1$estimate + bias + stats::qnorm(1-alpha)*sd
@@ -83,90 +101,29 @@ NPRHonest.fit <- function(d, M, kern="triangular", h, opt.criterion,
 
     structure(list(estimate=r1$estimate, lff=NA, maxbias=bias, sd=sd,
                    lower=lower, upper=upper, hl=hl, eff.obs=r1$eff.obs,
-                   hp=unname(h["p"]), hm=unname(h["m"]), naive=naive),
+                   hp=unname(h["p"]), hm=unname(h["m"]), naive=naive,
+                   fs=r1$fs),
               class="NPRResults")
 }
 
 
-## RDOptBW.fit <- function(d, M, kern="triangular", opt.criterion, bw.equal=TRUE,
-##                          alpha=0.05, beta=0.8, sclass="H", order=1,
-##                          se.initial="EHW", T0=0) {
-
-##     ## First check if sigma2 is supplied
-##     if (is.null(d$sigma2) & (is.null(d$sigma2p) | is.null(d$sigma2m)))
-##         d <- NPRPrelimVar.fit(d, se.initial=se.initial)
-
-##     ## Objective function for optimizing bandwidth
-##     obj <- function(hp, hm) {
-##         r <- NPRHonest.fit(d, M, kern, c(p=abs(hp), m=abs(hm)),
-##                           alpha=alpha, se.method="supplied.var",
-##                           sclass=sclass, order=order)
-##         if (opt.criterion=="OCI") {
-##             2*r$maxbias+r$sd*(stats::qnorm(1-alpha)+stats::qnorm(beta))
-##         } else if (opt.criterion=="MSE") {
-##             r$maxbias^2+r$sd^2
-##         } else if (opt.criterion=="FLCI") {
-##             r$hl
-##         } else {
-##             stop(sprintf("optimality criterion %s not yet implemented",
-##                          opt.criterion))
-##         }
-##     }
-
-##     if (bw.equal==FALSE) {
-##         r <- stats::optim(c(max(d$Xp)/2, max(abs(d$Xm)/2)),
-##                    function(h) obj(h[1], h[2]))
-##         if (r$convergence!=0) warning(r$message)
-##         hp <- abs(r$par[1])
-##         hm <- abs(r$par[2])
-##     } else {
-##         obj1 <- function(h) obj(h, h)
-##         hmin <- max(unique(d$Xp)[order+1], sort(unique(abs(d$Xm)))[order+1])
-##         hmax <- max(abs(c(d$Xp, d$Xm)))
-##         ## Optimize piecewise constant function using modification of golden
-##         ## search. In fact, the criterion may not be unimodal, so proceed with
-##         ## caution. (For triangular kernel, it appears unimodal)
-##         if (kern=="uniform") {
-##             supp <- sort(unique(c(d$Xp, abs(d$Xm))))
-##             hp <- hm <- gss(obj1, supp[supp>=hmin])
-##         } else {
-##             hm <- hp <- abs(stats::optimize(obj1, interval=c(hmin, hmax),
-##                                         tol=.Machine$double.eps^0.75)$minimum)
-##         }
-
-##     }
-
-##     structure(list(h=c(p=hp, m=hm), sigma2p=d$sigma2p, sigma2m=d$sigma2m),
-##               class="NPRBW")
-## }
-
-
-#' Optimal bandwidth selection in RD
+#' Optimal bandwidth selection in nonparametric regression
 #'
-#' Basic computing engine called by \code{\link{RDOptBW}} used to find
-#' optimal bandwidth
-#' @param d object of class \code{"RDData"}
+#' Basic computing engine called by \code{\link{RDOptBW}},
+#' \code{\link{FRDOptBW}}, and \code{\link{LPPOptBW}} to compute the optimal
+#' bandwidth
 #' @template RDoptBW
 #' @template RDclass
 #' @template Kern
 #' @template bwequal
 #' @template RDseInitial
-#' @param T0 Inital estimate of beta, for FRD only
-#' @return a list with the following elements
-#'     \describe{
-#'     \item{\code{hp}}{bandwidth for observations above cutoff}
-#'
-#'     \item{\code{hm}}{bandwidth for observations below cutoff, equal to \code{hp}
-#'     unless \code{bw.equal==FALSE}}
-#'
-#'     \item{\code{sigma2m}, \code{sigma2p}}{estimate of conditional variance
-#'      above and below cutoff, from \code{d}}
-#'    }
-#' @references{
-#' \cite{Imbens, Guido, and Kalyanaraman, Karthik,
-#' "Optimal bandwidth choice for the regression discontinuity estimator." The
-#' Review of Economic Studies 79 (3): 933-959.}
-#' }
+#' @inheritParams NPRHonest.fit
+#' @return Returns an object of class \code{"NPRBW"}, see descriptions in
+#'     \code{\link{RDOptBW}}, \code{\link{FRDOptBW}}, and
+#'     \code{\link{LPPOptBW}}.
+#' @references{ \cite{Imbens, Guido, and Kalyanaraman, Karthik,
+#'     "Optimal bandwidth choice for the regression discontinuity estimator."
+#'     The Review of Economic Studies 79 (3): 933-959.} }
 #' @examples
 #' ## Lee data
 #' d <- RDData(lee08, cutoff=0)
@@ -184,7 +141,7 @@ NPROptBW.fit <- function(d, M, kern="triangular", opt.criterion, bw.equal=TRUE,
     obj <- function(hp, hm) {
         r <- NPRHonest.fit(d, M, kern, c(p=abs(hp), m=abs(hm)),
                           alpha=alpha, se.method="supplied.var",
-                          sclass=sclass, order=order)
+                          sclass=sclass, order=order, T0=T0, T0bias=TRUE)
         if (opt.criterion=="OCI") {
             2*r$maxbias+r$sd*(stats::qnorm(1-alpha)+stats::qnorm(beta))
         } else if (opt.criterion=="MSE") {
@@ -228,7 +185,8 @@ NPROptBW.fit <- function(d, M, kern="triangular", opt.criterion, bw.equal=TRUE,
         }
     }
 
-    structure(list(h=c(p=hp, m=hm), sigma2p=d$sigma2p, sigma2m=d$sigma2m),
+    structure(list(h=c(p=hp, m=hm), sigma2p=d$sigma2p, sigma2m=d$sigma2m,
+                   sigma2=d$sigma2),
               class="NPRBW")
 }
 
@@ -270,11 +228,11 @@ print.NPRResults <- function(x, digits = getOption("digits"), ...) {
 #' @export
 print.NPRBW <- function(x, digits = getOption("digits"), ...) {
     if (!is.null(x$call))
-        cat("Call:\n", deparse(x$call), "\n", sep = "", fill=TRUE)
+        cat("Call:\n", deparse(x$call), "\n\n", sep = "", fill=TRUE)
     if (x$h["m"]==x$h["p"]) {
-        cat("\nBandwidth: ", format(x$h["m"], digits=digits), "\n", sep="")
+        cat("Bandwidth: ", format(x$h["m"], digits=digits), "\n", sep="")
     } else {
-        cat("\nBandwidth below cutoff: ", format(x$h["m"], digits=digits),
+        cat("Bandwidth below cutoff: ", format(x$h["m"], digits=digits),
             "\n", sep="")
         cat("\nBandwidth above cutoff: ", format(x$h["p"], digits=digits),
             "\n", sep="")

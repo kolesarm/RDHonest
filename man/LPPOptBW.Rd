@@ -21,7 +21,8 @@ environment from which the function is called.}
 \item{subset}{optional vector specifying a subset of observations to be used
 in the fitting process.}
 
-\item{point}{specifies the point \eqn{X_0} at which to do inference}
+\item{point}{specifies the point \eqn{x_0} at which to calculate the
+conditional mean}
 
 \item{M}{Bound on second derivative of the conditional mean function.}
 
@@ -35,9 +36,7 @@ contain \code{NA}s. The default is set by the \code{na.action} setting of
 \code{options} (usually \code{na.omit}).}
 
 \item{opt.criterion}{Optimality criterion that bandwidth is designed to
-    optimize. It can either be based on exact finite-sample maximum bias and
-    finite-sample estimate of variance, or asymptotic approximations to the
-    bias and variance. The options are:
+    optimize. The options are:
 
    \describe{
 
@@ -51,17 +50,17 @@ contain \code{NA}s. The default is set by the \code{na.action} setting of
 
     }
 
-    The finite-sample methods use conditional variance given by
-    \code{sigma2}, if supplied. Otherwise, for the purpose of estimating the
-    optimal bandwidth, conditional variance is assumed homoscedastic, and
-    estimated using a nearest neighbor estimator.}
+    The methods use conditional variance given by \code{sigma2}, if supplied.
+    Otherwise, for the purpose of estimating the optimal bandwidth,
+    conditional variance is estimated using the method specified by
+    \code{se.initial}.}
 
 \item{alpha}{determines confidence level, \code{1-alpha} for
 constructing/optimizing confidence intervals.}
 
 \item{beta}{Determines quantile of excess length to optimize, if bandwidth
 optimizes given quantile of excess length of one-sided confidence
-intervals.}
+intervals; otherwise ignored.}
 
 \item{sclass}{Smoothness class, either \code{"T"} for Taylor or
 \code{"H"} for Hölder class.}
@@ -69,22 +68,37 @@ intervals.}
 \item{order}{Order of local regression 1 for linear, 2 for quadratic.}
 
 \item{se.initial}{Method for estimating initial variance for computing
-    optimal bandwidth. Ignored if data already contains estimate of variance.
+    optimal bandwidth. Except for \code{"nn"}, all methods assume
+    homoskedasticity on either side of cutoff (for RD), or for all data (for
+    inference at a point).
 
 \describe{
 
-\item{"ROTEHW"}{Based on residuals from a local linear regression using a
-             triangular kernel and ROT bandwidth}
+\item{"EHW"}{Based on residuals from a local linear regression using a
+            triangular kernel, and and bandwidth given by a rule-of-thumb
+            bandwidth (for inference at a point, see \code{\link{ROTBW.fit}}),
+            or IK bandwidth (for fuzzy and sharp RD, see
+            \code{\link{IKBW.fit}}). For fuzzy RD, the IK bandwidth is based
+            on the reduced-form regression.}
 
-\item{"ROTdemeaned"}{Based on sum of squared deviations of outcome from
-              estimate of intercept in local linear regression with
-              triangular kernel and ROT bandwidth}
+\item{"demeaned"}{Like EHW, but instead of using the regression residuals,
+            estimate \eqn{\sigma^2_i}{sigma^2_i} by subtracting the estimated
+            intercept from the outcome (and not subtracting the estimated
+            slope). }
+
+\item{"Silverman"}{Use residuals from local constant regression with uniform
+kernel and bandwidth selected using Silverman's rule of thumb, as in Equation
+(14) in Imbens and Kalyanaraman (2012)}
+\item{"SilvermanNN"}{Use Silverman's rule of thumb to pick the bandwidth, but
+use nearest neighbor estimates, rather than the residuals.}
+
+\item{"nn"}{Use nearest neighbor estimates, without assuming homoscedasticity}
 }}
 }
 \value{
-Returns an object of class \code{"LPPBW"}. The function \code{print}
+Returns an object of class \code{"NPRBW"}. The function \code{print}
     can be used to obtain and print a summary of the results. An object of
-    class \code{"LPPBW"} is a list containing the following components:
+    class \code{"NPRBW"} is a list containing the following components:
 
     \describe{
     \item{\code{h}}{Bandwidth}
@@ -114,6 +128,15 @@ that is first in \code{data} and then in the environment of \code{formula}.
 # Lee dataset
 LPPOptBW(voteshare ~ margin, data = lee08, subset=margin>0,
          kern = "uniform", M = 0.1, opt.criterion = "MSE", sclass = "H")
+}
+\references{
+{
+
+\cite{Armstrong, Timothy B., and Michal Kolesár. 2019.
+"Simple and Honest Confidence Intervals in Nonparametric Regression", arXiv:
+1606.01200.}
+
+}
 }
 \seealso{
 \code{\link{LPPHonest}}

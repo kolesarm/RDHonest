@@ -13,7 +13,7 @@ and optionally a column called \code{"sigma2"} that corresponds to the
 conditional variance of the outcome (or an estimate of the conditional
 variance)}
 
-\item{point}{specifies the point \code{x0} at which to calculate the
+\item{point}{specifies the point \eqn{x_0} at which to calculate the
 conditional mean}
 }
 \value{
@@ -28,7 +28,7 @@ An object of class \code{"LPPData"}, which is a list containing the
 
     \item{sigma2}{Conditional variance of the outcome}
 
-    \item{orig.point}{Original point \code{x0}}
+    \item{orig.point}{Original value of \eqn{x_0}}
 
     \item{var.names}{Names of outcome and independent variable in supplied
     data frame}
@@ -37,8 +37,8 @@ An object of class \code{"LPPData"}, which is a list containing the
 }
 \description{
 Convert data to standardized format for use with low-level functions. If the
-point for which to do inference is non-zero, shift the independent variable
-so that it is at zero.
+point of interest \eqn{x_0} is non-zero, shift the independent variable so
+that it is at zero.
 }
 \examples{
 ## Transform Lee data

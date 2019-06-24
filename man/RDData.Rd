@@ -43,9 +43,9 @@ An object of class \code{"RDData"}, which is a list containing the
     }
 }
 \description{
-Convert data to standardized format for use with low-level functions. If the
-cutoff for treatment is non-zero, shift the running variable so that cutoff
-is at zero.
+Convert data to a standardized format for use with low-level functions. If
+the cutoff for treatment is non-zero, shift the running variable so that the
+cutoff is at zero.
 }
 \examples{
 ## Transform Lee data

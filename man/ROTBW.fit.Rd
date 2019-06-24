@@ -22,8 +22,8 @@ either be a string equal to \code{"triangular"} (\eqn{k(u)=(1-|u|)_{+}}),
 ROT bandwidth
 }
 \description{
-Calculate bandwidth for inference at a point on local linear regression using
-method in Fan and Gijbels (1996, Chapter 4.2).
+Calculate bandwidth for inference at a point with local linear regression
+using method in Fan and Gijbels (1996, Chapter 4.2).
 }
 \examples{
 dp <- LPPData(lee08[lee08$margin>0, ], point=0)

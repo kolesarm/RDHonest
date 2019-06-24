@@ -369,7 +369,7 @@ $M$ for the Taylor and Hölder smoothness class, as described in the supplements
 ```{r}
 ## Add variance estimate to the lee data so that the RDSmoothnessBound
 ## function doesn't have to compute them each time
-dl <- NPRPrelimVar.fit(dl, se.initial="NN")
+dl <- NPRPrelimVar.fit(dl, se.initial="nn")
 
 ### Only use three point-average for averages of a 100 points closest to cutoff,
 ### and report results separately for points above and below cutoff

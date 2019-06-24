@@ -1,8 +1,8 @@
 #' Class Constructor for \code{"RDData"}
 #'
-#' Convert data to standardized format for use with low-level functions. If the
-#' cutoff for treatment is non-zero, shift the running variable so that cutoff
-#' is at zero.
+#' Convert data to a standardized format for use with low-level functions. If
+#' the cutoff for treatment is non-zero, shift the running variable so that the
+#' cutoff is at zero.
 #' @param d a data frame or a list with first column corresponding to the
 #'     outcome variable, second column corresponding to the running variable and
 #'     optionally a column called \code{"sigma2"} that corresponds to the
@@ -57,9 +57,9 @@ RDData <- function(d, cutoff) {
 
 #' Class Constructor for \code{"FRDData"}
 #'
-#' Convert data to standardized format for use with low-level functions. If the
-#' cutoff for treatment is non-zero, shift the running variable so that cutoff
-#' is at zero.
+#' Convert data to a standardized format for use with low-level functions. If
+#' the cutoff for treatment is non-zero, shift the running variable so that the
+#' cutoff is at zero.
 #' @param d list with first element corresponding to the outcome vector, second
 #'     element to the treatment vector, third element to running variable
 #'     vector, and optionally an element called \code{"sigma2"} that is a matrix
@@ -101,7 +101,7 @@ RDData <- function(d, cutoff) {
 #' ## Transform retirement data
 #' d <- FRDData(rcp[, c(6, 3, 2)], cutoff=0)
 #' ## Outcome in logs
-#' d <- FRDData(cbind(logcn=log(rcp[, 6 ]), rcp[, c(3, 2)]), cutoff=0)
+#' d <- FRDData(cbind(logcn=log(rcp[, 6]), rcp[, c(3, 2)]), cutoff=0)
 #' @export
 FRDData <- function(d, cutoff) {
     if(is.unsorted(d[[3]]))
@@ -122,14 +122,14 @@ FRDData <- function(d, cutoff) {
 #' Class Constructor for \code{"LPPData"}
 #'
 #' Convert data to standardized format for use with low-level functions. If the
-#' point for which to do inference is non-zero, shift the independent variable
-#' so that it is at zero.
+#' point of interest \eqn{x_0} is non-zero, shift the independent variable so
+#' that it is at zero.
 #' @param d a data frame or a list with first column corresponding to the
 #'     outcome variable, second column corresponding to the independent variable
 #'     and optionally a column called \code{"sigma2"} that corresponds to the
 #'     conditional variance of the outcome (or an estimate of the conditional
 #'     variance)
-#' @param point specifies the point \code{x0} at which to calculate the
+#' @param point specifies the point \eqn{x_0} at which to calculate the
 #'     conditional mean
 #' @return An object of class \code{"LPPData"}, which is a list containing the
 #'     following components:
@@ -142,7 +142,7 @@ FRDData <- function(d, cutoff) {
 #'
 #'     \item{sigma2}{Conditional variance of the outcome}
 #'
-#'     \item{orig.point}{Original point \code{x0}}
+#'     \item{orig.point}{Original value of \eqn{x_0}}
 #'
 #'     \item{var.names}{Names of outcome and independent variable in supplied
 #'     data frame}
@@ -191,24 +191,6 @@ CheckClass <- function(x, class)
                                         " needs to be class ", class, "!"))
 
 
-## ## Split function into k bits and optimize on each bit in case not convex
-## CarefulOptim <- function(f, interval, k=10) {
-##     ## intervals
-##     s <- seq(interval[1], interval[2], length.out=k+1)
-##     s <- matrix(c(s[-length(s)], s[-1]), ncol=2)
-
-##     obj <- rep(0, k)
-##     arg <- rep(0, k)
-##     for (j in 1:k){
-##         r <- stats::optimize(f, s[j, ])
-##         arg[j] <- r$minimum
-##         obj[j] <- r$objective
-##     }
-##     jopt <- which.min(obj)
-##     list(objective=obj[jopt], minimum=arg[jopt])
-## }
-
-
 ## Modified golden section for unimodal piecewise constant function
 gss <- function(f, xs) {
     gr <- (sqrt(5) + 1) / 2
@@ -232,3 +214,21 @@ gss <- function(f, xs) {
     supp <- xs[a:b]
     supp[which.min(vapply(supp, f, numeric(1)))]
 }
+
+
+## ## Split function into k bits and optimize on each bit in case not convex
+## CarefulOptim <- function(f, interval, k=10) {
+##     ## intervals
+##     s <- seq(interval[1], interval[2], length.out=k+1)
+##     s <- matrix(c(s[-length(s)], s[-1]), ncol=2)
+
+##     obj <- rep(0, k)
+##     arg <- rep(0, k)
+##     for (j in 1:k){
+##         r <- stats::optimize(f, s[j, ])
+##         arg[j] <- r$minimum
+##         obj[j] <- r$objective
+##     }
+##     jopt <- which.min(obj)
+##     list(objective=obj[jopt], minimum=arg[jopt])
+## }

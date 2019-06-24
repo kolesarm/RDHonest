@@ -69,9 +69,8 @@ EqKern <- function(kernel = "uniform", boundary = TRUE, order = 0) {
 #' @inheritParams EqKern
 #' @return Integral value (a scalar).
 #' @examples
-#' KernMoment(function(u) u<1, moment = 3, boundary = FALSE)
-#' KernMoment(EqKern(kernel = "triangular", order = 2),
-#'            moment = 3)
+#' KernMoment(function(u) abs(u) < 1, moment = 3, boundary = FALSE)
+#' KernMoment(EqKern(kernel = "triangular", order = 2), moment = 3)
 #' @export
 KernMoment <- function(K, moment = 0, boundary = TRUE, type = "raw") {
     fkt <- switch(type,

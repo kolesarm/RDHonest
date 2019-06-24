@@ -77,7 +77,7 @@ LPReg <- function(X, Y, h, K, order=1, se.method=NULL, sigma2, J=3) {
 }
 
 
-#' Local Polynomial Regression
+#' Nonparametric Regression
 #'
 #' Calculate fuzzy or sharp RD estimate, or estimate of a conditional mean at a
 #' point (depending on the class of \code{d}), and its variance using local
@@ -97,12 +97,12 @@ LPReg <- function(X, Y, h, K, order=1, se.method=NULL, sigma2, J=3) {
 #'               by \code{se.method}.}
 #'     \item{w}{Implicit weight function used}
 #'
-#'     \item{sigma2}{Estimate of \eqn{sigma^2(X)} for values of \eqn{X}
-#'             receiving positive kernel weight. By default, estimates are based
-#'             on squared regression residuals, as used in \code{"EHW"}. If
-#'             \code{"demeaned"} or \code{"nn"} is specified, estimates are
-#'             based on that method, with \code{"nn"} method used if both are
-#'             specified.}
+#'     \item{sigma2}{Estimate of \eqn{\sigma^2(X)}{sigma^2(X)} for values of
+#'             \eqn{X} receiving positive kernel weight. By default, estimates
+#'             are based on squared regression residuals, as used in
+#'             \code{"EHW"}. If \code{se.method="demeaned"} or
+#'             \code{se.method="nn"} is specified, estimates are based on that
+#'             method, with \code{"nn"} method used if both are specified.}
 #'
 #'      \item{eff.obs}{Number of effective observations}
 #'
@@ -110,7 +110,7 @@ LPReg <- function(X, Y, h, K, order=1, se.method=NULL, sigma2, J=3) {
 #' @examples
 #' NPRreg.fit(RDData(lee08, cutoff=0), h=5, order=2, se.method=c("nn", "plugin", "EHW"))
 #' NPRreg.fit(LPPData(lee08[lee08$margin>=0, ], point=0), h=5, order=1)
-#' d <- FRDData(cbind(logcn=log(rcp[, 6 ]), rcp[, c(3, 2)]), cutoff=0)
+#' d <- FRDData(cbind(logcn=log(rcp[, 6]), rcp[, c(3, 2)]), cutoff=0)
 #' NPRreg.fit(d, h=10, order=1)
 #' @export
 NPRreg.fit <- function(d, h, kern="triangular", order=1, se.method="nn",
@@ -195,12 +195,13 @@ NPRreg.fit <- function(d, h, kern="triangular", order=1, se.method="nn",
 #' Compute estimate of variance, which can then be used in optimal bandwidth
 #' calculations.
 #'
-#' @param d object of class \code{"RDData"}
+#' @param d object of class \code{"RDData"}, \code{"FRDData"}, or
+#'     \code{"LPPData"}
 #' @template RDseInitial
-#' @return object of class \code{"RDData"} containing estimated variances.
+#' @return object of the same class as \code{d} containing estimated variances.
 #' @export
 NPRPrelimVar.fit <- function(d, se.initial="EHW") {
-    if (se.initial == "NN") {
+    if (se.initial == "nn") {
         if (inherits(d, "LPPData")) {
             d$sigma2 <- sigmaNN(d$X, d$Y, J=3)
         } else {
@@ -218,6 +219,7 @@ NPRPrelimVar.fit <- function(d, se.initial="EHW") {
         if (inherits(d, "FRDData")) {
             drf$Yp <- drf$Yp[, 1]
             drf$Ym <- drf$Ym[, 1]
+            class(drf) <- "RDData"
         }
         h1 <- if (inherits(d, "LPPData")) ROTBW.fit(drf) else IKBW.fit(drf)
     } else if (se.initial == "Silverman" | se.initial == "SilvermanNN") {
@@ -240,6 +242,7 @@ NPRPrelimVar.fit <- function(d, se.initial="EHW") {
             r1$sigma2m <- r1$sigma2m*length(r1$sigma2m) / (length(r1$sigma2m)-1)
         }
     } else if (se.initial=="SilvermanNN") {
+        ## order doesn't matter for nn method
         r1 <- NPRreg.fit(d=d, h=h1, kern="uniform", order=1, se.method="nn")
     } else if (se.initial == "EHW" | se.initial == "demeaned") {
         r1 <- NPRreg.fit(d, h1, se.method=se.initial)
@@ -267,7 +270,8 @@ NPRPrelimVar.fit <- function(d, se.initial="EHW") {
 #' for inference under under second order Hölder class. For RD, use a separate
 #' regression on either side of the cutoff
 #'
-#' @param d object of class \code{"RDData"}
+#' @param d object of class \code{"RDData"}, \code{"FRDData"}, or
+#'     \code{"LPPData"}.
 #' @examples
 #' NPR_MROT.fit(RDData(lee08, cutoff=0))
 #' NPR_MROT.fit(LPPData(lee08[lee08$margin>0, ], point=0))
@@ -289,7 +293,7 @@ NPR_MROT.fit <- function(d) {
         f2 <- function(x) abs(2*r1[3]+6*x*r1[4]+12*x^2*r1[5])
         ## maximum occurs either at endpoints, or else at the extremum,
         ## -r1[4]/(4*r1[5]), if the extremum is in the support
-        f2e <- -r1[4]/(4*r1[5])
+        f2e <- if(abs(r1[5])<=1e-10) Inf else -r1[4]/(4*r1[5])
         M <- max(f2(min(d$X)), f2(max(d$X)))
         if (min(d$X) < f2e & max(d$X) > f2e) M <- max(f2(f2e), M)
 

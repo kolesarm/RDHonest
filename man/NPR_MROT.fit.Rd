@@ -7,7 +7,8 @@
 NPR_MROT.fit(d)
 }
 \arguments{
-\item{d}{object of class \code{"RDData"}}
+\item{d}{object of class \code{"RDData"}, \code{"FRDData"}, or
+\code{"LPPData"}.}
 }
 \description{
 Use global quartic regression to estimate a bound on the second derivative

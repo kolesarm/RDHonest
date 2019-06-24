@@ -41,3 +41,14 @@ Returns a list with the following elements
 Estimate a lower bound on smoothness constant M and provide a lower
 confidence interval.
 }
+\references{
+{
+
+\cite{Armstrong, Tim, and Michal Kolesár. 2018. "Optimal Inference in a Class
+of Regression Models." Econometrica 86 (2): 655–83.}
+
+\cite{Kolesár, Michal, and Christoph Rothe. 2018. "Inference in Regression
+Discontinuity Designs with a Discrete Running Variable." American Economic
+Review 108 (8): 2277–2304.}
+}
+}
