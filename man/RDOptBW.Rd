@@ -4,9 +4,10 @@
 \alias{RDOptBW}
 \title{Optimal Bandwidth Selection in Regression Discontinuity}
 \usage{
-RDOptBW(formula, data, subset, cutoff = 0, M, kern = "triangular",
-  na.action, opt.criterion, bw.equal = TRUE, alpha = 0.05,
-  beta = 0.8, sclass = "H", order = 1, se.initial = "EHW")
+RDOptBW(formula, data, subset, weights, cutoff = 0, M,
+  kern = "triangular", na.action, opt.criterion, bw.equal = TRUE,
+  alpha = 0.05, beta = 0.8, sclass = "H", order = 1,
+  se.initial = "EHW")
 }
 \arguments{
 \item{formula}{object of class \code{"formula"} (or one that can be coerced
@@ -20,6 +21,9 @@ which the function is called.}
 
 \item{subset}{optional vector specifying a subset of observations to be used
 in the fitting process.}
+
+\item{weights}{Optional vector of weights to weight the observations
+(useful for aggregated data). Disregarded if optimal kernel is used.}
 
 \item{cutoff}{specifies the RD cutoff in the running variable.}
 

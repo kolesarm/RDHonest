@@ -13,6 +13,8 @@
 #'     in the fitting process.
 #' @param point specifies the point \eqn{x_0} at which to calculate the
 #'     conditional mean
+#' @param weights Optional vector of weights to weight the observations (useful
+#'     for aggregated data).
 #' @param na.action function which indicates what should happen when the data
 #'     contain \code{NA}s. The default is set by the \code{na.action} setting of
 #'     \code{options} (usually \code{na.omit}).

@@ -91,6 +91,24 @@ RDSmoothnessBound(dl, s=100, separate=TRUE, multiple=FALSE, sclass="T")
 RDSmoothnessBound(dl, s=100, separate=FALSE, multiple=TRUE, sclass="H")
 
 ## ------------------------------------------------------------------------
+d <- cghs
+## Make 20 groups based on observation number
+d$mod <- seq_along(d$yearat14) %% 20
+## Make cells defined as intersection of group and year
+d$cell <- d$mod/100+d$yearat14
+## Data with cell averages
+dd <- data.frame()
+for (j in unique(d$cell)){
+   dd <- rbind(dd, data.frame(y=mean(log(d$earnings)[d$cell==j]),
+     x=mean(d$yearat14[d$cell==j]),
+     weights=length(d$yearat14[d$cell==j])))
+}
+
+## ------------------------------------------------------------------------
+RDHonest(log(earnings)~yearat14, cutoff=1947, h=5, data=cghs, M=0.1, se.method=c("EHW", "nn"))
+RDHonest(y~x, cutoff=1947, weights=weights, h=5, data=dd, M=0.1)
+
+## ------------------------------------------------------------------------
 ## Assumes first column in the data frame corresponds to outcome,
 ##  second to the treatment variable, and third to the running variable
 ## Outcome here is log of non-durables consumption

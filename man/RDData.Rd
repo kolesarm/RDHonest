@@ -8,10 +8,11 @@ RDData(d, cutoff)
 }
 \arguments{
 \item{d}{a data frame or a list with first column corresponding to the
-outcome variable, second column corresponding to the running variable and
+outcome variable, second column corresponding to the running variable,
 optionally a column called \code{"sigma2"} that corresponds to the
 conditional variance of the outcome (or an estimate of the conditional
-variance)}
+variance), and optionally a column called \code{"weights"} if observations
+are aggregated by cell.}
 
 \item{cutoff}{specifies the cutoff for the running variable}
 }
@@ -28,6 +29,10 @@ An object of class \code{"RDData"}, which is a list containing the
     \item{Xm}{Running variable for observations below cutoff}
 
     \item{Xp}{Running variable for observations above cutoff}
+
+    \item{wm}{weights for observations below cutoff}
+
+    \item{wp}{weights for observations above cutoff}
 
     \item{sigma2m}{Conditional variance of the outcome for observations below
     cutoff}

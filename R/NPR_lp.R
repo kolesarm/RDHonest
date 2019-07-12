@@ -43,15 +43,15 @@ NPRHonest.fit <- function(d, M, kern="triangular", h, opt.criterion,
     ## Suppress warnings about too few observations
     r1 <- NPRreg.fit(d, h, kern, order, se.method, TRUE, J)
     if (inherits(d, "LPPData")) {
-        w <- r1$w(d$X)
+        w <- r1$w
         wt <- w[w!=0]
         xx <- d$X[w!=0]
         nobs <- length(wt)
         ## Are we at a boundary?
         bd <- length(unique(d$X>=0))==1
     } else {
-        wp <- r1$wp(d$Xp)
-        wm <- r1$wm(d$Xm)
+        wp <- r1$wp
+        wm <- r1$wm
         wt <- c(wm[wm!=0], wp[wp!=0])
         xx <-  c(d$Xm[wm!=0], d$Xp[wp!=0])
         nobs <- min(sum(wp!=0), sum(wm!=0))

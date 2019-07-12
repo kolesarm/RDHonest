@@ -9,11 +9,12 @@ FRDData(d, cutoff)
 \arguments{
 \item{d}{list with first element corresponding to the outcome vector, second
 element to the treatment vector, third element to running variable
-vector, and optionally an element called \code{"sigma2"} that is a matrix
+vector, optionally an element called \code{"sigma2"} that is a matrix
 with four columns corresponding to the \code{[1, 1]}, \code{[1, 2]},
 \code{[2, 1]}, and \code{[2, 2]} elements of the conditional variance
 matrix of the outcome and the treatment (or an estimate of the
-conditional variance matrix)}
+conditional variance matrix), and optionally a column called
+\code{"weights"} if observations are aggregated by cell.}
 
 \item{cutoff}{specifies the cutoff for the running variable}
 }
@@ -32,6 +33,10 @@ An object of class \code{"FRDData"}, which is a list containing the
     \item{Xm}{Running variable for observations below cutoff}
 
     \item{Xp}{Running variable for observations above cutoff}
+
+    \item{wm}{weights for observations below cutoff}
+
+    \item{wp}{weights for observations above cutoff}
 
     \item{sigma2m}{Matrix of conditional covariances for the outcome and the
     treatment for observations below cutoff}

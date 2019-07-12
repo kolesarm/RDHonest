@@ -8,10 +8,11 @@ LPPData(d, point)
 }
 \arguments{
 \item{d}{a data frame or a list with first column corresponding to the
-outcome variable, second column corresponding to the independent variable
-and optionally a column called \code{"sigma2"} that corresponds to the
-conditional variance of the outcome (or an estimate of the conditional
-variance)}
+outcome variable, second column corresponding to the independent
+variable, optionally a column called \code{"sigma2"} that corresponds to
+the conditional variance of the outcome (or an estimate of the
+conditional variance), and optionally a column called \code{"weights"} if
+observations are aggregated by cell.}
 
 \item{point}{specifies the point \eqn{x_0} at which to calculate the
 conditional mean}
@@ -25,6 +26,8 @@ An object of class \code{"LPPData"}, which is a list containing the
     \item{Y}{Outcome vector}
 
     \item{X}{Independent variable}
+
+    \item{w}{Weights}
 
     \item{sigma2}{Conditional variance of the outcome}
 

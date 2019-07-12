@@ -43,5 +43,6 @@ object of the same class as \code{d} containing estimated variances.
 }
 \description{
 Compute estimate of variance, which can then be used in optimal bandwidth
-calculations.
+calculations. Except for \code{se.initial="nn"}, these estimates are
+unweighted.
 }

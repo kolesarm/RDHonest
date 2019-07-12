@@ -1,6 +1,6 @@
 ## method assumes X is sorted
 ## @param J number of nearest neighbors
-sigmaNN <- function(X, Y, J=3) {
+sigmaNN <- function(X, Y, J=3, weights=rep(1L, length(X))) {
     n <- length(X)
     sigma2 <- matrix(nrow=n, ncol=NCOL(Y)^2)
 
@@ -10,13 +10,13 @@ sigmaNN <- function(X, Y, J=3) {
         d <- sort(abs(c(X[s[-length(s)]], X[k:min(k+J, n)][-1])-X[k]))[J]
         ind <- (abs(X-X[k])<=d)
         ind[k] <- FALSE                 # exclude oneself
-        Jk <- sum(ind)
-        sigma2[k, ] <- Jk/(Jk+1)*
+        Jk <- sum(weights[ind])
+        sigma2[k, ] <- Jk/(Jk+weights[k])*
             if (NCOL(Y)>1)
-                as.vector(outer(Y[k, ]-colMeans(Y[ind, ]),
-                                Y[k, ]-colMeans(Y[ind, ])))
+                as.vector(outer(Y[k, ]-colSums(weights[ind]*Y[ind, ])/Jk,
+                                Y[k, ]-colSums(weights[ind]*Y[ind, ])/Jk))
             else
-                (Y[k]-mean(Y[ind]))^2
+                (Y[k]-sum(weights[ind]*Y[ind])/Jk)^2
     }
     drop(sigma2)
 }
@@ -34,15 +34,22 @@ sigmaNN <- function(X, Y, J=3) {
 ## @param sigma2 Optionally, supply estimates of \eqn{\sigma^{2}_{i}} (for
 ##     \code{"supplied.var"} \code{se.method})
 ## @template RDse
-LPReg <- function(X, Y, h, K, order=1, se.method=NULL, sigma2, J=3) {
+LPReg <- function(X, Y, h, K, order=1, se.method=NULL, sigma2, J=3,
+                  weights=rep(1L, length(X))) {
     R <- outer(X, 0:order, "^")
-    W <- K(X/h)
+    W <- K(X/h)*weights
     Gamma <- crossprod(R, W*R)
     if (sum(W>0) <= order | h==0 |
         class(try(solve(Gamma), silent=TRUE)) != "matrix")
-        return(list(theta=0, sigma2=NA, var=NA, w=function(u) 0, eff.obs=0))
+        return(list(theta=0, sigma2=NA, var=NA, w=0, eff.obs=0))
+
+    ## weights if we think of the estimator as linear estimator
+    ## w <- function(x) solve(Gamma, t(outer(x, 0:order, "^")*K(x/h)))[1, ]
+    ## No longer works for weighted data
+    w <- (W*R %*% solve(Gamma))[, 1]
 
     beta <- solve(Gamma, crossprod(R, W*Y))
+
     ## Squared residuals, allowing for multivariate Y
     sig <- function(r)
         r[, rep(seq_len(ncol(r)), each=ncol(r))] *
@@ -54,9 +61,9 @@ LPReg <- function(X, Y, h, K, order=1, se.method=NULL, sigma2, J=3) {
     colnames(v) <- c("supplied.var", "nn", "EHW", "demeaned")
     EHW <- function(sigma2)
         if (NCOL(sigma2)==1)
-            sum((W*R %*% solve(Gamma))[, 1]^2 * sigma2)
+            sum(w^2 * sigma2)
         else
-            colSums((W*R %*% solve(Gamma))[, 1]^2 * sigma2)
+            colSums(w^2 * sigma2)
 
     if("EHW" %in% se.method) v[, 3] <- EHW(hsigma2)
     if("supplied.var" %in% se.method) v[, 1] <- EHW(sigma2)
@@ -66,14 +73,12 @@ LPReg <- function(X, Y, h, K, order=1, se.method=NULL, sigma2, J=3) {
         v[, 4] <- EHW(hsigma2)
     }
     if("nn" %in% se.method) {
-        hsigma2 <- sigmaNN(X, Y, J=J)
+        hsigma2 <- sigmaNN(X, Y, J=J, weights)
         v[, 2] <- EHW(hsigma2)
     }
 
-    ## weight function if we think of the estimator as linear estimator
-    w <- function(x) solve(Gamma, t(outer(x, 0:order, "^")*K(x/h)))[1, ]
     list(theta=beta[1, ], sigma2=hsigma2, var=drop(v),
-         w=w, eff.obs=1/sum(w(X)^2))
+         w=w, eff.obs=1/sum(w^2))
 }
 
 
@@ -148,16 +153,20 @@ NPRreg.fit <- function(d, h, kern="triangular", order=1, se.method="nn",
     }
 
     if (inherits(d, "LPPData")) {
-        r <- LPReg(d$X, d$Y[W>0], h[1], K, order, se.method, d$sigma2[W>0], J)
-        return(list(estimate=r$theta, se=c(sqrt(r$var), plugin=NA), w=r$w,
+        r <- LPReg(d$X, d$Y[W>0], h[1], K, order, se.method, d$sigma2[W>0],
+                   J, weights=d$w[W>0])
+        ## Estimation weights
+        W[W>0] <- r$w
+        return(list(estimate=r$theta, se=c(sqrt(r$var), plugin=NA), w=W,
                     sigma2=r$sigma2, eff.obs=r$eff.obs))
     }
-
     rm <- LPReg(d$Xm, as.matrix(d$Ym)[Wm>0, ], h["m"], K, order, se.method,
-                d$sigma2m[Wm>0, ], J)
+                d$sigma2m[Wm>0, ], J, weights=d$wm[Wm>0])
     rp <- LPReg(d$Xp, as.matrix(d$Yp)[Wp>0, ], h["p"], K, order, se.method,
-                d$sigma2p[Wp>0, ], J)
-    ret <- list(estimate=NULL, se=NULL, wm=rm$w, wp=rp$w, sigma2m=rm$sigma2,
+                d$sigma2p[Wp>0, ], J, weights=d$wp[Wp>0])
+    Wm[Wm>0] <- rm$w
+    Wp[Wp>0] <- rp$w
+    ret <- list(estimate=NULL, se=NULL, wm=Wm, wp=Wp, sigma2m=rm$sigma2,
                 sigma2p=rp$sigma2, eff.obs=rm$eff.obs+rp$eff.obs)
     if (inherits(d, "RDData")) {
         plugin <- NA
@@ -193,7 +202,8 @@ NPRreg.fit <- function(d, h, kern="triangular", order=1, se.method="nn",
 #' Compute preliminary estimate of variance
 #'
 #' Compute estimate of variance, which can then be used in optimal bandwidth
-#' calculations.
+#' calculations. Except for \code{se.initial="nn"}, these estimates are
+#' unweighted.
 #'
 #' @param d object of class \code{"RDData"}, \code{"FRDData"}, or
 #'     \code{"LPPData"}
@@ -203,10 +213,10 @@ NPRreg.fit <- function(d, h, kern="triangular", order=1, se.method="nn",
 NPRPrelimVar.fit <- function(d, se.initial="EHW") {
     if (se.initial == "nn") {
         if (inherits(d, "LPPData")) {
-            d$sigma2 <- sigmaNN(d$X, d$Y, J=3)
+            d$sigma2 <- sigmaNN(d$X, d$Y, J=3, d$w)
         } else {
-            d$sigma2p <- sigmaNN(d$Xp, d$Yp, J=3)
-            d$sigma2m <- sigmaNN(d$Xm, d$Ym, J=3)
+            d$sigma2p <- sigmaNN(d$Xp, d$Yp, J=3, d$wp)
+            d$sigma2m <- sigmaNN(d$Xm, d$Ym, J=3, d$wm)
         }
         return(d)
     }

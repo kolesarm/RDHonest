@@ -82,5 +82,5 @@ polynomial regression of order \code{order}.
 NPRreg.fit(RDData(lee08, cutoff=0), h=5, order=2, se.method=c("nn", "plugin", "EHW"))
 NPRreg.fit(LPPData(lee08[lee08$margin>=0, ], point=0), h=5, order=1)
 d <- FRDData(cbind(logcn=log(rcp[, 6]), rcp[, c(3, 2)]), cutoff=0)
-NPRreg.fit(d, h=10, order=1)
+r <- NPRreg.fit(d, h=10, order=1)
 }

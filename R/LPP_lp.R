@@ -66,18 +66,18 @@
 #' LPPHonest(voteshare ~ margin, data = lee08, subset = margin>0,
 #'           kern = "uniform", M = 0.1, h = 10, sclass = "T")
 #' @export
-LPPHonest <- function(formula, data, subset, point=0, M, kern="triangular",
+LPPHonest <- function(formula, data, subset, weights, point=0, M, kern="triangular",
                       na.action, opt.criterion, h, se.method="nn", alpha=0.05,
                       beta=0.8, J=3, sclass="H", order=1, se.initial="EHW") {
 
     ## construct model frame
     cl <- mf <- match.call(expand.dots = FALSE)
-    m <- match(c("formula", "data", "subset", "na.action"),
+    m <- match(c("formula", "data", "subset", "weights", "na.action"),
                names(mf), 0L)
     mf <- mf[c(1L, m)]
     mf[[1L]] <- quote(stats::model.frame)
     mf <- eval(mf, parent.frame())
-
+    mf$weights  <- mf$"(weights)"
     d <- LPPData(mf, point)
 
     if (!missing(h)) {
@@ -137,18 +137,18 @@ LPPHonest <- function(formula, data, subset, point=0, M, kern="triangular",
 #' LPPOptBW(voteshare ~ margin, data = lee08, subset=margin>0,
 #'          kern = "uniform", M = 0.1, opt.criterion = "MSE", sclass = "H")
 #' @export
-LPPOptBW <- function(formula, data, subset, point=0, M, kern="triangular",
+LPPOptBW <- function(formula, data, subset, weights, point=0, M, kern="triangular",
                     na.action, opt.criterion, alpha=0.05, beta=0.8, sclass="H",
                     order=1, se.initial="EHW") {
 
     ## construct model frame
     cl <- mf <- match.call(expand.dots = FALSE)
-    m <- match(c("formula", "data", "subset", "na.action"),
+    m <- match(c("formula", "data", "subset", "weights", "na.action"),
                names(mf), 0L)
     mf <- mf[c(1L, m)]
     mf[[1L]] <- quote(stats::model.frame)
     mf <- eval(mf, parent.frame())
-
+    mf$weights  <- mf$"(weights)"
     d <- LPPData(mf, point)
 
     ret <- NPROptBW.fit(d, M, kern, opt.criterion, alpha, beta, sclass,

@@ -5,8 +5,8 @@
 \title{CIs in sharp RD with discrete regressors under bounded misspecification error
 class}
 \usage{
-RDHonestBME(formula, data, subset, cutoff = 0, na.action, h = Inf,
-  alpha = 0.05, order = 0, regformula)
+RDHonestBME(formula, data, subset, weights, cutoff = 0, na.action,
+  h = Inf, alpha = 0.05, order = 0, regformula)
 }
 \arguments{
 \item{formula}{object of class \code{"formula"} (or one that can be coerced
@@ -20,6 +20,9 @@ which the function is called.}
 
 \item{subset}{optional vector specifying a subset of observations to be used
 in the fitting process.}
+
+\item{weights}{Optional vector of weights to weight the observations
+(useful for aggregated data). Disregarded if optimal kernel is used.}
 
 \item{cutoff}{specifies the RD cutoff in the running variable.}
 
@@ -50,6 +53,10 @@ element of the design matrix}
 Computes honest CIs for local linear regression with uniform kernel under the
 bounded misspecification error class of functions, as considered in Kolesár
 and Rothe (2018)
+}
+\details{
+The parameter \code{weights} is ignored, it is only included to keep a
+unified interface with \code{\link{RDHonest}}.
 }
 \section{Note}{
 

@@ -64,14 +64,14 @@
 #' FRDHonest(cn~retired | elig_year, data=rcp, cutoff=0, M=c(1, 0.1),
 #'           kern="triangular", opt.criterion="MSE", T0=0)
 #' @export
-FRDHonest <- function(formula, data, subset, cutoff=0, M, kern="triangular",
-                     na.action, opt.criterion, bw.equal=TRUE, h,
-                     se.method="nn", alpha=0.05, beta=0.8, J=3, sclass="H",
-                     order=1, se.initial="EHW", T0=0) {
+FRDHonest <- function(formula, data, subset, weights, cutoff=0, M,
+                      kern="triangular", na.action, opt.criterion,
+                      bw.equal=TRUE, h, se.method="nn", alpha=0.05, beta=0.8,
+                      J=3, sclass="H", order=1, se.initial="EHW", T0=0) {
 
     ## construct model frame
     cl <- mf <- match.call(expand.dots = FALSE)
-    m <- match(c("formula", "data", "subset", "na.action"),
+    m <- match(c("formula", "data", "subset", "weights", "na.action"),
                names(mf), 0L)
     mf <- mf[c(1L, m)]
 
@@ -81,7 +81,7 @@ FRDHonest <- function(formula, data, subset, cutoff=0, M, kern="triangular",
 
     mf[[1L]] <- quote(stats::model.frame)
     mf <- eval(mf, parent.frame())
-
+    mf$weights  <- mf$"(weights)"
     d <- FRDData(mf, cutoff)
 
     if (!missing(h)) {
@@ -160,14 +160,14 @@ FRDHonest <- function(formula, data, subset, cutoff=0, M, kern="triangular",
 #' FRDOptBW(cn~retired | elig_year, data=rcp, cutoff=0, M=c(1, 0.1),
 #'           kern="triangular", opt.criterion="FLCI")
 #' @export
-FRDOptBW <- function(formula, data, subset, cutoff=0, M, kern="triangular",
+FRDOptBW <- function(formula, data, subset, weights, cutoff=0, M, kern="triangular",
                     na.action, opt.criterion, bw.equal=TRUE,
                     alpha=0.05, beta=0.8, sclass="H", order=1,
                     se.initial="EHW", T0=0) {
 
     ## construct model frame
     cl <- mf <- match.call(expand.dots = FALSE)
-    m <- match(c("formula", "data", "subset", "na.action"),
+    m <- match(c("formula", "data", "subset", "weights", "na.action"),
                names(mf), 0L)
     mf <- mf[c(1L, m)]
 
@@ -177,7 +177,7 @@ FRDOptBW <- function(formula, data, subset, cutoff=0, M, kern="triangular",
 
     mf[[1L]] <- quote(stats::model.frame)
     mf <- eval(mf, parent.frame())
-
+    mf$weights  <- mf$"(weights)"
     d <- FRDData(mf, cutoff)
 
     ret <- NPROptBW.fit(d, M, kern, opt.criterion, bw.equal, alpha, beta, sclass,

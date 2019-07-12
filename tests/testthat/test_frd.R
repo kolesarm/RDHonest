@@ -33,6 +33,7 @@ test_that("FRD data example check", {
                         T0=r1$estimate)
     ## With positive T0, expect greater effective M, and thus smaller bandwidth
     expect_lt(r2$hp, r1$hp)
+    ## On travis, only the first 6 digits match, not sure why
     expect_equal(round(r2$estimate, 6), -0.188134)
 })
 

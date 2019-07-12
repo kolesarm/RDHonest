@@ -4,10 +4,11 @@
 #' the cutoff for treatment is non-zero, shift the running variable so that the
 #' cutoff is at zero.
 #' @param d a data frame or a list with first column corresponding to the
-#'     outcome variable, second column corresponding to the running variable and
+#'     outcome variable, second column corresponding to the running variable,
 #'     optionally a column called \code{"sigma2"} that corresponds to the
 #'     conditional variance of the outcome (or an estimate of the conditional
-#'     variance)
+#'     variance), and optionally a column called \code{"weights"} if observations
+#'     are aggregated by cell.
 #' @param cutoff specifies the cutoff for the running variable
 #' @return An object of class \code{"RDData"}, which is a list containing the
 #'     following components:
@@ -21,6 +22,10 @@
 #'     \item{Xm}{Running variable for observations below cutoff}
 #'
 #'     \item{Xp}{Running variable for observations above cutoff}
+#'
+#'     \item{wm}{weights for observations below cutoff}
+#'
+#'     \item{wp}{weights for observations above cutoff}
 #'
 #'     \item{sigma2m}{Conditional variance of the outcome for observations below
 #'     cutoff}
@@ -50,6 +55,9 @@ RDData <- function(d, cutoff) {
                orig.cutoff=cutoff, var.names=names(d)[1:2])
     df$sigma2m <- d$sigma2[X<0]
     df$sigma2p <- d$sigma2[X>=0]
+    if(is.null(d$weights)) d$weights <- rep(1L, length(X))
+    df$wm <- d$weights[X<0]
+    df$wp <- d$weights[X>=0]
 
     structure(df, class="RDData")
 }
@@ -62,11 +70,12 @@ RDData <- function(d, cutoff) {
 #' cutoff is at zero.
 #' @param d list with first element corresponding to the outcome vector, second
 #'     element to the treatment vector, third element to running variable
-#'     vector, and optionally an element called \code{"sigma2"} that is a matrix
+#'     vector, optionally an element called \code{"sigma2"} that is a matrix
 #'     with four columns corresponding to the \code{[1, 1]}, \code{[1, 2]},
 #'     \code{[2, 1]}, and \code{[2, 2]} elements of the conditional variance
 #'     matrix of the outcome and the treatment (or an estimate of the
-#'     conditional variance matrix)
+#'     conditional variance matrix), and optionally a column called
+#'     \code{"weights"} if observations are aggregated by cell.
 #' @param cutoff specifies the cutoff for the running variable
 #' @return An object of class \code{"FRDData"}, which is a list containing the
 #'     following components:
@@ -82,6 +91,10 @@ RDData <- function(d, cutoff) {
 #'     \item{Xm}{Running variable for observations below cutoff}
 #'
 #'     \item{Xp}{Running variable for observations above cutoff}
+#'
+#'     \item{wm}{weights for observations below cutoff}
+#'
+#'     \item{wp}{weights for observations above cutoff}
 #'
 #'     \item{sigma2m}{Matrix of conditional covariances for the outcome and the
 #'     treatment for observations below cutoff}
@@ -114,6 +127,9 @@ FRDData <- function(d, cutoff) {
 
     df$sigma2m <- d$sigma2[X<0, ]
     df$sigma2p <- d$sigma2[X>=0, ]
+    if(is.null(d$weights)) d$weights <- rep(1L, length(X))
+    df$wm <- d$weights[X<0]
+    df$wp <- d$weights[X>=0]
 
     structure(df, class="FRDData")
 }
@@ -125,10 +141,11 @@ FRDData <- function(d, cutoff) {
 #' point of interest \eqn{x_0} is non-zero, shift the independent variable so
 #' that it is at zero.
 #' @param d a data frame or a list with first column corresponding to the
-#'     outcome variable, second column corresponding to the independent variable
-#'     and optionally a column called \code{"sigma2"} that corresponds to the
-#'     conditional variance of the outcome (or an estimate of the conditional
-#'     variance)
+#'     outcome variable, second column corresponding to the independent
+#'     variable, optionally a column called \code{"sigma2"} that corresponds to
+#'     the conditional variance of the outcome (or an estimate of the
+#'     conditional variance), and optionally a column called \code{"weights"} if
+#'     observations are aggregated by cell.
 #' @param point specifies the point \eqn{x_0} at which to calculate the
 #'     conditional mean
 #' @return An object of class \code{"LPPData"}, which is a list containing the
@@ -139,6 +156,8 @@ FRDData <- function(d, cutoff) {
 #'     \item{Y}{Outcome vector}
 #'
 #'     \item{X}{Independent variable}
+#'
+#'     \item{w}{Weights}
 #'
 #'     \item{sigma2}{Conditional variance of the outcome}
 #'
@@ -163,6 +182,7 @@ LPPData <- function(d, point) {
     df <- list(Y=d[[1]], X=d[[2]] - point,
                orig.point=point, var.names=names(d)[1:2])
     df$sigma2 <- d$sigma2
+    df$w <- if(is.null(d$weights)) rep(1L, length(df$X)) else d$weights
 
     structure(df, class="LPPData")
 }

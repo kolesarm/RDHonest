@@ -406,6 +406,39 @@ RDSmoothnessBound(dl, s=100, separate=TRUE, multiple=FALSE, sclass="T")
 RDSmoothnessBound(dl, s=100, separate=FALSE, multiple=TRUE, sclass="H")
 ```
 
+## Weighted regression
+
+In some cases, data is only observed as cell averages. For instance, suppose
+that instead of observing the original `cghs` data, we only observe averages for
+cells as follows:
+
+```{r}
+d <- cghs
+## Make 20 groups based on observation number
+d$mod <- seq_along(d$yearat14) %% 20
+## Make cells defined as intersection of group and year
+d$cell <- d$mod/100+d$yearat14
+## Data with cell averages
+dd <- data.frame()
+for (j in unique(d$cell)){
+   dd <- rbind(dd, data.frame(y=mean(log(d$earnings)[d$cell==j]),
+     x=mean(d$yearat14[d$cell==j]),
+     weights=length(d$yearat14[d$cell==j])))
+}
+```
+
+The column `weights` gives the number of observations that each cell averages
+over. In this case, if we weight the observations using `weights`, we can
+recover the original estimates (and the same worst-case bias):
+
+```{r}
+RDHonest(log(earnings)~yearat14, cutoff=1947, h=5, data=cghs, M=0.1, se.method=c("EHW", "nn"))
+RDHonest(y~x, cutoff=1947, weights=weights, h=5, data=dd, M=0.1, se.method=c("EHW", "nn"))
+```
+
+Note the variance estimates don't quite match, since the variance estimator is
+different, but the worst-case bias and the point estimate are identical.
+
 # Fuzzy RD
 
 ## Model

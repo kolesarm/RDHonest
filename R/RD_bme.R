@@ -21,6 +21,9 @@ RDlpformula <- function(order) {
 #' bounded misspecification error class of functions, as considered in Kolesár
 #' and Rothe (2018)
 #'
+#' The parameter \code{weights} is ignored, it is only included to keep a
+#' unified interface with \code{\link{RDHonest}}.
+#'
 #' @template RDFormula
 #' @template RDBW
 #' @param alpha determines confidence level, \eqn{1-\alpha}{1-alpha}
@@ -46,7 +49,7 @@ RDlpformula <- function(order) {
 #'
 #' }
 #' @export
-RDHonestBME <- function(formula, data, subset, cutoff=0, na.action, h=Inf,
+RDHonestBME <- function(formula, data, subset, weights, cutoff=0, na.action, h=Inf,
                         alpha=0.05, order=0, regformula) {
     if (length(h)==1) h <- c(m=h, p=h)
     ## construct model frame

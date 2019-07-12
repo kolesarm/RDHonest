@@ -4,9 +4,10 @@
 \alias{LPPHonest}
 \title{Honest inference at a point}
 \usage{
-LPPHonest(formula, data, subset, point = 0, M, kern = "triangular",
-  na.action, opt.criterion, h, se.method = "nn", alpha = 0.05,
-  beta = 0.8, J = 3, sclass = "H", order = 1, se.initial = "EHW")
+LPPHonest(formula, data, subset, weights, point = 0, M,
+  kern = "triangular", na.action, opt.criterion, h, se.method = "nn",
+  alpha = 0.05, beta = 0.8, J = 3, sclass = "H", order = 1,
+  se.initial = "EHW")
 }
 \arguments{
 \item{formula}{object of class \code{"formula"} (or one that can be coerced
@@ -20,6 +21,9 @@ environment from which the function is called.}
 
 \item{subset}{optional vector specifying a subset of observations to be used
 in the fitting process.}
+
+\item{weights}{Optional vector of weights to weight the observations (useful
+for aggregated data).}
 
 \item{point}{specifies the point \eqn{x_0} at which to calculate the
 conditional mean}
