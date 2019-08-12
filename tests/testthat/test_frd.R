@@ -80,7 +80,9 @@ test_that("FRD interface", {
     p2 <- FRDHonest(log(cn)~retired | elig_year, data=rcp1, cutoff=0, M=M,
                     kern="triangular", opt.criterion="OCI", T0=p1$estimate)
     expect_equal(r2$estimate, p2$estimate)
-    expect_equal(capture.output(print(r2)), capture.output(print(p2))[-(1:6)])
+    ## codecov.io check
+    expect_equal(capture.output(print(r2))[1:9],
+                 capture.output(print(p2))[7:15])
 
     r3 <- NPRHonest.fit(d, M, kern="triangular", h=7,
                         T0=r1$estimate)
