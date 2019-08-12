@@ -9,6 +9,7 @@ addons:
       - ghostscript
 r_packages:
   - covr
+  - lintr
 after_script:
   - R CMD INSTALL $PKG_TARBALL
   - Rscript -e 'lintr::lint_package()'
