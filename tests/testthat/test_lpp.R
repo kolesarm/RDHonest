@@ -13,7 +13,8 @@ test_that("Inference at point agrees with RD", {
     expect_equal(mm$eff.obs+pp$eff.obs, rde$eff.obs)
 
     p2 <- LPPHonest(voteshare~margin, data=lee08, subset=margin>=0, h=5, M=2)
-    expect_equal(capture.output(print(pp)),
+    ## 1:9 since something weird happens on codecov.io if lintr is included
+    expect_equal(capture.output(print(pp))[1:9],
                  capture.output(print(p2))[6:14])
     ## Local constant yields infinite bias
     expect_equal(NPRHonest.fit(d, h=5, M=2, order=0)$maxbias, Inf)

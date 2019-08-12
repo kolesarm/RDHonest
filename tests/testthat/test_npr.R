@@ -76,7 +76,8 @@ test_that("Test NPRreg", {
     ## summary(r4, vcov = sandwich::sandwich,
     ##         diagnostics=TRUE)$coefficients[2, 1:2]
     expect_identical(r1$estimate, rr$estimate/rf$estimate)
-    r2 <- NPRreg.fit(d, h=5, kern=function(x) abs(x)<=1, order=0, se.method="EHW")
+    r2 <- NPRreg.fit(d, h=5, kern=function(x) abs(x)<=1, order=0,
+                     se.method="EHW")
     ## r3 <- AER::ivreg(logcn~retired | Z, subset=(abs(elig_year)<=5), data=dt)
     ## summary(r3, vcov = sandwich::sandwich,
     ## diagnostics = TRUE)$coefficients[2, 1:2]
