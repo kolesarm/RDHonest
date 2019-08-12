@@ -177,7 +177,8 @@ RDHonest <- function(formula, data, subset, weights, cutoff=0, M,
 #' @export
 RDOptBW <- function(formula, data, subset, weights, cutoff=0, M,
                     kern="triangular", na.action, opt.criterion, bw.equal=TRUE,
-                    alpha=0.05, beta=0.8, sclass="H", order=1, se.initial="EHW") {
+                    alpha=0.05, beta=0.8, sclass="H", order=1,
+                    se.initial="EHW") {
 
     ## construct model frame
     cl <- mf <- match.call(expand.dots = FALSE)
@@ -189,8 +190,8 @@ RDOptBW <- function(formula, data, subset, weights, cutoff=0, M,
     mf$weights  <- mf$"(weights)"
     d <- RDData(mf, cutoff)
 
-    ret <- NPROptBW.fit(d, M, kern, opt.criterion, bw.equal, alpha, beta, sclass,
-                       order, se.initial=se.initial)
+    ret <- NPROptBW.fit(d, M, kern, opt.criterion, bw.equal, alpha, beta,
+                        sclass, order, se.initial=se.initial)
     ret$call <- cl
     ret$na.action <- attr(mf, "na.action")
 

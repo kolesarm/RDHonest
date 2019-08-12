@@ -92,7 +92,8 @@ FRDHonest <- function(formula, data, subset, weights, cutoff=0, M,
         ret <- NPRHonest.fit(d, M, kern, opt.criterion=opt.criterion,
                             bw.equal=bw.equal, alpha=alpha, beta=beta,
                             se.method=se.method, J=J,
-                            sclass=sclass, order=order, se.initial=se.initial, T0=T0)
+                            sclass=sclass, order=order, se.initial=se.initial,
+                            T0=T0)
     }
 
     ret$call <- cl
@@ -160,10 +161,10 @@ FRDHonest <- function(formula, data, subset, weights, cutoff=0, M,
 #' FRDOptBW(cn~retired | elig_year, data=rcp, cutoff=0, M=c(1, 0.1),
 #'           kern="triangular", opt.criterion="FLCI")
 #' @export
-FRDOptBW <- function(formula, data, subset, weights, cutoff=0, M, kern="triangular",
-                    na.action, opt.criterion, bw.equal=TRUE,
-                    alpha=0.05, beta=0.8, sclass="H", order=1,
-                    se.initial="EHW", T0=0) {
+FRDOptBW <- function(formula, data, subset, weights, cutoff=0, M,
+                     kern="triangular", na.action, opt.criterion, bw.equal=TRUE,
+                     alpha=0.05, beta=0.8, sclass="H", order=1,
+                     se.initial="EHW", T0=0) {
 
     ## construct model frame
     cl <- mf <- match.call(expand.dots = FALSE)
@@ -180,8 +181,8 @@ FRDOptBW <- function(formula, data, subset, weights, cutoff=0, M, kern="triangul
     mf$weights  <- mf$"(weights)"
     d <- FRDData(mf, cutoff)
 
-    ret <- NPROptBW.fit(d, M, kern, opt.criterion, bw.equal, alpha, beta, sclass,
-                       order, se.initial=se.initial, T0=T0)
+    ret <- NPROptBW.fit(d, M, kern, opt.criterion, bw.equal, alpha, beta,
+                        sclass, order, se.initial=se.initial, T0=T0)
     ret$call <- cl
     ret$na.action <- attr(mf, "na.action")
 

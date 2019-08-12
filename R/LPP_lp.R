@@ -66,9 +66,10 @@
 #' LPPHonest(voteshare ~ margin, data = lee08, subset = margin>0,
 #'           kern = "uniform", M = 0.1, h = 10, sclass = "T")
 #' @export
-LPPHonest <- function(formula, data, subset, weights, point=0, M, kern="triangular",
-                      na.action, opt.criterion, h, se.method="nn", alpha=0.05,
-                      beta=0.8, J=3, sclass="H", order=1, se.initial="EHW") {
+LPPHonest <- function(formula, data, subset, weights, point=0, M,
+                      kern="triangular", na.action, opt.criterion, h,
+                      se.method="nn", alpha=0.05, beta=0.8, J=3, sclass="H",
+                      order=1, se.initial="EHW") {
 
     ## construct model frame
     cl <- mf <- match.call(expand.dots = FALSE)
@@ -137,9 +138,9 @@ LPPHonest <- function(formula, data, subset, weights, point=0, M, kern="triangul
 #' LPPOptBW(voteshare ~ margin, data = lee08, subset=margin>0,
 #'          kern = "uniform", M = 0.1, opt.criterion = "MSE", sclass = "H")
 #' @export
-LPPOptBW <- function(formula, data, subset, weights, point=0, M, kern="triangular",
-                    na.action, opt.criterion, alpha=0.05, beta=0.8, sclass="H",
-                    order=1, se.initial="EHW") {
+LPPOptBW <- function(formula, data, subset, weights, point=0, M,
+                     kern="triangular", na.action, opt.criterion, alpha=0.05,
+                     beta=0.8, sclass="H", order=1, se.initial="EHW") {
 
     ## construct model frame
     cl <- mf <- match.call(expand.dots = FALSE)

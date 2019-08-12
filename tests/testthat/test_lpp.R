@@ -87,6 +87,7 @@ test_that("Optimal bandwidth calculations", {
     ## Make sure we're getting positive worst-case bias
     leep <- lee08[lee08$margin>0, ]
     M <- NPR_MROT.fit(LPPData(leep, point = 20))
-    r <- LPPHonest(voteshare ~ margin, data=leep, point=20, kern="uniform", M=M, opt.criterion="MSE", sclass="H")
+    r <- LPPHonest(voteshare ~ margin, data=leep, point=20, kern="uniform", M=M,
+                   opt.criterion="MSE", sclass="H")
     expect_equal(r$maxbias, 0.2482525)
 })

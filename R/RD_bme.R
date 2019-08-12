@@ -49,8 +49,8 @@ RDlpformula <- function(order) {
 #'
 #' }
 #' @export
-RDHonestBME <- function(formula, data, subset, weights, cutoff=0, na.action, h=Inf,
-                        alpha=0.05, order=0, regformula) {
+RDHonestBME <- function(formula, data, subset, weights, cutoff=0, na.action,
+                        h=Inf, alpha=0.05, order=0, regformula) {
     if (length(h)==1) h <- c(m=h, p=h)
     ## construct model frame
     cl <- mf <- match.call(expand.dots = FALSE)

@@ -1,7 +1,8 @@
 context("Test inference under no bias")
 
 test_that("Selected bw is infinite", {
-    d <- FRDData(cbind(logcn=log(rcp[1:5000, 6 ]), rcp[1:5000, c(3, 2)]), cutoff=0)
+    d <- FRDData(cbind(logcn=log(rcp[1:5000, 6 ]), rcp[1:5000, c(3, 2)]),
+                 cutoff=0)
 
     ## Expect using all data
     r0 <- NPRHonest.fit(d, M=c(0, 0), kern="triangular",
@@ -65,7 +66,8 @@ test_that("FRD with almost perfect first stage", {
 })
 
 test_that("FRD interface", {
-    d <- FRDData(cbind(logf=log(rcp[1:10000, 6]), rcp[1:10000, c(3, 2)]), cutoff=0)
+    d <- FRDData(cbind(logf=log(rcp[1:10000, 6]), rcp[1:10000, c(3, 2)]),
+                 cutoff=0)
     M <- NPR_MROT.fit(d)
     rcp1 <- rcp[1:10000, ]
     r1 <- NPRHonest.fit(d, M, kern="triangular", opt.criterion="OCI", T0=0)
