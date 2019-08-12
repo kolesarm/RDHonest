@@ -9,5 +9,8 @@ addons:
       - ghostscript
 r_packages:
   - covr
+after_script:
+  - R CMD INSTALL $PKG_TARBALL
+  - Rscript -e 'lintr::lint_package()'
 after_success:
   - Rscript -e 'covr::codecov()'
