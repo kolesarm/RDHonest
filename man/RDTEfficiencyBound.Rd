@@ -4,8 +4,14 @@
 \alias{RDTEfficiencyBound}
 \title{Finite-sample efficiency bounds for minimax CIs}
 \usage{
-RDTEfficiencyBound(d, M, opt.criterion = "FLCI", alpha = 0.05,
-  beta = 0.5, se.initial = "EHW")
+RDTEfficiencyBound(
+  d,
+  M,
+  opt.criterion = "FLCI",
+  alpha = 0.05,
+  beta = 0.5,
+  se.initial = "EHW"
+)
 }
 \arguments{
 \item{d}{object of class \code{"RDData"}}
@@ -58,8 +64,9 @@ second-order Taylor smoothness class.
 \references{
 {
 
-\cite{Armstrong, Tim, and Michal Kolesár. 2018. "Optimal Inference in a Class
-of Regression Models." Econometrica 86 (2): 655–83.}
+\cite{Armstrong, Timothy B., and Michal Kolesár. 2018.
+"Optimal Inference in a Class of Regression Models." Econometrica 86 (2):
+655–83.}
 
 }
 }

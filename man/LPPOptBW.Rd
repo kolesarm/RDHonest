@@ -4,9 +4,22 @@
 \alias{LPPOptBW}
 \title{Optimal Bandwidth Selection for inference at a point}
 \usage{
-LPPOptBW(formula, data, subset, weights, point = 0, M,
-  kern = "triangular", na.action, opt.criterion, alpha = 0.05,
-  beta = 0.8, sclass = "H", order = 1, se.initial = "EHW")
+LPPOptBW(
+  formula,
+  data,
+  subset,
+  weights,
+  point = 0,
+  M,
+  kern = "triangular",
+  na.action,
+  opt.criterion,
+  alpha = 0.05,
+  beta = 0.8,
+  sclass = "H",
+  order = 1,
+  se.initial = "EHW"
+)
 }
 \arguments{
 \item{formula}{object of class \code{"formula"} (or one that can be coerced
@@ -135,9 +148,9 @@ LPPOptBW(voteshare ~ margin, data = lee08, subset=margin>0,
 \references{
 {
 
-\cite{Armstrong, Timothy B., and Michal Kolesár. 2019.
-"Simple and Honest Confidence Intervals in Nonparametric Regression", arXiv:
-1606.01200.}
+\cite{Armstrong, Timothy B., and Michal Kolesár. 2020.
+"Simple and Honest Confidence Intervals in Nonparametric Regression."
+Quantitative Economics 11 (1): 1–39.}
 
 }
 }

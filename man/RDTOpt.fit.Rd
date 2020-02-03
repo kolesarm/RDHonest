@@ -4,8 +4,16 @@
 \alias{RDTOpt.fit}
 \title{Optimal inference in RD under Taylor class}
 \usage{
-RDTOpt.fit(d, M, opt.criterion, alpha = 0.05, beta = 0.5,
-  se.method = "supplied.var", J = 3, se.initial = "IKEHW")
+RDTOpt.fit(
+  d,
+  M,
+  opt.criterion,
+  alpha = 0.05,
+  beta = 0.5,
+  se.method = "supplied.var",
+  J = 3,
+  se.initial = "IKEHW"
+)
 }
 \arguments{
 \item{d}{object of class \code{"RDData"}}

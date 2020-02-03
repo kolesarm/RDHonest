@@ -27,8 +27,9 @@
 #' }
 #' @references{
 #'
-#' \cite{Armstrong, Tim, and Michal Kolesár. 2018. "Optimal Inference in a Class
-#' of Regression Models." Econometrica 86 (2): 655–83.}
+#' \cite{Armstrong, Timothy B., and Michal Kolesár. 2018.
+#' "Optimal Inference in a Class of Regression Models." Econometrica 86 (2):
+#' 655–83.}
 #'
 #' \cite{Kolesár, Michal, and Christoph Rothe. 2018. "Inference in Regression
 #' Discontinuity Designs with a Discrete Running Variable." American Economic

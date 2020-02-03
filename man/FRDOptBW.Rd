@@ -4,10 +4,24 @@
 \alias{FRDOptBW}
 \title{Optimal Bandwidth Selection in Regression Discontinuity}
 \usage{
-FRDOptBW(formula, data, subset, weights, cutoff = 0, M,
-  kern = "triangular", na.action, opt.criterion, bw.equal = TRUE,
-  alpha = 0.05, beta = 0.8, sclass = "H", order = 1,
-  se.initial = "EHW", T0 = 0)
+FRDOptBW(
+  formula,
+  data,
+  subset,
+  weights,
+  cutoff = 0,
+  M,
+  kern = "triangular",
+  na.action,
+  opt.criterion,
+  bw.equal = TRUE,
+  alpha = 0.05,
+  beta = 0.8,
+  sclass = "H",
+  order = 1,
+  se.initial = "EHW",
+  T0 = 0
+)
 }
 \arguments{
 \item{formula}{object of class \code{"formula"} (or one that can be coerced
@@ -146,12 +160,14 @@ FRDOptBW(cn~retired | elig_year, data=rcp, cutoff=0, M=c(1, 0.1),
 }
 \references{
 {
-\cite{Armstrong, Tim, and Michal Kolesár. 2018. "Optimal Inference in a Class
-of Regression Models." Econometrica 86 (2): 655–83.}
 
-\cite{Armstrong, Timothy B., and Michal Kolesár. 2019.
-"Simple and Honest Confidence Intervals in Nonparametric Regression", arXiv:
-1606.01200.}
+\cite{Armstrong, Timothy B., and Michal Kolesár. 2018.
+"Optimal Inference in a Class of Regression Models." Econometrica 86 (2):
+655–83.}
+
+\cite{Armstrong, Timothy B., and Michal Kolesár. 2020.
+"Simple and Honest Confidence Intervals in Nonparametric Regression."
+Quantitative Economics 11 (1): 1–39.}
 
 \cite{Imbens, Guido, and Kalyanaraman, Karthik,
 "Optimal bandwidth choice for the regression discontinuity estimator." The

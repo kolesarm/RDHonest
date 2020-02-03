@@ -4,10 +4,23 @@
 \alias{NPRHonest.fit}
 \title{Honest inference in nonparametric regression}
 \usage{
-NPRHonest.fit(d, M, kern = "triangular", h, opt.criterion,
-  bw.equal = TRUE, alpha = 0.05, beta = 0.8, se.method = "nn",
-  J = 3, sclass = "H", order = 1, se.initial = "EHW", T0 = 0,
-  T0bias = FALSE)
+NPRHonest.fit(
+  d,
+  M,
+  kern = "triangular",
+  h,
+  opt.criterion,
+  bw.equal = TRUE,
+  alpha = 0.05,
+  beta = 0.8,
+  se.method = "nn",
+  J = 3,
+  sclass = "H",
+  order = 1,
+  se.initial = "EHW",
+  T0 = 0,
+  T0bias = FALSE
+)
 }
 \arguments{
 \item{d}{object of class \code{"RDData"}, \code{"FRDData"}, or

@@ -57,8 +57,14 @@
 #' @seealso \code{\link{FRDOptBW}}
 #' @references{
 #'
-#' \cite{Armstrong, Tim, and Michal Kolesár. 2018. "Optimal Inference in a Class
-#' of Regression Models." Econometrica 86 (2): 655–83.}
+#' \cite{Armstrong, Timothy B., and Michal Kolesár. 2018.
+#' "Optimal Inference in a Class of Regression Models." Econometrica 86 (2):
+#' 655–83.}
+#'
+#' \cite{Armstrong, Timothy B., and Michal Kolesár. 2020.
+#' "Simple and Honest Confidence Intervals in Nonparametric Regression."
+#' Quantitative Economics 11 (1): 1–39.}
+#'
 #' }
 #' @examples
 #' FRDHonest(cn~retired | elig_year, data=rcp, cutoff=0, M=c(1, 0.1),
@@ -142,12 +148,14 @@ FRDHonest <- function(formula, data, subset, weights, cutoff=0, M,
 #'    }
 #' @seealso \code{\link{RDHonest}}
 #' @references{
-#' \cite{Armstrong, Tim, and Michal Kolesár. 2018. "Optimal Inference in a Class
-#' of Regression Models." Econometrica 86 (2): 655–83.}
 #'
-#' \cite{Armstrong, Timothy B., and Michal Kolesár. 2019.
-#' "Simple and Honest Confidence Intervals in Nonparametric Regression", arXiv:
-#' 1606.01200.}
+#' \cite{Armstrong, Timothy B., and Michal Kolesár. 2018.
+#' "Optimal Inference in a Class of Regression Models." Econometrica 86 (2):
+#' 655–83.}
+#'
+#' \cite{Armstrong, Timothy B., and Michal Kolesár. 2020.
+#' "Simple and Honest Confidence Intervals in Nonparametric Regression."
+#' Quantitative Economics 11 (1): 1–39.}
 #'
 #' \cite{Imbens, Guido, and Kalyanaraman, Karthik,
 #' "Optimal bandwidth choice for the regression discontinuity estimator." The

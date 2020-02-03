@@ -4,10 +4,27 @@
 \alias{FRDHonest}
 \title{Honest inference in fuzzy RD}
 \usage{
-FRDHonest(formula, data, subset, weights, cutoff = 0, M,
-  kern = "triangular", na.action, opt.criterion, bw.equal = TRUE, h,
-  se.method = "nn", alpha = 0.05, beta = 0.8, J = 3,
-  sclass = "H", order = 1, se.initial = "EHW", T0 = 0)
+FRDHonest(
+  formula,
+  data,
+  subset,
+  weights,
+  cutoff = 0,
+  M,
+  kern = "triangular",
+  na.action,
+  opt.criterion,
+  bw.equal = TRUE,
+  h,
+  se.method = "nn",
+  alpha = 0.05,
+  beta = 0.8,
+  J = 3,
+  sclass = "H",
+  order = 1,
+  se.initial = "EHW",
+  T0 = 0
+)
 }
 \arguments{
 \item{formula}{object of class \code{"formula"} (or one that can be coerced
@@ -198,8 +215,14 @@ FRDHonest(cn~retired | elig_year, data=rcp, cutoff=0, M=c(1, 0.1),
 \references{
 {
 
-\cite{Armstrong, Tim, and Michal Kolesár. 2018. "Optimal Inference in a Class
-of Regression Models." Econometrica 86 (2): 655–83.}
+\cite{Armstrong, Timothy B., and Michal Kolesár. 2018.
+"Optimal Inference in a Class of Regression Models." Econometrica 86 (2):
+655–83.}
+
+\cite{Armstrong, Timothy B., and Michal Kolesár. 2020.
+"Simple and Honest Confidence Intervals in Nonparametric Regression."
+Quantitative Economics 11 (1): 1–39.}
+
 }
 }
 \seealso{

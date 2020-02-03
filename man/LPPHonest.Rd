@@ -4,10 +4,25 @@
 \alias{LPPHonest}
 \title{Honest inference at a point}
 \usage{
-LPPHonest(formula, data, subset, weights, point = 0, M,
-  kern = "triangular", na.action, opt.criterion, h, se.method = "nn",
-  alpha = 0.05, beta = 0.8, J = 3, sclass = "H", order = 1,
-  se.initial = "EHW")
+LPPHonest(
+  formula,
+  data,
+  subset,
+  weights,
+  point = 0,
+  M,
+  kern = "triangular",
+  na.action,
+  opt.criterion,
+  h,
+  se.method = "nn",
+  alpha = 0.05,
+  beta = 0.8,
+  J = 3,
+  sclass = "H",
+  order = 1,
+  se.initial = "EHW"
+)
 }
 \arguments{
 \item{formula}{object of class \code{"formula"} (or one that can be coerced
@@ -196,9 +211,9 @@ LPPHonest(voteshare ~ margin, data = lee08, subset = margin>0,
 \references{
 {
 
-\cite{Armstrong, Timothy B., and Michal Kolesár. 2019.
-"Simple and Honest Confidence Intervals in Nonparametric Regression", arXiv:
-1606.01200.}
+\cite{Armstrong, Timothy B., and Michal Kolesár. 2020.
+"Simple and Honest Confidence Intervals in Nonparametric Regression."
+Quantitative Economics 11 (1): 1–39.}
 
 }
 }

@@ -5,8 +5,18 @@
 \title{CIs in sharp RD with discrete regressors under bounded misspecification error
 class}
 \usage{
-RDHonestBME(formula, data, subset, weights, cutoff = 0, na.action,
-  h = Inf, alpha = 0.05, order = 0, regformula)
+RDHonestBME(
+  formula,
+  data,
+  subset,
+  weights,
+  cutoff = 0,
+  na.action,
+  h = Inf,
+  alpha = 0.05,
+  order = 0,
+  regformula
+)
 }
 \arguments{
 \item{formula}{object of class \code{"formula"} (or one that can be coerced

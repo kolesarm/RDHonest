@@ -4,8 +4,15 @@
 \alias{plot_RDscatter}
 \title{Scatterplot of binned raw observations}
 \usage{
-plot_RDscatter(d, avg = 10, xlab = NULL, ylab = NULL,
-  window = NULL, vert = TRUE, propdotsize = FALSE)
+plot_RDscatter(
+  d,
+  avg = 10,
+  xlab = NULL,
+  ylab = NULL,
+  window = NULL,
+  vert = TRUE,
+  propdotsize = FALSE
+)
 }
 \arguments{
 \item{d}{Object of class \code{"RDdata"}}

@@ -55,9 +55,9 @@
 #' @seealso \code{\link{LPPOptBW}}
 #' @references{
 #'
-#' \cite{Armstrong, Timothy B., and Michal Kolesár. 2019.
-#' "Simple and Honest Confidence Intervals in Nonparametric Regression", arXiv:
-#' 1606.01200.}
+#' \cite{Armstrong, Timothy B., and Michal Kolesár. 2020.
+#' "Simple and Honest Confidence Intervals in Nonparametric Regression."
+#' Quantitative Economics 11 (1): 1–39.}
 #'
 #' }
 #' @examples
@@ -127,9 +127,9 @@ LPPHonest <- function(formula, data, subset, weights, point=0, M,
 #' @seealso \code{\link{LPPHonest}}
 #' @references{
 #'
-#' \cite{Armstrong, Timothy B., and Michal Kolesár. 2019.
-#' "Simple and Honest Confidence Intervals in Nonparametric Regression", arXiv:
-#' 1606.01200.}
+#' \cite{Armstrong, Timothy B., and Michal Kolesár. 2020.
+#' "Simple and Honest Confidence Intervals in Nonparametric Regression."
+#' Quantitative Economics 11 (1): 1–39.}
 #'
 #' }
 #' @examples

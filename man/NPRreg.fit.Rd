@@ -4,8 +4,15 @@
 \alias{NPRreg.fit}
 \title{Nonparametric Regression}
 \usage{
-NPRreg.fit(d, h, kern = "triangular", order = 1, se.method = "nn",
-  no.warning = FALSE, J = 3)
+NPRreg.fit(
+  d,
+  h,
+  kern = "triangular",
+  order = 1,
+  se.method = "nn",
+  no.warning = FALSE,
+  J = 3
+)
 }
 \arguments{
 \item{d}{object of class \code{"LPPData"}, \code{"RDData"}, or

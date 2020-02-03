@@ -59,12 +59,13 @@
 #' @seealso \code{\link{RDOptBW}}
 #' @references{
 #'
-#' \cite{Armstrong, Tim, and Michal Kolesár. 2018. "Optimal Inference in a Class
-#' of Regression Models." Econometrica 86 (2): 655–83.}
+#' \cite{Armstrong, Timothy B., and Michal Kolesár. 2018.
+#' "Optimal Inference in a Class of Regression Models." Econometrica 86 (2):
+#' 655–83.}
 #'
-#' \cite{Armstrong, Timothy B., and Michal Kolesár. 2019.
-#' "Simple and Honest Confidence Intervals in Nonparametric Regression", arXiv:
-#' 1606.01200.}
+#' \cite{Armstrong, Timothy B., and Michal Kolesár. 2020.
+#' "Simple and Honest Confidence Intervals in Nonparametric Regression."
+#' Quantitative Economics 11 (1): 1–39.}
 #'
 #' \cite{Imbens, Guido, and Kalyanaraman, Karthik,
 #' "Optimal bandwidth choice for the regression discontinuity estimator." The
@@ -136,8 +137,8 @@ RDHonest <- function(formula, data, subset, weights, cutoff=0, M,
 #'     \describe{
 #'     \item{\code{hp}}{bandwidth for observations above cutoff}
 #'
-#'     \item{\code{hm}}{bandwidth for observations below cutoff, equal to \code{hp}
-#'     unless \code{bw.equal==FALSE}}
+#'     \item{\code{hm}}{bandwidth for observations below cutoff, equal to
+#'     \code{hp} unless \code{bw.equal==FALSE}}
 #'
 #'     \item{\code{sigma2m}, \code{sigma2p}}{estimate of conditional variance
 #'     just above and just below cutoff, \eqn{\sigma^2_+(0)} and
@@ -148,18 +149,20 @@ RDHonest <- function(formula, data, subset, weights, cutoff=0, M,
 #'
 #'    \item{\code{call}}{the matched call}
 #'
-#'    \item{\code{na.action}}{(where relevant) information on handling of missing
-#'    data.}
+#'    \item{\code{na.action}}{(where relevant) information on handling of
+#'    missing data.}
 #'
 #'    }
 #' @seealso \code{\link{RDHonest}}
 #' @references{
-#' \cite{Armstrong, Tim, and Michal Kolesár. 2018. "Optimal Inference in a Class
-#' of Regression Models." Econometrica 86 (2): 655–83.}
 #'
-#' \cite{Armstrong, Timothy B., and Michal Kolesár. 2019.
-#' "Simple and Honest Confidence Intervals in Nonparametric Regression", arXiv:
-#' 1606.01200.}
+#' \cite{Armstrong, Timothy B., and Michal Kolesár. 2018.
+#' "Optimal Inference in a Class of Regression Models." Econometrica 86 (2):
+#' 655–83.}
+#'
+#' \cite{Armstrong, Timothy B., and Michal Kolesár. 2020.
+#' "Simple and Honest Confidence Intervals in Nonparametric Regression."
+#' Quantitative Economics 11 (1): 1–39.}
 #'
 #' \cite{Imbens, Guido, and Kalyanaraman, Karthik,
 #' "Optimal bandwidth choice for the regression discontinuity estimator." The

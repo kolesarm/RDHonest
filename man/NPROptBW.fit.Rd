@@ -4,9 +4,19 @@
 \alias{NPROptBW.fit}
 \title{Optimal bandwidth selection in nonparametric regression}
 \usage{
-NPROptBW.fit(d, M, kern = "triangular", opt.criterion, bw.equal = TRUE,
-  alpha = 0.05, beta = 0.8, sclass = "H", order = 1,
-  se.initial = "EHW", T0 = 0)
+NPROptBW.fit(
+  d,
+  M,
+  kern = "triangular",
+  opt.criterion,
+  bw.equal = TRUE,
+  alpha = 0.05,
+  beta = 0.8,
+  sclass = "H",
+  order = 1,
+  se.initial = "EHW",
+  T0 = 0
+)
 }
 \arguments{
 \item{d}{object of class \code{"RDData"}, \code{"FRDData"}, or

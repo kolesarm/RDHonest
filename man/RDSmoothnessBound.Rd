@@ -4,8 +4,14 @@
 \alias{RDSmoothnessBound}
 \title{Lower bound on smoothness constant M in RD designs}
 \usage{
-RDSmoothnessBound(d, s, separate = TRUE, multiple = TRUE,
-  alpha = 0.05, sclass = "T")
+RDSmoothnessBound(
+  d,
+  s,
+  separate = TRUE,
+  multiple = TRUE,
+  alpha = 0.05,
+  sclass = "T"
+)
 }
 \arguments{
 \item{d}{object of class \code{"RDData"}}
@@ -44,8 +50,9 @@ confidence interval.
 \references{
 {
 
-\cite{Armstrong, Tim, and Michal Kolesár. 2018. "Optimal Inference in a Class
-of Regression Models." Econometrica 86 (2): 655–83.}
+\cite{Armstrong, Timothy B., and Michal Kolesár. 2018.
+"Optimal Inference in a Class of Regression Models." Econometrica 86 (2):
+655–83.}
 
 \cite{Kolesár, Michal, and Christoph Rothe. 2018. "Inference in Regression
 Discontinuity Designs with a Discrete Running Variable." American Economic

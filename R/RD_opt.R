@@ -189,8 +189,9 @@ RDTOpt.fit <- function(d, M, opt.criterion, alpha=0.05, beta=0.5,
 #' @template RDseInitial
 #' @references{
 #'
-#' \cite{Armstrong, Tim, and Michal Kolesár. 2018. "Optimal Inference in a Class
-#' of Regression Models." Econometrica 86 (2): 655–83.}
+#' \cite{Armstrong, Timothy B., and Michal Kolesár. 2018.
+#' "Optimal Inference in a Class of Regression Models." Econometrica 86 (2):
+#' 655–83.}
 #'
 #' }
 #' @export

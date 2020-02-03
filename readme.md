@@ -2,9 +2,10 @@
 
 # RDHonest
 
-Honest and efficient confidence intervals in regression discontinuity designs
-using procedures from [Armstrong and Kolesár
-(2019)](https://arxiv.org/abs/1606.01200), [Armstrong and Kolesár
+This R package implements honest and efficient confidence intervals in fuzzy and
+sharp regression discontinuity designs using procedures from [Armstrong and
+Kolesár (2020)](https:://doi.org/10.3982/QE1199)
+([preprint](https://arxiv.org/abs/1606.01200)), [Armstrong and Kolesár
 (2018)](https://doi.org/10.3982/ECTA14434)
 ([preprint](https://arxiv.org/abs/1511.06028)), and [Kolesár and Rothe
 (2018)](https://doi.org/10.1257/aer.20160945)
@@ -20,10 +21,10 @@ Foundation under grant numbers SES-1628939 (Armstrong) and SES-1628878
 
 ## Installation
 
-You can install the package manually by downloading the source code here, or
-using the function `install_github()` from the `devtools` package:
+You can install the current development version of the package by downloading
+the source code here, or using the  `install_github()` function:
 
 ```
-install.packages("devtools") ## if devtools package not installed
-devtools::install_github("kolesarm/RDHonest")
+install.packages("remotes") # if not installed
+remotes::install_github("kolesarm/RDHonest")
 ```
