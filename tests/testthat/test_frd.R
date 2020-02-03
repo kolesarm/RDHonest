@@ -1,7 +1,7 @@
 context("Test inference under no bias")
 
 test_that("Selected bw is infinite", {
-    d <- FRDData(cbind(logcn=log(rcp[1:5000, 6 ]), rcp[1:5000, c(3, 2)]),
+    d <- FRDData(cbind(logcn=log(rcp[1:5000, 6]), rcp[1:5000, c(3, 2)]),
                  cutoff=0)
 
     ## Expect using all data
@@ -27,7 +27,7 @@ context("Test FRD")
 
 test_that("FRD data example check", {
 
-    d <- FRDData(cbind(logcn=log(rcp[, 6 ]), rcp[, c(3, 2)]), cutoff=0)
+    d <- FRDData(cbind(logcn=log(rcp[, 6]), rcp[, c(3, 2)]), cutoff=0)
     M <- NPR_MROT.fit(d)
     r1 <- NPRHonest.fit(d, M, kern="triangular", opt.criterion="MSE", T0=0)
     r2 <- NPRHonest.fit(d, M, kern="triangular", opt.criterion="MSE",

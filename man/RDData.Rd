@@ -11,8 +11,8 @@ RDData(d, cutoff)
 outcome variable, second column corresponding to the running variable,
 optionally a column called \code{"sigma2"} that corresponds to the
 conditional variance of the outcome (or an estimate of the conditional
-variance), and optionally a column called \code{"weights"} if observations
-are aggregated by cell.}
+variance), and optionally a column called \code{"weights"} if
+observations are aggregated by cell.}
 
 \item{cutoff}{specifies the cutoff for the running variable}
 }

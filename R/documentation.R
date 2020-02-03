@@ -101,7 +101,8 @@
 #' \url{https://doi.org/10.1257/000282806776157641}
 "cghs"
 
-#' Battistin et al. (2009) retirement consumption puzzle dataset
+#' Battistin, Brugiavini, Rettore, and Weber (2009) retirement consumption
+#' puzzle dataset
 #'
 #' @format A data frame with 30,006 rows and 6 variables:
 #' \describe{

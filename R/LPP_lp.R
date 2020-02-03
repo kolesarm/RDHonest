@@ -35,8 +35,9 @@
 #'         based on \code{estimate}. This CI is optimal if
 #'         \code{opt.criterion="OCI"}}
 #'
-#'   \item{\code{hl}}{Half-length of a two-sided CI based on \code{estimate}, so the CI is
-#'          \code{c(estimate-hl, estimate+hl)}. The CI is optimal if \code{opt.criterion="FLCI"}}
+#'   \item{\code{hl}}{Half-length of a two-sided CI based on \code{estimate}, so
+#'          the CI is \code{c(estimate-hl, estimate+hl)}. The CI is optimal if
+#'          \code{opt.criterion="FLCI"}}
 #'
 #'   \item{\code{eff.obs}}{Effective number of observations used by
 #'             \code{estimate}}
@@ -187,7 +188,7 @@ ROTBW.fit <- function(d, kern="triangular", order=1, boundary=NULL) {
 
     if(is.null(boundary))
         boundary <- if ((min(X)>=0) | (max(X)<=0)) TRUE else FALSE
-    if( (boundary==TRUE) & (order %% 2 ==0) )
+    if((boundary==TRUE) & (order %% 2 ==0))
         warning("ROT method for computing bandwidth requires either\n",
                 "order to be odd or else a boundary point")
     N <- length(d$X)

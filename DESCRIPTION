@@ -19,7 +19,8 @@ Suggests:
     testthat,
     knitr,
     rmarkdown,
-    Formula
+    Formula,
+    formatR
 RoxygenNote: 7.0.2
 URL: https://github.com/kolesarm/RDHonest
 VignetteBuilder: knitr

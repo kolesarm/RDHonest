@@ -131,10 +131,11 @@ intervals; otherwise ignored.}
 
 \item{"EHW"}{Based on residuals from a local linear regression using a
             triangular kernel, and and bandwidth given by a rule-of-thumb
-            bandwidth (for inference at a point, see \code{\link{ROTBW.fit}}),
-            or IK bandwidth (for fuzzy and sharp RD, see
-            \code{\link{IKBW.fit}}). For fuzzy RD, the IK bandwidth is based
-            on the reduced-form regression.}
+            bandwidth (for inference at a point, see
+            \code{\link{ROTBW.fit}}), or Imbens and Kalyanaraman (2012, IK)
+            bandwidth (for fuzzy and sharp RD, see \code{\link{IKBW.fit}}).
+            For fuzzy RD, the IK bandwidth is based on the reduced-form
+            regression.}
 
 \item{"demeaned"}{Like EHW, but instead of using the regression residuals,
             estimate \eqn{\sigma^2_i}{sigma^2_i} by subtracting the estimated
@@ -160,8 +161,8 @@ Returns an object of class \code{"NPRResults"}. The function
   \item{\code{estimate}}{Point estimate. This estimate is MSE-optimal if
                   \code{opt.criterion="MSE"}}
 
-  \item{\code{lff}}{Least favorable function, only relevant for optimal estimator
-             under Taylor class.}
+  \item{\code{lff}}{Least favorable function, only relevant for optimal
+             estimator under Taylor class.}
 
   \item{\code{maxbias}}{Maximum bias of \code{estimate}}
 

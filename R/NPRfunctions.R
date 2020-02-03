@@ -39,8 +39,11 @@ LPReg <- function(X, Y, h, K, order=1, se.method=NULL, sigma2, J=3,
     R <- outer(X, 0:order, "^")
     W <- K(X/h)*weights
     Gamma <- crossprod(R, W*R)
+
+    ## if (sum(W>0) <= order | h==0 |
+    ##     class(try(solve(Gamma), silent=TRUE)) != "matrix")
     if (sum(W>0) <= order | h==0 |
-        class(try(solve(Gamma), silent=TRUE)) != "matrix")
+        inherits(try(solve(Gamma), silent=TRUE), "try-error"))
         return(list(theta=0, sigma2=NA, var=NA, w=0, eff.obs=0))
 
     ## weights if we think of the estimator as linear estimator
@@ -113,7 +116,8 @@ LPReg <- function(X, Y, h, K, order=1, se.method=NULL, sigma2, J=3,
 #'
 #' }
 #' @examples
-#' NPRreg.fit(RDData(lee08, cutoff=0), h=5, order=2, se.method=c("nn", "plugin", "EHW"))
+#' NPRreg.fit(RDData(lee08, cutoff=0), h=5, order=2,
+#'            se.method=c("nn", "plugin", "EHW"))
 #' NPRreg.fit(LPPData(lee08[lee08$margin>=0, ], point=0), h=5, order=1)
 #' d <- FRDData(cbind(logcn=log(rcp[, 6]), rcp[, c(3, 2)]), cutoff=0)
 #' r <- NPRreg.fit(d, h=10, order=1)

@@ -130,8 +130,8 @@ FRDHonest <- function(formula, data, subset, weights, cutoff=0, M,
 #'     \describe{
 #'     \item{\code{hp}}{bandwidth for observations above cutoff}
 #'
-#'     \item{\code{hm}}{bandwidth for observations below cutoff, equal to \code{hp}
-#'     unless \code{bw.equal==FALSE}}
+#'     \item{\code{hm}}{bandwidth for observations below cutoff, equal to
+#'     \code{hp} unless \code{bw.equal==FALSE}}
 #'
 #'     \item{\code{sigma2m}, \code{sigma2p}}{estimate of conditional variance
 #'     just above and just below cutoff, \eqn{\sigma^2_+(0)} and
@@ -142,8 +142,8 @@ FRDHonest <- function(formula, data, subset, weights, cutoff=0, M,
 #'
 #'    \item{\code{call}}{the matched call}
 #'
-#'    \item{\code{na.action}}{(where relevant) information on handling of missing
-#'    data.}
+#'    \item{\code{na.action}}{(where relevant) information on handling of
+#'    missing data.}
 #'
 #'    }
 #' @seealso \code{\link{RDHonest}}
@@ -157,7 +157,7 @@ FRDHonest <- function(formula, data, subset, weights, cutoff=0, M,
 #' "Simple and Honest Confidence Intervals in Nonparametric Regression."
 #' Quantitative Economics 11 (1): 1–39.}
 #'
-#' \cite{Imbens, Guido, and Kalyanaraman, Karthik,
+#' \cite{Imbens, Guido, and Kalyanaraman, Karthik. 2012.
 #' "Optimal bandwidth choice for the regression discontinuity estimator." The
 #' Review of Economic Studies 79 (3): 933-959.}
 #'

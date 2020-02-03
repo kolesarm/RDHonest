@@ -28,8 +28,8 @@
 #'   \item{\code{estimate}}{Point estimate. This estimate is MSE-optimal if
 #'                   \code{opt.criterion="MSE"}}
 #'
-#'   \item{\code{lff}}{Least favorable function, only relevant for optimal estimator
-#'              under Taylor class.}
+#'   \item{\code{lff}}{Least favorable function, only relevant for optimal
+#'              estimator under Taylor class.}
 #'
 #'   \item{\code{maxbias}}{Maximum bias of \code{estimate}}
 #'
@@ -210,7 +210,7 @@ RDOptBW <- function(formula, data, subset, weights, cutoff=0, M,
 #' @param verbose Print details of calculation?
 #' @return Imbens and Kalyanaraman bandwidth
 #' @references{
-#' \cite{Imbens, Guido, and Kalyanaraman, Karthik,
+#' \cite{Imbens, Guido, and Kalyanaraman, Karthik. 2012.
 #' "Optimal bandwidth choice for the regression discontinuity estimator." The
 #' Review of Economic Studies 79 (3): 933-959.}
 #' }

@@ -7,8 +7,8 @@
 #'     outcome variable, second column corresponding to the running variable,
 #'     optionally a column called \code{"sigma2"} that corresponds to the
 #'     conditional variance of the outcome (or an estimate of the conditional
-#'     variance), and optionally a column called \code{"weights"} if observations
-#'     are aggregated by cell.
+#'     variance), and optionally a column called \code{"weights"} if
+#'     observations are aggregated by cell.
 #' @param cutoff specifies the cutoff for the running variable
 #' @return An object of class \code{"RDData"}, which is a list containing the
 #'     following components:
@@ -244,7 +244,7 @@ gss <- function(f, xs) {
 
 ##     obj <- rep(0, k)
 ##     arg <- rep(0, k)
-##     for (j in 1:k){
+##     for (j in 1:k) {
 ##         r <- stats::optimize(f, s[j, ])
 ##         arg[j] <- r$minimum
 ##         obj[j] <- r$objective

@@ -52,7 +52,7 @@ interest is given by the jump of $f$ at the cutoff, $$ \beta=\lim_{x\downarrow
 c_{0}}f(x)-\lim_{x\uparrow c_{0}}f(x).$$ Let $\sigma^2(x_i)$ denote the
 conditional variance of $u_i$.
 
-In the Lee dataset, the running variable corresponds to the margin of victory of
+In the @lee08 dataset, the running variable corresponds to the margin of victory of
 a Democratic candidate in a US House election, and the treatment corresponds to
 winning the election. Therefore, the cutoff is zero. The outcome of interest is
 the Democratic vote share in the following election.
@@ -393,7 +393,7 @@ The package also implements lower-bound estimates for the smoothness constant
 $M$ for the Taylor and Hölder smoothness class, as described in the supplements to @KoRo16 and @ArKo16optimal
 
 ```{r}
-## Add variance estimate to the lee data so that the RDSmoothnessBound
+## Add variance estimate to the Lee (2008) data so that the RDSmoothnessBound
 ## function doesn't have to compute them each time
 dl <- NPRPrelimVar.fit(dl, se.initial="nn")
 
@@ -452,7 +452,7 @@ first-stage regressions are given by
 \end{align*}
 See Section 3.3 in @ArKo16honest for a more detailed description.
 
-In the Battistin et al dataset, the treatment variable is an indicator for
+In the @battistin09 dataset, the treatment variable is an indicator for
 retirement, and the running variable is number of years since being eligible to
 retire. The cutoff is $0$. (individuals exactly at the cutoff are dropped).
 Similarly to the `RDData` function, the `FRDData` function transforms the data into an appropriate format:

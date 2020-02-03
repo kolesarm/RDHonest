@@ -31,7 +31,7 @@ IKBW.fit(RDData(lee08, cutoff=0))
 }
 \references{
 {
-\cite{Imbens, Guido, and Kalyanaraman, Karthik,
+\cite{Imbens, Guido, and Kalyanaraman, Karthik. 2012.
 "Optimal bandwidth choice for the regression discontinuity estimator." The
 Review of Economic Studies 79 (3): 933-959.}
 }

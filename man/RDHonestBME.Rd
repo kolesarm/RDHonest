@@ -52,12 +52,12 @@ criterion given by \code{opt.criterion}.}
 \item{order}{Order of local regression \code{1} for linear, \code{2} for
 quadratic.}
 
-\item{regformula}{Explicitly specify regression formula to use instead of running a
-local linear regression, with \code{y} and \code{x} denoting the outcome
-and the running variable, and cutoff is normalized to \code{0}. Local
-linear regression (\code{order = 1}) is equivalent to
-\code{regformula = "y~x*I(x>0)"}. Inference is done on the \code{order+2}th
-element of the design matrix}
+\item{regformula}{Explicitly specify regression formula to use instead of
+running a local linear regression, with \code{y} and \code{x} denoting
+the outcome and the running variable, and cutoff is normalized to
+\code{0}. Local linear regression (\code{order = 1}) is equivalent to
+\code{regformula = "y~x*I(x>0)"}. Inference is done on the
+\code{order+2}th element of the design matrix}
 }
 \description{
 Computes honest CIs for local linear regression with uniform kernel under the

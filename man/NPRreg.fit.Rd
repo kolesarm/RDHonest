@@ -86,7 +86,8 @@ point (depending on the class of \code{d}), and its variance using local
 polynomial regression of order \code{order}.
 }
 \examples{
-NPRreg.fit(RDData(lee08, cutoff=0), h=5, order=2, se.method=c("nn", "plugin", "EHW"))
+NPRreg.fit(RDData(lee08, cutoff=0), h=5, order=2,
+           se.method=c("nn", "plugin", "EHW"))
 NPRreg.fit(LPPData(lee08[lee08$margin>=0, ], point=0), h=5, order=1)
 d <- FRDData(cbind(logcn=log(rcp[, 6]), rcp[, c(3, 2)]), cutoff=0)
 r <- NPRreg.fit(d, h=10, order=1)

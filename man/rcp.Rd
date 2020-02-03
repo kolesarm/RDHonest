@@ -3,7 +3,8 @@
 \docType{data}
 \name{rcp}
 \alias{rcp}
-\title{Battistin et al. (2009) retirement consumption puzzle dataset}
+\title{Battistin, Brugiavini, Rettore, and Weber (2009) retirement consumption
+puzzle dataset}
 \format{A data frame with 30,006 rows and 6 variables:
 \describe{
   \item{survey_year}{Survey year}
@@ -21,7 +22,8 @@ American Economic Review data archive,
 rcp
 }
 \description{
-Battistin et al. (2009) retirement consumption puzzle dataset
+Battistin, Brugiavini, Rettore, and Weber (2009) retirement consumption
+puzzle dataset
 }
 \references{
 {

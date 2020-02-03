@@ -7,7 +7,7 @@ test_that("Test weighting using cghs", {
     ## Make cells by group and year
     d$cell <- d$mod/10+d$yearat14
     dd <- data.frame()
-    for (j in unique(d$cell)){
+    for (j in unique(d$cell)) {
         dd <- rbind(dd, data.frame(y=mean(log(d$earnings)[d$cell==j]),
                                    x=mean(d$yearat14[d$cell==j]),
                                    weights=length(d$yearat14[d$cell==j])))

@@ -121,9 +121,13 @@ NPRHonest.fit <- function(d, M, kern="triangular", h, opt.criterion,
 #' @return Returns an object of class \code{"NPRBW"}, see descriptions in
 #'     \code{\link{RDOptBW}}, \code{\link{FRDOptBW}}, and
 #'     \code{\link{LPPOptBW}}.
-#' @references{ \cite{Imbens, Guido, and Kalyanaraman, Karthik,
+#' @references{
+#'
+#' \cite{Imbens, Guido, and Kalyanaraman, Karthik. 2012.
 #'     "Optimal bandwidth choice for the regression discontinuity estimator."
-#'     The Review of Economic Studies 79 (3): 933-959.} }
+#'     The Review of Economic Studies 79 (3): 933-959.}
+#'
+#' }
 #' @examples
 #' ## Lee data
 #' d <- RDData(lee08, cutoff=0)

@@ -73,10 +73,11 @@ intervals; otherwise ignored.}
 
 \item{"EHW"}{Based on residuals from a local linear regression using a
             triangular kernel, and and bandwidth given by a rule-of-thumb
-            bandwidth (for inference at a point, see \code{\link{ROTBW.fit}}),
-            or IK bandwidth (for fuzzy and sharp RD, see
-            \code{\link{IKBW.fit}}). For fuzzy RD, the IK bandwidth is based
-            on the reduced-form regression.}
+            bandwidth (for inference at a point, see
+            \code{\link{ROTBW.fit}}), or Imbens and Kalyanaraman (2012, IK)
+            bandwidth (for fuzzy and sharp RD, see \code{\link{IKBW.fit}}).
+            For fuzzy RD, the IK bandwidth is based on the reduced-form
+            regression.}
 
 \item{"demeaned"}{Like EHW, but instead of using the regression residuals,
             estimate \eqn{\sigma^2_i}{sigma^2_i} by subtracting the estimated
@@ -111,7 +112,11 @@ d <- RDData(lee08, cutoff=0)
 NPROptBW.fit(d, M=0.1, opt.criterion="MSE")[c("hp", "hm")]
 }
 \references{
-{ \cite{Imbens, Guido, and Kalyanaraman, Karthik,
+{
+
+\cite{Imbens, Guido, and Kalyanaraman, Karthik. 2012.
     "Optimal bandwidth choice for the regression discontinuity estimator."
-    The Review of Economic Studies 79 (3): 933-959.} }
+    The Review of Economic Studies 79 (3): 933-959.}
+
+}
 }

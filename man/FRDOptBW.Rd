@@ -96,10 +96,11 @@ intervals; otherwise ignored.}
 
 \item{"EHW"}{Based on residuals from a local linear regression using a
             triangular kernel, and and bandwidth given by a rule-of-thumb
-            bandwidth (for inference at a point, see \code{\link{ROTBW.fit}}),
-            or IK bandwidth (for fuzzy and sharp RD, see
-            \code{\link{IKBW.fit}}). For fuzzy RD, the IK bandwidth is based
-            on the reduced-form regression.}
+            bandwidth (for inference at a point, see
+            \code{\link{ROTBW.fit}}), or Imbens and Kalyanaraman (2012, IK)
+            bandwidth (for fuzzy and sharp RD, see \code{\link{IKBW.fit}}).
+            For fuzzy RD, the IK bandwidth is based on the reduced-form
+            regression.}
 
 \item{"demeaned"}{Like EHW, but instead of using the regression residuals,
             estimate \eqn{\sigma^2_i}{sigma^2_i} by subtracting the estimated
@@ -126,8 +127,8 @@ Returns an object of class \code{"RDBW"}. The function \code{print}
     \describe{
     \item{\code{hp}}{bandwidth for observations above cutoff}
 
-    \item{\code{hm}}{bandwidth for observations below cutoff, equal to \code{hp}
-    unless \code{bw.equal==FALSE}}
+    \item{\code{hm}}{bandwidth for observations below cutoff, equal to
+    \code{hp} unless \code{bw.equal==FALSE}}
 
     \item{\code{sigma2m}, \code{sigma2p}}{estimate of conditional variance
     just above and just below cutoff, \eqn{\sigma^2_+(0)} and
@@ -138,8 +139,8 @@ Returns an object of class \code{"RDBW"}. The function \code{print}
 
    \item{\code{call}}{the matched call}
 
-   \item{\code{na.action}}{(where relevant) information on handling of missing
-   data.}
+   \item{\code{na.action}}{(where relevant) information on handling of
+   missing data.}
 
    }
 }
@@ -169,7 +170,7 @@ FRDOptBW(cn~retired | elig_year, data=rcp, cutoff=0, M=c(1, 0.1),
 "Simple and Honest Confidence Intervals in Nonparametric Regression."
 Quantitative Economics 11 (1): 1–39.}
 
-\cite{Imbens, Guido, and Kalyanaraman, Karthik,
+\cite{Imbens, Guido, and Kalyanaraman, Karthik. 2012.
 "Optimal bandwidth choice for the regression discontinuity estimator." The
 Review of Economic Studies 79 (3): 933-959.}
 

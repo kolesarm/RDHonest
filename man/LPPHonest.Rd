@@ -128,10 +128,11 @@ intervals; otherwise ignored.}
 
 \item{"EHW"}{Based on residuals from a local linear regression using a
             triangular kernel, and and bandwidth given by a rule-of-thumb
-            bandwidth (for inference at a point, see \code{\link{ROTBW.fit}}),
-            or IK bandwidth (for fuzzy and sharp RD, see
-            \code{\link{IKBW.fit}}). For fuzzy RD, the IK bandwidth is based
-            on the reduced-form regression.}
+            bandwidth (for inference at a point, see
+            \code{\link{ROTBW.fit}}), or Imbens and Kalyanaraman (2012, IK)
+            bandwidth (for fuzzy and sharp RD, see \code{\link{IKBW.fit}}).
+            For fuzzy RD, the IK bandwidth is based on the reduced-form
+            regression.}
 
 \item{"demeaned"}{Like EHW, but instead of using the regression residuals,
             estimate \eqn{\sigma^2_i}{sigma^2_i} by subtracting the estimated
@@ -167,8 +168,9 @@ Returns an object of class \code{"NPResults"}. The function
         based on \code{estimate}. This CI is optimal if
         \code{opt.criterion="OCI"}}
 
-  \item{\code{hl}}{Half-length of a two-sided CI based on \code{estimate}, so the CI is
-         \code{c(estimate-hl, estimate+hl)}. The CI is optimal if \code{opt.criterion="FLCI"}}
+  \item{\code{hl}}{Half-length of a two-sided CI based on \code{estimate}, so
+         the CI is \code{c(estimate-hl, estimate+hl)}. The CI is optimal if
+         \code{opt.criterion="FLCI"}}
 
   \item{\code{eff.obs}}{Effective number of observations used by
             \code{estimate}}
