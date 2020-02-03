@@ -148,8 +148,8 @@ NPRreg.fit <- function(d, h, kern="triangular", order=1, se.method="nn",
                min(length(unique(d$Xp)), length(unique(d$Xm))))
 
     if (nob <= 3*order & no.warning==FALSE)
-            warning("Too few observations to compute estimates.\nOnly ",
-                    nob, " units with positive weights")
+        warning("Too few observations to compute estimates.\nOnly ",
+                nob, " units with positive weights")
     if (uob <= order & no.warning==FALSE) {
         warning("Too few distinct values to compute estimates.\nOnly ",
                 uob, " unique values for ",
