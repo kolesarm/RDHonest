@@ -4,7 +4,7 @@
 
 This R package implements honest and efficient confidence intervals in fuzzy and
 sharp regression discontinuity designs using procedures from [Armstrong and
-Kolesár (2020)](https:://doi.org/10.3982/QE1199)
+Kolesár (2020)](https://doi.org/10.3982/QE1199)
 ([preprint](https://arxiv.org/abs/1606.01200)), [Armstrong and Kolesár
 (2018)](https://doi.org/10.3982/ECTA14434)
 ([preprint](https://arxiv.org/abs/1511.06028)), and [Kolesár and Rothe
