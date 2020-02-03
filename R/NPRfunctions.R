@@ -125,11 +125,17 @@ LPReg <- function(X, Y, h, K, order=1, se.method=NULL, sigma2, J=3,
 NPRreg.fit <- function(d, h, kern="triangular", order=1, se.method="nn",
                        no.warning=FALSE, J=3) {
 
-    K <- if (!is.function(kern)) {
-             EqKern(kern, boundary=FALSE, order=0)
-         } else {
-             kern
-         }
+    if (!is.function(kern)) {
+        K <- EqKern(kern, boundary=FALSE, order=0)
+        nu0 <- RDHonest::kernC[RDHonest::kernC$kernel==kern &
+                               RDHonest::kernC$order==order &
+                               RDHonest::kernC$boundary==TRUE, "nu0"]
+    } else {
+        K <- kern
+        nu0 <- KernMoment(EqKern(kern, boundary=TRUE, order=order),
+                          moment=0, boundary=TRUE, "raw2")
+    }
+
     if (inherits(d, "LPPData")) {
         ## Keep only positive kernel weights
         W <- if (h[1]<=0) 0*d$X else K(d$X/h[1]) # kernel weights
@@ -147,14 +153,11 @@ NPRreg.fit <- function(d, h, kern="triangular", order=1, se.method="nn",
     uob <- max(length(unique(d$X)),
                min(length(unique(d$Xp)), length(unique(d$Xm))))
 
-    if (nob <= 3*order & no.warning==FALSE)
+    if (no.warning==FALSE & (nob <= 3*order | uob <= order))
         warning("Too few observations to compute estimates.\nOnly ",
-                nob, " units with positive weights")
-    if (uob <= order & no.warning==FALSE) {
-        warning("Too few distinct values to compute estimates.\nOnly ",
+                nob, " units with positive weights and ",
                 uob, " unique values for ",
                 "independent variable with positive weights")
-    }
 
     if (inherits(d, "LPPData")) {
         r <- LPReg(d$X, d$Y[W>0], h[1], K, order, se.method, d$sigma2[W>0],
@@ -175,14 +178,6 @@ NPRreg.fit <- function(d, h, kern="triangular", order=1, se.method="nn",
     if (inherits(d, "RDData")) {
         plugin <- NA
         if ("plugin" %in% se.method) {
-            if (is.function(kern)) {
-                ke <- EqKern(kern, boundary=TRUE, order=order)
-                nu0 <- KernMoment(ke, moment=0, boundary=TRUE, "raw2")
-            } else {
-                nu0 <- RDHonest::kernC[RDHonest::kernC$kernel==kern &
-                                       RDHonest::kernC$order==order &
-                                       RDHonest::kernC$boundary==TRUE, "nu0"]
-            }
             ## we kept original outcomes, but only kept X's receiving positive
             ## weight
             N <- length(d$Yp) + length(d$Ym)
@@ -236,6 +231,7 @@ NPRPrelimVar.fit <- function(d, se.initial="EHW") {
             class(drf) <- "RDData"
         }
         h1 <- if (inherits(d, "LPPData")) ROTBW.fit(drf) else IKBW.fit(drf)
+        r1 <- NPRreg.fit(d, h1, se.method=se.initial)
     } else if (se.initial == "Silverman" | se.initial == "SilvermanNN") {
         X <- if (inherits(d, "LPPData")) d$X else c(d$Xm, d$Xp)
         Xmin <- if (inherits(d, "LPPData")) {
@@ -244,22 +240,22 @@ NPRPrelimVar.fit <- function(d, se.initial="EHW") {
                     max(sort(unique(d$Xp))[2], sort(abs(unique(d$Xm)))[2])
                 }
         h1 <- max(1.84*stats::sd(X)/sum(length(X))^(1/5), Xmin)
-    }
-
-    if (se.initial=="Silverman") {
-        r1 <- NPRreg.fit(d=d, h=h1, kern="uniform", order=0, se.method="EHW")
-        ## Variance adjustment for backward compatibility
-        if (inherits(d, "LPPData")) {
-            r1$sigma2 <- r1$sigma2*length(r1$sigma2) / (length(r1$sigma2)-1)
+        if (se.initial=="Silverman") {
+            r1 <- NPRreg.fit(d=d, h=h1, kern="uniform", order=0,
+                             se.method="EHW")
+            ## Variance adjustment for backward compatibility
+            if (inherits(d, "LPPData")) {
+                r1$sigma2 <- r1$sigma2*length(r1$sigma2) / (length(r1$sigma2)-1)
+            } else {
+                r1$sigma2p <- r1$sigma2p*length(r1$sigma2p) /
+                    (length(r1$sigma2p)-1)
+                r1$sigma2m <- r1$sigma2m*length(r1$sigma2m) /
+                    (length(r1$sigma2m)-1)
+            }
         } else {
-            r1$sigma2p <- r1$sigma2p*length(r1$sigma2p) / (length(r1$sigma2p)-1)
-            r1$sigma2m <- r1$sigma2m*length(r1$sigma2m) / (length(r1$sigma2m)-1)
+            ## order doesn't matter for nn method
+            r1 <- NPRreg.fit(d=d, h=h1, kern="uniform", order=1, se.method="nn")
         }
-    } else if (se.initial=="SilvermanNN") {
-        ## order doesn't matter for nn method
-        r1 <- NPRreg.fit(d=d, h=h1, kern="uniform", order=1, se.method="nn")
-    } else if (se.initial == "EHW" | se.initial == "demeaned") {
-        r1 <- NPRreg.fit(d, h1, se.method=se.initial)
     } else {
         stop("Unknown method for estimating initial variance")
     }
