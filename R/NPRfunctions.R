@@ -231,6 +231,10 @@ NPRPrelimVar.fit <- function(d, se.initial="EHW") {
             class(drf) <- "RDData"
         }
         h1 <- if (inherits(d, "LPPData")) ROTBW.fit(drf) else IKBW.fit(drf)
+        if(is.nan(h1)) {
+            warning("Preliminary bandwidth is NaN, setting it to Inf")
+            h1 <- Inf
+        }
         r1 <- NPRreg.fit(d, h1, se.method=se.initial)
     } else if (se.initial == "Silverman" | se.initial == "SilvermanNN") {
         X <- if (inherits(d, "LPPData")) d$X else c(d$Xm, d$Xp)
