@@ -1,4 +1,4 @@
-[![Travis build status](https://travis-ci.com/kolesarm/RDHonest.svg?branch=master)](https://travis-ci.com/kolesarm/RDHonest) [![Coverage status](https://codecov.io/gh/kolesarm/RDHonest/branch/master/graph/badge.svg)](https://codecov.io/github/kolesarm/RDHonest?branch=master)
+[![R-CMD-check](https://github.com/kolesarm/RDHonest/workflows/R-CMD-check/badge.svg)](https://github.com/kolesarm/RDHonest/actions) [![Coverage status](https://codecov.io/gh/kolesarm/RDHonest/branch/master/graph/badge.svg)](https://codecov.io/github/kolesarm/RDHonest?branch=master)
 
 # RDHonest
 
@@ -9,7 +9,7 @@ Kolesár (2020)](https://doi.org/10.3982/QE1199)
 (2018)](https://doi.org/10.3982/ECTA14434)
 ([preprint](https://arxiv.org/abs/1511.06028)), and [Kolesár and Rothe
 (2018)](https://doi.org/10.1257/aer.20160945)
-([preprint](https://arxiv.org/abs/1606.04086))
+([preprint](https://arxiv.org/abs/1606.04086)).
 
 See vignette [RDHonest](doc/RDHonest.pdf) for description of the package
 (available through `vignette("RDHonest")` once package is installed), and the

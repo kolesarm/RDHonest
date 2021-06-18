@@ -8,3 +8,4 @@ readme.md
 notes.org
 .lintr
 ^codecov\.yml$
+^\.github$
