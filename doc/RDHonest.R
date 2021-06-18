@@ -78,7 +78,7 @@ RDHonest(voteshare ~ margin, data=lee08, kern="uniform", M=M, sclass="H", opt.cr
 
 
 ## -----------------------------------------------------------------------------
-## Add variance estimate to the lee data so that the RDSmoothnessBound
+## Add variance estimate to the Lee (2008) data so that the RDSmoothnessBound
 ## function doesn't have to compute them each time
 dl <- NPRPrelimVar.fit(dl, se.initial="nn")
 

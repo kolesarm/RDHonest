@@ -104,8 +104,8 @@ test_that("Honest inference in Lee and LM data",  {
     expect_equal(r$maxbias, ff(r$hp, "uniform", "supplied.var")$maxbias)
 
     r <- es("triangular", "nn")
-    expect_equal(r$hm, 22.80882408)
-    expect_equal(unname(r$estimate+r$hl), 0.05476609)
+    expect_lt(abs(r$hm- 22.80882408), 5e-7)
+    expect_lt(unname(r$estimate+r$hl- 0.05476609), 1e-7)
     ## End replication
 
     ## Replicate 1511.06028v2

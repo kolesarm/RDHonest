@@ -135,9 +135,9 @@ RDHonest <- function(formula, data, subset, weights, cutoff=0, M,
 #'     class \code{"RDBW"} is a list containing the following components:
 #'
 #'     \describe{
-#'     \item{\code{hp}}{bandwidth for observations above cutoff}
+#'     \item{\code{hp}}{bandwidth for observations strictly above cutoff}
 #'
-#'     \item{\code{hm}}{bandwidth for observations below cutoff, equal to
+#'     \item{\code{hm}}{bandwidth for observations weakly below cutoff, equal to
 #'     \code{hp} unless \code{bw.equal==FALSE}}
 #'
 #'     \item{\code{sigma2m}, \code{sigma2p}}{estimate of conditional variance

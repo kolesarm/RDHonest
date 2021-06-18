@@ -125,10 +125,10 @@ Returns an object of class \code{"RDBW"}. The function \code{print}
     class \code{"RDBW"} is a list containing the following components:
 
     \describe{
-    \item{\code{hp}}{bandwidth for observations above cutoff}
+    \item{\code{hp}}{bandwidth for observations weakly above cutoff}
 
-    \item{\code{hm}}{bandwidth for observations below cutoff, equal to
-    \code{hp} unless \code{bw.equal==FALSE}}
+    \item{\code{hm}}{bandwidth for observations strictly below cutoff, equal
+    to \code{hp} unless \code{bw.equal==FALSE}}
 
     \item{\code{sigma2m}, \code{sigma2p}}{estimate of conditional variance
     just above and just below cutoff, \eqn{\sigma^2_+(0)} and
