@@ -18,7 +18,7 @@ A data frame with 30,006 rows and 6 variables:
 }
 \source{
 American Economic Review data archive,
-\url{https://doi.org/10.1257/aer.99.5.2209}
+\doi{doi.org/10.1257/aer.99.5.2209}
 }
 \usage{
 rcp

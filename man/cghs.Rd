@@ -13,7 +13,7 @@ A data frame with 73,954 rows and 2 variables:
 }
 \source{
 American Economic Review data archive,
-\url{https://doi.org/10.1257/000282806776157641}
+\doi{10.1257/000282806776157641}
 }
 \usage{
 cghs

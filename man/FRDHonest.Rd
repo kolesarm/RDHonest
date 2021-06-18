@@ -210,7 +210,7 @@ that is first in \code{data} and then in the environment of \code{formula}.
 }
 
 \examples{
-FRDHonest(cn~retired | elig_year, data=rcp, cutoff=0, M=c(1, 0.1),
+FRDHonest(cn~retired | elig_year, data=rcp, cutoff=0, M=c(5, 0.5),
           kern="triangular", opt.criterion="MSE", T0=0)
 }
 \references{

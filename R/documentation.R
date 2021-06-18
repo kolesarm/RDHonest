@@ -98,7 +98,7 @@
 #'
 #' }
 #' @source American Economic Review data archive,
-#' \url{https://doi.org/10.1257/000282806776157641}
+#' \doi{10.1257/000282806776157641}
 "cghs"
 
 #' Battistin, Brugiavini, Rettore, and Weber (2009) retirement consumption
@@ -121,7 +121,7 @@
 #'     2209–26.}
 #' }
 #' @source American Economic Review data archive,
-#' \url{https://doi.org/10.1257/aer.99.5.2209}
+#' \doi{doi.org/10.1257/aer.99.5.2209}
 "rcp"
 
 #' Constants for common kernels.

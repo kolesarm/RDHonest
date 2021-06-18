@@ -75,8 +75,8 @@ RDSmoothnessBound <- function(d, s, separate=TRUE, multiple=TRUE, alpha=0.05,
     } else {
         Sp <- Sm <- 1
     }
-    Dp <- sapply(seq_len(Sp), Dpj)
-    Dm <- sapply(seq_len(Sm), Dmj)
+    Dp <- vapply(seq_len(Sp), Dpj, numeric(11))
+    Dm <- vapply(seq_len(Sm), Dmj, numeric(11))
 
     ## Critical value
     cv <- function(M, Z, sd, alpha) {
