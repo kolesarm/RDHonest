@@ -15,6 +15,15 @@ test_that("Test class constructor sorting", {
     d1 <- LPPData(rcp[sort(rcp$elig_year,
                            index.return=TRUE)$ix, c(6, 2)], point=-3)
     expect_identical(d1, d0)
+
+    ## Now test that I() works
+    expect_equal(RDHonest(voteshare ~ margin, data=lee08, M=0, h=2)$estimate,
+                 -RDHonest(voteshare ~ I(-margin),
+                           data=lee08, M=0, h=2)$estimate)
+    expect_equal(FRDHonest(cn~retired | elig_year, data=rcp, cutoff=0,
+                           M=c(1, 0.1), h=3)$estimate,
+                 FRDHonest(cn~retired | I(2*elig_year), data=rcp, cutoff=0,
+                           M=c(1, 0.1), h=6)$estimate)
 })
 
 test_that("IK bandwidth calculations", {

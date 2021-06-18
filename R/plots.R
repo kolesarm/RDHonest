@@ -68,11 +68,7 @@ plot_RDscatter <- function(d, avg=10, xlab=NULL, ylab=NULL,
         p <- ggplot2::qplot(x=x, y=y, data=bd)
     }
 
-    p <- p + ggplot2::theme_classic() +
-        ggplot2::theme(legend.position = "none", axis.line.x=ggplot2::
-                       element_line(color="black", size=0.2, linetype="solid"),
-                       axis.line.y=ggplot2::
-                       element_line(color="black", size=0.2, linetype="solid"))
+    p <- p + ggplot2::theme(legend.position = "none")
     if(!is.null(xlab)) p <- p + ggplot2::xlab(xlab)
     if(!is.null(ylab)) p <- p + ggplot2::ylab(ylab)
     if(vert) p <- p + ggplot2::geom_vline(xintercept=d$orig.cutoff,

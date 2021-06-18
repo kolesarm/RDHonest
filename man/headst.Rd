@@ -4,7 +4,8 @@
 \name{headst}
 \alias{headst}
 \title{Head Start data from Ludwig and Miller (2007)}
-\format{A data frame with 3,127 rows and 9 variables:
+\format{
+A data frame with 3,127 rows and 9 variables:
 
 \describe{
 \item{statefp}{State FIPS code}
@@ -22,7 +23,8 @@
 \item{highSchool}{High school completion rate in 1990 census, ages 18-24}
 \item{statepc}{State postal code}
 \item{county}{County name}
-}}
+}
+}
 \source{
 Douglas Miller's website,
 \url{http://faculty.econ.ucdavis.edu/faculty/dlmiller/statafiles/}

@@ -4,11 +4,13 @@
 \name{cghs}
 \alias{cghs}
 \title{Oreopoulos (2006) UK general household survey dataset}
-\format{A data frame with 73,954 rows and 2 variables:
+\format{
+A data frame with 73,954 rows and 2 variables:
 \describe{
   \item{earnings}{Annual earnings in 1998 (UK pounds)}
   \item{yearat14}{Year individual turned 14}
- }}
+ }
+}
 \source{
 American Economic Review data archive,
 \url{https://doi.org/10.1257/000282806776157641}

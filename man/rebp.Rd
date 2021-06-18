@@ -4,13 +4,15 @@
 \name{rebp}
 \alias{rebp}
 \title{Austrian unemployment duration data from Lalive (2008)}
-\format{A data frame with 29,371 rows and 4 variables:
+\format{
+A data frame with 29,371 rows and 4 variables:
 \describe{
   \item{age}{Age in years, at monthly accuracy}
   \item{period}{Indicator for whether REBP is in place}
   \item{female}{Indicator for female}
   \item{duration}{unemployment duration in weeks}
- }}
+ }
+}
 \source{
 Rafael Lalive's website,
     \url{https://sites.google.com/site/rafaellalive/}

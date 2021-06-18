@@ -1,4 +1,4 @@
-[![Travis build status](https://travis-ci.org/kolesarm/RDHonest.svg?branch=master)](https://travis-ci.org/kolesarm/RDHonest) [![Coverage status](https://codecov.io/gh/kolesarm/RDHonest/branch/master/graph/badge.svg)](https://codecov.io/github/kolesarm/RDHonest?branch=master)
+[![Travis build status](https://travis-ci.com/kolesarm/RDHonest.svg?branch=master)](https://travis-ci.com/kolesarm/RDHonest) [![Coverage status](https://codecov.io/gh/kolesarm/RDHonest/branch/master/graph/badge.svg)](https://codecov.io/github/kolesarm/RDHonest?branch=master)
 
 # RDHonest
 
@@ -21,10 +21,11 @@ Foundation under grant numbers SES-1628939 (Armstrong) and SES-1628878
 
 ## Installation
 
-You can install the current development version of the package by downloading
-the source code here, or using the  `install_github()` function:
+you can get the current development version from GitHub:
 
-```
-install.packages("remotes") # if not installed
+``` r
+if (!requireNamespace("remotes")) {
+  install.packages("remotes")
+}
 remotes::install_github("kolesarm/RDHonest")
 ```

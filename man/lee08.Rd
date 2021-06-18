@@ -4,11 +4,13 @@
 \name{lee08}
 \alias{lee08}
 \title{Lee (2008) US House elections dataset}
-\format{A data frame with 6,558 rows and 2 variables:
+\format{
+A data frame with 6,558 rows and 2 variables:
 \describe{
   \item{voteshare}{Vote share in next election}
   \item{margin}{Democratic margin of victory}
- }}
+ }
+}
 \source{
 Mostly Harmless Econometrics data archive,
 \url{https://economics.mit.edu/faculty/angrist/data1/mhe}

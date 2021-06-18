@@ -4,7 +4,8 @@
 \name{kernC}
 \alias{kernC}
 \title{Constants for common kernels.}
-\format{A data frame with 18 rows and 19 variables:
+\format{
+A data frame with 18 rows and 19 variables:
 \describe{
   \item{kernel}{Kernel type.}
 
@@ -23,7 +24,8 @@
   \item{pMSE}{constant for pointwise MSE optimal bandwidth,
        \eqn{((p+1)!^2\nu_0 / (2(p+1)\mu_{p+1}^2))^{1/(2p+3)}}, see page 67 in
        Fan and Gijbels (1996)}
- }}
+ }
+}
 \source{
 Computed analytically using symbolic math software
 }
