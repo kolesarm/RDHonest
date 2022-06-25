@@ -46,7 +46,6 @@ export(CVb)
 export(EqKern)
 export(FRDData)
 export(FRDHonest)
-export(IKBW.fit)
 export(KernMoment)
 export(LPPData)
 export(LPPHonest)
@@ -59,12 +58,12 @@ export(RDHonestBME)
 export(RDSmoothnessBound)
 export(RDTEfficiencyBound)
 export(RDTOpt.fit)
-export(ROTBW.fit)
 export(plot_RDscatter)
 
 
 TODO
 - make class constructors internal
+- for optimal Taylor inference, two bandwidths are reported
 
 CHANGES
 - simplify output of CVb function. No longer accept vector alpha as argument

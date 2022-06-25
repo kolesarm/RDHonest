@@ -67,7 +67,7 @@ RDLFFunction <- function(d, C, delta)
 ## @param d Object of class \code{"RDData"}
 ## @param f Object of class \code{"RDLFFunction"}
 ## @template RDse
-RDEstimator <- function(d, f, alpha=0.05, se.method="supplied.var", J=3) {
+RDTEstimator <- function(d, f, alpha=0.05, se.method="supplied.var", J=3) {
     den <- sum(f$p(d$Xp) / d$sigma2p) # denominator
 
     Wp <- f$p(d$Xp) / (d$sigma2p*den)
@@ -109,24 +109,16 @@ RDEstimator <- function(d, f, alpha=0.05, se.method="supplied.var", J=3) {
 
     structure(list(estimate=Lhat, maxbias=maxbias, sd=sd, lower=lower,
                    upper=upper, hl=hl, delta=sqrt(4*q), omega=2*b,
-                   eff.obs=eff.obs, lff=f),
+                   eff.obs=eff.obs),
               class="NPRResults")
 }
 
-#' Optimal inference in RD under Taylor class
-#'
-#' Basic computing engine called by \code{\link{RDHonest}} to compute honest
-#' confidence intervals for optimal estimators in RD under second-order Taylor
-#' class.
-#'
-#' @param d object of class \code{"RDData"}
-#' @template RDoptBW
-#' @template RDse
-#' @template RDseInitial
-#' @param M Bound on second derivative of the conditional mean function.
-#' @return Returns an object of class \code{"RDResults"}, see description in
-#'     \code{\link{RDHonest}}
-#' @export
+## Optimal inference in RD under Taylor class
+##
+## Basic computing engine called by \code{\link{RDHonest}} to compute honest
+## confidence intervals for optimal estimators in RD under second-order Taylor
+## class.
+##
 RDTOpt.fit <- function(d, M, opt.criterion, alpha=0.05, beta=0.5,
                        se.method="supplied.var", J=3, se.initial="IKEHW") {
     ## First check if sigma2 is supplied
@@ -148,9 +140,6 @@ RDTOpt.fit <- function(d, M, opt.criterion, alpha=0.05, beta=0.5,
         eq <- function(b) {
             r <- RDgbC(d, b, C)
             q1 <- Q(d, r)
-            ## b*bnmflci(sqrt(q), alpha=alpha)$c *
-            ##     sum(RDgbC(d, b, C)$p(d$Xp) / d$sigma2p) - q
-
             ## Instead of using the above formula from page S5 of 1511.06028v2,
             ## optimize half-length directly
             den <- sum(r$p(d$Xp) / d$sigma2p) # denominator
@@ -164,10 +153,10 @@ RDTOpt.fit <- function(d, M, opt.criterion, alpha=0.05, beta=0.5,
     }
 
     ## Compute optimal estimator
-    r <- RDEstimator(d, lff, alpha, se.method, J)
-    ## TODO: Why not just llf$m(0)?
-    r$hm <- (r$lff$m(0)/C)^(1/2)
-    r$hp <- (r$lff$p(0)/C)^(1/2)
+    r <- RDTEstimator(d, lff, alpha, se.method, J)
+    ## Two bandwidths in this case
+    r$hm <- (lff$m(0)/C)^(1/2)
+    r$hp <- (lff$p(0)/C)^(1/2)
     r
 }
 
@@ -205,8 +194,8 @@ RDTEfficiencyBound <- function(d, M, opt.criterion="FLCI",
 
     if (opt.criterion=="OCI") {
         delta <- stats::qnorm(1-alpha)+stats::qnorm(beta)
-        r1 <- RDEstimator(d, RDLFFunction(d, C, delta))
-        r2 <- RDEstimator(d, RDLFFunction(d, C, 2*delta))
+        r1 <- RDTEstimator(d, RDLFFunction(d, C, delta))
+        r2 <- RDTEstimator(d, RDLFFunction(d, C, 2*delta))
         return(r2$omega/(r1$delta*r1$sd+r1$omega))
     } else {
         ## From proof of Pratt result, it follows that the expected length is
