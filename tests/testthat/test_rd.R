@@ -154,15 +154,15 @@ test_that("Honest inference in Lee and LM data",  {
     ## expect_equal(r3$h, 5.0590753991)
 
     ## Decrease M, these results are not true minima...
-    r1 <- RDOptBW(voteshare ~ margin, data = lee08, kern = "uniform",
+    r1 <- RDHonest(voteshare ~ margin, data = lee08, kern = "uniform",
                  M = 0.01, opt.criterion = "MSE", sclass = "T",
                  se.initial="SilvermanNN")
     r2 <- RDHonest(voteshare ~ margin, data = lee08, kern = "uniform",
                   M = 0.01, opt.criterion = "MSE", sclass = "H",
                   se.initial="SilvermanNN")
-    r3 <- RDOptBW(voteshare ~ margin, data = lee08, kern = "uniform",
-                 M = 0.1, opt.criterion = "MSE", sclass = "T",
-                 se.initial="Silverman")
+    h3 <- NPROptBW.fit(RDData(lee08, cutoff=0), kern = "uniform", M = 0.1,
+                       opt.criterion = "MSE", sclass = "T",
+                       se.initial="Silverman")
     expect_equal(unname(r1$h), 12.6576125622)
     expect_equal(unname(r2$lower), 6.0484981004)
     expect_equal(unname(r3$h), 5.0866454840)

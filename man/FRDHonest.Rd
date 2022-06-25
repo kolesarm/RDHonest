@@ -191,9 +191,8 @@ estimator in fuzzy RD under second-order Taylor or Hölder smoothness class.
 }
 \details{
 The bandwidth is calculated to be optimal for a given performance criterion,
-as specified by \code{opt.criterion}. It is calculated using the function
-\code{\link{FRDOptBW}}. Alternatively, the bandwidth can be specified by
-\code{h}.
+as specified by \code{opt.criterion}. Alternatively, the bandwidth can be
+specified by \code{h}.
 }
 \section{Note}{
 
@@ -217,7 +216,4 @@ FRDHonest(cn~retired | elig_year, data=rcp, cutoff=0, M=c(5, 0.5),
 Quantitative Economics 11 (1): 1–39.}
 
 }
-}
-\seealso{
-\code{\link{FRDOptBW}}
 }

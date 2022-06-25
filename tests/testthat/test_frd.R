@@ -92,7 +92,7 @@ test_that("FRD interface", {
 
     r4 <- NPROptBW.fit(d, M, kern="triangular", opt.criterion="OCI",
                         T0=r1$estimate)
-    p4 <- FRDOptBW(log(cn)~retired | elig_year, data=rcp1, cutoff=0, M=M,
+    p4 <- FRDHonest(log(cn)~retired | elig_year, data=rcp1, cutoff=0, M=M,
                     kern="triangular", opt.criterion="OCI", T0=p1$estimate)
-    expect_equal(r4$h-p4$h, 0L)
+    expect_identical(r4$h, p4$h)
 })

@@ -5,9 +5,8 @@
 #' second-order Taylor or Hölder smoothness class.
 #'
 #' The bandwidth is calculated to be optimal for a given performance criterion,
-#' as specified by \code{opt.criterion}. It is calculated using the function
-#' \code{\link{LPPOptBW}}. Alternatively, the bandwidth can be specified by
-#' \code{h}.
+#' as specified by \code{opt.criterion}. Alternatively, the bandwidth can be
+#' specified by \code{h}.
 #'
 #' @template LPPFormula
 #' @template RDse
@@ -52,7 +51,6 @@
 #'   \item{\code{fs}}{Not relevant for inference at a point}
 #'
 #' }
-#' @seealso \code{\link{LPPOptBW}}
 #' @references{
 #'
 #' \cite{Armstrong, Timothy B., and Michal Kolesár. 2020.
@@ -91,69 +89,6 @@ LPPHonest <- function(formula, data, subset, weights, point=0, M,
                              sclass=sclass, order=order, se.initial=se.initial)
     }
 
-    ret$call <- cl
-    ret$na.action <- attr(mf, "na.action")
-
-    ret
-}
-
-
-#' Optimal Bandwidth Selection for inference at a point
-#'
-#' Estimate bandwidth based on local polynomial regression that optimizes either
-#' maximum mean squared error, or length or quantiles of excess length of a
-#' honest CI under second order Hölder or Taylor class.
-#'
-#' @template LPPFormula
-#' @template RDoptBW
-#' @template RDclass
-#' @template Kern
-#' @template RDseInitial
-#' @return Returns an object of class \code{"NPRBW"}. The function \code{print}
-#'     can be used to obtain and print a summary of the results. An object of
-#'     class \code{"NPRBW"} is a list containing the following components:
-#'
-#'     \describe{
-#'     \item{\code{h}}{Bandwidth}
-#'
-#'     \item{\code{sigma2}}{estimate of conditional variance at a point}
-#'
-#'    \item{\code{call}}{the matched call}
-#'
-#'    \item{\code{na.action}}{(where relevant) information on handling of
-#'                            missing data.}
-#'
-#'    }
-#' @seealso \code{\link{LPPHonest}}
-#' @references{
-#'
-#' \cite{Armstrong, Timothy B., and Michal Kolesár. 2020.
-#' "Simple and Honest Confidence Intervals in Nonparametric Regression."
-#' Quantitative Economics 11 (1): 1–39.}
-#'
-#' }
-#' @examples
-#'
-#' # Lee dataset
-#' LPPOptBW(voteshare ~ margin, data = lee08, subset=margin>0,
-#'          kern = "uniform", M = 0.1, opt.criterion = "MSE", sclass = "H")
-#' @export
-LPPOptBW <- function(formula, data, subset, weights, point=0, M,
-                     kern="triangular", na.action, opt.criterion, alpha=0.05,
-                     beta=0.8, sclass="H", order=1, se.initial="EHW") {
-
-    ## construct model frame
-    cl <- mf <- match.call(expand.dots = FALSE)
-    m <- match(c("formula", "data", "subset", "weights", "na.action"),
-               names(mf), 0L)
-    mf <- mf[c(1L, m)]
-    mf[[1L]] <- quote(stats::model.frame)
-    mf <- eval(mf, parent.frame())
-    mf$weights  <- mf$"(weights)"
-    d <- LPPData(mf, point)
-
-    ret <- NPROptBW.fit(d, M, kern, opt.criterion, alpha, beta, sclass,
-                       order, se.initial=se.initial)
     ret$call <- cl
     ret$na.action <- attr(mf, "na.action")
 

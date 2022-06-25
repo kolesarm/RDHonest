@@ -221,14 +221,6 @@ RDHonest(voteshare ~ margin, data=lee08, kern="triangular", M=0.1,
     opt.criterion="FLCI", sclass="H")
 ```
 
-It is also possible to compute the optimal bandwidths directly using the function
-`RDOptBW`
-
-```{r}
-RDOptBW(voteshare ~ margin, data=lee08, kern="triangular",
-    M=0.1, opt.criterion="MSE", sclass="H")$h
-```
-
 ### Inference when running variable is discrete
 
 The confidence intervals described above can also be used when the running
@@ -495,14 +487,6 @@ r <- FRDHonest(log(cn) ~ retired | elig_year, data=rcp, kern="triangular", M=c(0
 FRDHonest(log(cn) ~ retired | elig_year, data=rcp, kern="triangular", M=c(0.001, 0.002), opt.criterion="MSE", sclass="H", T0=r$estimate)
 ```
 
-
-It is also possible to compute the optimal bandwidths directly using the function
-`RDOptBW`
-
-```{r}
-FRDOptBW(log(cn) ~ retired | elig_year, data=rcp, kern="triangular", M=c(0.001, 0.002), opt.criterion="MSE", sclass="H", T0=r$estimate)$h
-```
-
 ## Data-driven choice of smoothness constant
 
 Like in the sharp RD case, Without further restrictions, the smoothness
@@ -526,7 +510,7 @@ parameter space under which this method yields honest inference.
 
 # Inference at a point
 
-The package also contains functions `LPPHonest` and `LPPOptBW` for inference at
+The package also contains function `LPPHonest` for inference at
 a point, and optimal bandwidth selection for inference at a point. Suppose, for example, one
 was interested in the vote share for candidates with margin of victory equal to
 20 points:

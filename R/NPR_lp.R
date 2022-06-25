@@ -87,17 +87,7 @@ NPRHonest.fit <- function(d, M, kern="triangular", h, opt.criterion, alpha=0.05,
 
 ## Optimal bandwidth selection in nonparametric regression
 ##
-## Basic computing engine called by \code{\link{RDOptBW}},
-## \code{\link{FRDOptBW}}, and \code{\link{LPPOptBW}} to compute the optimal
-## bandwidth
-## @template RDoptBW
-## @template RDclass
-## @template Kern
-## @template RDseInitial
-## @inheritParams NPRHonest.fit
-## @return Returns an object of class \code{"NPRBW"}, see descriptions in
-##     \code{\link{RDOptBW}}, \code{\link{FRDOptBW}}, and
-##     \code{\link{LPPOptBW}}.
+## Basic computing engine to compute the optimal bandwidth
 NPROptBW.fit <- function(d, M, kern="triangular", opt.criterion, alpha=0.05,
                          beta=0.8, sclass="H", order=1, se.initial="EHW", T0=0) {
 

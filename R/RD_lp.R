@@ -54,7 +54,6 @@
 #'   \item{\code{fs}}{Not relevant for sharp RD}
 #'
 #' }
-#' @seealso \code{\link{RDOptBW}}
 #' @references{
 #'
 #' \cite{Armstrong, Timothy B., and Michal Kolesár. 2018.
@@ -111,84 +110,6 @@ RDHonest <- function(formula, data, subset, weights, cutoff=0, M,
     ret
 }
 
-
-#' Optimal Bandwidth Selection in Regression Discontinuity
-#'
-#' Estimate bandwidth for sharp RD based on local polynomial regression that
-#' optimizes either maximum mean squared error, or length or quantiles of excess
-#' length of a honest CI under second order Hölder or Taylor class.
-#'
-#' @template RDFormula
-#' @template RDoptBW
-#' @template RDclass
-#' @template Kern
-#' @template RDseInitial
-#' @return Returns an object of class \code{"RDBW"}. The function \code{print}
-#'     can be used to obtain and print a summary of the results. An object of
-#'     class \code{"RDBW"} is a list containing the following components:
-#'
-#'     \describe{
-#'     \item{\code{h}}{bandwidth}
-
-#'     \item{\code{sigma2m}, \code{sigma2p}}{estimate of conditional variance
-#'     just above and just below cutoff, \eqn{\sigma^2_+(0)} and
-#'     \eqn{\sigma^2_{-}(0)}}
-#'
-#'    \item{\code{f0}}{estimate of density of running variable at cutoff, if
-#'    bandwidth computed using asymptotic method}
-#'
-#'    \item{\code{call}}{the matched call}
-#'
-#'    \item{\code{na.action}}{(where relevant) information on handling of
-#'    missing data.}
-#'
-#'    }
-#' @seealso \code{\link{RDHonest}}
-#' @references{
-#'
-#' \cite{Armstrong, Timothy B., and Michal Kolesár. 2018.
-#' "Optimal Inference in a Class of Regression Models." Econometrica 86 (2):
-#' 655–83.}
-#'
-#' \cite{Armstrong, Timothy B., and Michal Kolesár. 2020.
-#' "Simple and Honest Confidence Intervals in Nonparametric Regression."
-#' Quantitative Economics 11 (1): 1–39.}
-#'
-#' \cite{Imbens, Guido, and Kalyanaraman, Karthik,
-#' "Optimal bandwidth choice for the regression discontinuity estimator." The
-#' Review of Economic Studies 79 (3): 933-959.}
-#'
-#' \cite{Kolesár, Michal, and Christoph Rothe. 2018. "Inference in Regression
-#' Discontinuity Designs with a Discrete Running Variable." American Economic
-#' Review 108 (8): 2277–2304.}
-#' }
-#' @examples
-#'
-#' ## Use Lee dataset
-#' RDOptBW(voteshare ~ margin, data = lee08, kern = "uniform",
-#'         M = 0.1, opt.criterion = "MSE", sclass = "H")
-#' @export
-RDOptBW <- function(formula, data, subset, weights, cutoff=0, M,
-                    kern="triangular", na.action, opt.criterion, alpha=0.05,
-                    beta=0.8, sclass="H", order=1, se.initial="EHW") {
-
-    ## construct model frame
-    cl <- mf <- match.call(expand.dots = FALSE)
-    m <- match(c("formula", "data", "subset", "weights", "na.action"),
-               names(mf), 0L)
-    mf <- mf[c(1L, m)]
-    mf[[1L]] <- quote(stats::model.frame)
-    mf <- eval(mf, parent.frame())
-    mf$weights  <- mf$"(weights)"
-    d <- RDData(mf, cutoff)
-
-    ret <- NPROptBW.fit(d, M, kern, opt.criterion, alpha, beta,
-                        sclass, order, se.initial=se.initial)
-    ret$call <- cl
-    ret$na.action <- attr(mf, "na.action")
-
-    ret
-}
 
 #' Imbens and Kalyanaraman bandwidth
 #'

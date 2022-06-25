@@ -4,9 +4,8 @@
 #' estimator in fuzzy RD under second-order Taylor or Hölder smoothness class.
 #'
 #' The bandwidth is calculated to be optimal for a given performance criterion,
-#' as specified by \code{opt.criterion}. It is calculated using the function
-#' \code{\link{FRDOptBW}}. Alternatively, the bandwidth can be specified by
-#' \code{h}.
+#' as specified by \code{opt.criterion}. Alternatively, the bandwidth can be
+#' specified by \code{h}.
 #'
 #' @template RDFormula
 #' @template RDse
@@ -53,7 +52,6 @@
 #'   \item{\code{fs}}{Estimate of the first-stage coefficient}
 #'
 #' }
-#' @seealso \code{\link{FRDOptBW}}
 #' @references{
 #'
 #' \cite{Armstrong, Timothy B., and Michal Kolesár. 2018.
@@ -100,90 +98,6 @@ FRDHonest <- function(formula, data, subset, weights, cutoff=0, M,
                              T0=T0)
     }
 
-    ret$call <- cl
-    ret$na.action <- attr(mf, "na.action")
-
-    ret
-}
-
-
-#' Optimal Bandwidth Selection in Regression Discontinuity
-#'
-#' Estimate bandwidth for sharp RD based on local polynomial regression that
-#' optimizes either maximum mean squared error, or length or quantiles of excess
-#' length of a honest CI under second order Hölder or Taylor class.
-#'
-#' @template RDFormula
-#' @template RDoptBW
-#' @template RDclass
-#' @template Kern
-#' @template RDseInitial
-#' @param T0 Initial estimate of the treatment effect for calculating the
-#'     optimal bandwidth. Only relevant for Fuzzy RD.
-#' @return Returns an object of class \code{"RDBW"}. The function \code{print}
-#'     can be used to obtain and print a summary of the results. An object of
-#'     class \code{"RDBW"} is a list containing the following components:
-#'
-#'     \describe{
-#'     \item{\code{h}}{bandwidth}
-#'
-#'     \item{\code{sigma2m}, \code{sigma2p}}{estimate of conditional variance
-#'     just above and just below cutoff, \eqn{\sigma^2_+(0)} and
-#'     \eqn{\sigma^2_{-}(0)}}
-#'
-#'    \item{\code{f0}}{estimate of density of running variable at cutoff, if
-#'    bandwidth computed using asymptotic method}
-#'
-#'    \item{\code{call}}{the matched call}
-#'
-#'    \item{\code{na.action}}{(where relevant) information on handling of
-#'    missing data.}
-#'
-#'    }
-#' @seealso \code{\link{RDHonest}}
-#' @references{
-#'
-#' \cite{Armstrong, Timothy B., and Michal Kolesár. 2018.
-#' "Optimal Inference in a Class of Regression Models." Econometrica 86 (2):
-#' 655–83.}
-#'
-#' \cite{Armstrong, Timothy B., and Michal Kolesár. 2020.
-#' "Simple and Honest Confidence Intervals in Nonparametric Regression."
-#' Quantitative Economics 11 (1): 1–39.}
-#'
-#' \cite{Imbens, Guido, and Kalyanaraman, Karthik. 2012.
-#' "Optimal bandwidth choice for the regression discontinuity estimator." The
-#' Review of Economic Studies 79 (3): 933-959.}
-#'
-#' \cite{Kolesár, Michal, and Christoph Rothe. 2018. "Inference in Regression
-#' Discontinuity Designs with a Discrete Running Variable." American Economic
-#' Review 108 (8): 2277–2304.}
-#' }
-#' @examples
-#' FRDOptBW(cn~retired | elig_year, data=rcp, cutoff=0, M=c(1, 0.1),
-#'           kern="triangular", opt.criterion="FLCI")
-#' @export
-FRDOptBW <- function(formula, data, subset, weights, cutoff=0, M,
-                     kern="triangular", na.action, opt.criterion, alpha=0.05,
-                     beta=0.8, sclass="H", order=1, se.initial="EHW", T0=0) {
-
-    ## construct model frame
-    cl <- mf <- match.call(expand.dots = FALSE)
-    m <- match(c("formula", "data", "subset", "weights", "na.action"),
-               names(mf), 0L)
-    mf <- mf[c(1L, m)]
-
-    formula <- Formula::as.Formula(formula)
-    stopifnot(length(formula)[1] == 1L, length(formula)[2] == 2)
-    mf$formula <- formula
-
-    mf[[1L]] <- quote(stats::model.frame)
-    mf <- eval(mf, parent.frame())
-    mf$weights  <- mf$"(weights)"
-    d <- FRDData(mf, cutoff)
-
-    ret <- NPROptBW.fit(d, M, kern, opt.criterion, alpha, beta, sclass, order,
-                        se.initial=se.initial, T0=T0)
     ret$call <- cl
     ret$na.action <- attr(mf, "na.action")
 

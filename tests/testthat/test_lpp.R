@@ -73,13 +73,13 @@ test_that("ROT bandwidth check", {
 test_that("Optimal bandwidth calculations", {
     dp <- LPPData(lee08[lee08$margin>0, ], point=0)
     Mh <- NPR_MROT.fit(dp)
-    r <- capture.output(print(
-        LPPHonest(voteshare~margin, data=lee08, subset=margin>0, point=0,
-                  M=2*Mh, opt.criterion="MSE"), digits=4))
+    r1 <- LPPHonest(voteshare~margin, data=lee08, subset=margin>0, point=0,
+                    M=2*Mh, opt.criterion="MSE")
+    r <- capture.output(print(r1, digits=4))
     expect_equal(r[13], "Bandwidth: 13.41")
-    r1 <- LPPOptBW(voteshare~margin, data=lee08, subset=margin>0, point=0,
-                   M=2*Mh, opt.criterion="MSE")
-    expect_equal(r1$h,  13.4109132)
+    r2 <- NPROptBW.fit(dp, M=2*Mh, opt.criterion="MSE")$h
+    expect_identical(r2,  r1$h)
+    expect_equal(r2,  13.4109132)
     expect_equal(unname(NPRHonest.fit(dp, M=Mh, kern="uniform",
                                       opt.criterion="FLCI")$upper),
                  55.24963853)

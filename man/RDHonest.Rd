@@ -225,6 +225,3 @@ Discontinuity Designs with a Discrete Running Variable." American Economic
 Review 108 (8): 2277–2304.}
 }
 }
-\seealso{
-\code{\link{RDOptBW}}
-}

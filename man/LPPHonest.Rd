@@ -189,9 +189,8 @@ second-order Taylor or Hölder smoothness class.
 }
 \details{
 The bandwidth is calculated to be optimal for a given performance criterion,
-as specified by \code{opt.criterion}. It is calculated using the function
-\code{\link{LPPOptBW}}. Alternatively, the bandwidth can be specified by
-\code{h}.
+as specified by \code{opt.criterion}. Alternatively, the bandwidth can be
+specified by \code{h}.
 }
 \section{Note}{
 
@@ -213,7 +212,4 @@ LPPHonest(voteshare ~ margin, data = lee08, subset = margin>0,
 Quantitative Economics 11 (1): 1–39.}
 
 }
-}
-\seealso{
-\code{\link{LPPOptBW}}
 }
