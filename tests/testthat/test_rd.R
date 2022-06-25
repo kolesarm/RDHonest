@@ -77,15 +77,13 @@ test_that("Honest inference in Lee and LM data",  {
                 cutoff=0)
     es <- function(kern, se.method) {
         NPRHonest.fit(d, M=0.0076085544, kern=kern, sclass="H",
-                     se.method=se.method,
-                     J=3, alpha=0.05, opt.criterion="MSE", bw.equal=TRUE,
-                     se.initial="SilvermanNN")
+                      se.method=se.method, J=3, alpha=0.05, opt.criterion="MSE",
+                      se.initial="SilvermanNN")
     }
     ff <- function(h, kern, se.method) {
         NPRHonest.fit(d, M=0.0076085544, kern=kern, sclass="H",
-                     se.method=se.method,
-                     J=3, alpha=0.05, h=h, bw.equal=TRUE,
-                     se.initial="SilvermanNN")
+                      se.method=se.method, J=3, alpha=0.05, h=h,
+                      se.initial="SilvermanNN")
     }
 
     ## In this case the objective is not unimodal, but the modification still
@@ -97,14 +95,14 @@ test_that("Honest inference in Lee and LM data",  {
     ## expect_equal(unname(r1$estimate-r1$hl), -2.7294671445)
     ## New algorithm
     expect_equal(unname(r$lower), -2.6908821020)
-    expect_equal(unname(r$hp), 17.5696563721)
+    expect_equal(unname(r$h), 17.5696563721)
     expect_equal(unname(r1$estimate-r1$hl), -2.7106778586)
 
     ## Just a sanity check
-    expect_equal(r$maxbias, ff(r$hp, "uniform", "supplied.var")$maxbias)
+    expect_equal(r$maxbias, ff(r$h, "uniform", "supplied.var")$maxbias)
 
     r <- es("triangular", "nn")
-    expect_lt(abs(r$hm- 22.80882408), 5e-7)
+    expect_lt(abs(r$h- 22.80882408), 5e-7)
     expect_lt(unname(r$estimate+r$hl- 0.05476609), 1e-7)
     ## End replication
 
@@ -122,13 +120,14 @@ test_that("Honest inference in Lee and LM data",  {
                   se.initial="demeaned")
     expect_equal(r$estimate-r$hl, c("supplied.var"=2.3786060461))
 
-    r <- RDHonest(voteshare ~ margin, data=lee08, kern="triangular",
-                  M=0.04, opt.criterion="MSE", se.method="supplied.var",
-                  se.initial="demeaned", bw.equal=FALSE, sclass="T")
-    expect_equal(r$estimate, 5.9545948946)
-    r1 <- capture.output(print(r, digits=6))
-    expect_equal(r1[15],
-                 "Bandwidth above cutoff: 10.6765")
+    ## We no longer allow different bw below and above cutoff
+    ## r <- RDHonest(voteshare ~ margin, data=lee08, kern="triangular",
+    ##               M=0.04, opt.criterion="MSE", se.method="supplied.var",
+    ##               se.initial="demeaned", bw.equal=FALSE, sclass="T")
+    ## expect_equal(r$estimate, 5.9545948946)
+    ## r1 <- capture.output(print(r, digits=6))
+    ## expect_equal(r1[15],
+    ##              "Bandwidth above cutoff: 10.6765")
     ## End replication
 
     ## Vignette replication Version: 0.1.2
@@ -150,9 +149,9 @@ test_that("Honest inference in Lee and LM data",  {
     ##              M = 0.1, opt.criterion = "MSE", sclass = "T",
     ##              se.initial="Silverman")
     ## Old optimization
-    ## expect_equal(r1$hp, 4.9367547102)
+    ## expect_equal(r1$h, 4.9367547102)
     ## expect_equal(unname(r2$lower), 2.3916108168)
-    ## expect_equal(r3$hp, 5.0590753991)
+    ## expect_equal(r3$h, 5.0590753991)
 
     ## Decrease M, these results are not true minima...
     r1 <- RDOptBW(voteshare ~ margin, data = lee08, kern = "uniform",
@@ -164,11 +163,9 @@ test_that("Honest inference in Lee and LM data",  {
     r3 <- RDOptBW(voteshare ~ margin, data = lee08, kern = "uniform",
                  M = 0.1, opt.criterion = "MSE", sclass = "T",
                  se.initial="Silverman")
-    r4 <- capture.output(print(r3, digits=8))
-    expect_equal(unname(r1$h["p"]), 12.6576125622)
+    expect_equal(unname(r1$h), 12.6576125622)
     expect_equal(unname(r2$lower), 6.0484981004)
-    expect_equal(unname(r3$h["p"]), 5.0866454840)
-    expect_equal(r4[7], "Bandwidth: 5.0866455")
+    expect_equal(unname(r3$h), 5.0866454840)
 })
 
 test_that("BME CIs match paper", {
@@ -188,7 +185,7 @@ test_that("BME CIs match paper", {
     expect_equal(r3$CI, r4$CI)
 })
 
-test_that("Optmizing bw", {
+test_that("Optimizing bw", {
     xprobs <- c(rep(.5/5, 5), rep(.5/4, 4))
     xsupp <- sort(c(-(1:5)/5, (1:4)/4))
     set.seed(42)
@@ -197,15 +194,15 @@ test_that("Optmizing bw", {
 
     r <- RDHonest(y~x, data=d, cutoff=0, M=40, kern="uniform",
                   opt.criterion="FLCI")
-    expect_equal(r$hp, 1/2)
+    expect_equal(r$h, 1/2)
 
     r <- RDHonest(y~x, data=d, cutoff=0, M=60, kern="uniform",
                   opt.criterion="FLCI", order=2)
-    expect_equal(r$hp, 3/4)
+    expect_equal(r$h, 3/4)
 
     r <- RDHonest(y~x, data=d, cutoff=0, M=0.4, kern="uniform",
                   opt.criterion="FLCI", order=2)
-    expect_equal(r$hp, 1)
+    expect_equal(r$h, 1)
 
     xprobs <- c(rep(.5/4, 4), rep(.5/4, 4))
     xsupp <- sort(c(-(1:4)/4, (1:4)/4))

@@ -18,9 +18,9 @@ test_that("Test LPreg", {
                 J=4)
     r2 <- LPReg(d$Xm, d$Ym[, 2], h=10, K, order=2, se.method=c("EHW", "nn"),
                 J=4)
-    expect_identical(r0$theta, c(r1$theta, r2$theta))
+    expect_lt(max(abs(r0$theta- c(r1$theta, r2$theta))), 1e-10)
     expect_equal(r0$sigma2[, c(1, 4)], cbind(r1$sigma2, r2$sigma2))
-    expect_identical(r0$var[c(1, 4), ], rbind(r1$var, r2$var))
+    expect_equal(r0$var[c(1, 4), ], rbind(r1$var, r2$var))
     expect_equal(r0$w, r1$w)
     expect_identical(r0$eff.obs, r1$eff.obs)
 })
@@ -75,7 +75,7 @@ test_that("Test NPRreg", {
     ##                  subset=(abs(elig_year)<=10), data=dt)
     ## summary(r4, vcov = sandwich::sandwich,
     ##         diagnostics=TRUE)$coefficients[2, 1:2]
-    expect_identical(r1$estimate, rr$estimate/rf$estimate)
+    expect_lt(abs(r1$estimate- rr$estimate/rf$estimate), 1e-10)
     r2 <- NPRreg.fit(d, h=5, kern=function(x) abs(x)<=1, order=0,
                      se.method="EHW")
     ## r3 <- AER::ivreg(logcn~retired | Z, subset=(abs(elig_year)<=5), data=dt)

@@ -14,7 +14,6 @@ FRDOptBW(
   kern = "triangular",
   na.action,
   opt.criterion,
-  bw.equal = TRUE,
   alpha = 0.05,
   beta = 0.8,
   sclass = "H",
@@ -72,9 +71,6 @@ contain \code{NA}s. The default is set by the \code{na.action} setting of
     conditional variance is estimated using the method specified by
     \code{se.initial}.}
 
-\item{bw.equal}{logical specifying whether bandwidths on either side of
-cutoff should be constrained to equal to each other.}
-
 \item{alpha}{determines confidence level, \code{1-alpha} for
 constructing/optimizing confidence intervals.}
 
@@ -125,10 +121,7 @@ Returns an object of class \code{"RDBW"}. The function \code{print}
     class \code{"RDBW"} is a list containing the following components:
 
     \describe{
-    \item{\code{hp}}{bandwidth for observations weakly above cutoff}
-
-    \item{\code{hm}}{bandwidth for observations strictly below cutoff, equal
-    to \code{hp} unless \code{bw.equal==FALSE}}
+    \item{\code{h}}{bandwidth}
 
     \item{\code{sigma2m}, \code{sigma2p}}{estimate of conditional variance
     just above and just below cutoff, \eqn{\sigma^2_+(0)} and

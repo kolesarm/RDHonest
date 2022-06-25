@@ -18,12 +18,8 @@ NPRreg.fit(
 \item{d}{object of class \code{"LPPData"}, \code{"RDData"}, or
 \code{"FRDData"}}
 
-\item{h}{bandwidth, a scalar parameter. For fuzzy or sharp RD, it can be a
-named vector of length two with names \code{"p"} and \code{"m"}, in which
-case the bandwidth \code{h["m"]} is used for observations strictly below
-the cutoff, and the bandwidth \code{h["p"]} is used for observations
-weakly above the cutoff. If not supplied, optimal bandwidth is computed
-according to criterion given by \code{opt.criterion}.}
+\item{h}{bandwidth, a scalar parameter. If not supplied, optimal bandwidth is
+computed according to criterion given by \code{opt.criterion}.}
 
 \item{kern}{specifies kernel function used in the local regression. It can
 either be a string equal to \code{"triangular"} (\eqn{k(u)=(1-|u|)_{+}}),

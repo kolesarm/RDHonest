@@ -1,8 +1,16 @@
 Package: RDHonest
 Title: Honest Inference in Regression Discontinuity Designs
 Version: 0.3.2
-Authors@R: person("Michal", "Kolesar",
-    email = "kolesarmi@googlemail.com", role = c("aut", "cre"))
+Authors@R:
+    c(person(given = "Michal",
+            family = "Kolesár",
+            role = c("aut", "cre"),
+            email = "kolesarmi@googlemail.com",
+            comment = c(ORCID = "0000-0002-2482-7796")),
+      person(given= "Tim",
+             family = "Armstrong",
+             role = "ctb",
+             email = "timothy.armstrong@usc.edu"))
 Description: Honest and nearly-optimal confidence intervals in fuzzy and sharp
     regression discontinuity designs and for inference at a point based on local
     polynomial regression.
@@ -21,7 +29,7 @@ Suggests:
     rmarkdown,
     Formula,
     formatR
-RoxygenNote: 7.1.1
+RoxygenNote: 7.2.0
 URL: https://github.com/kolesarm/RDHonest
 VignetteBuilder: knitr
 Language: en-US

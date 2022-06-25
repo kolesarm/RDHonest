@@ -14,7 +14,7 @@ test_that("Selected bw is infinite", {
     expect_identical(r1$maxbias, 0)
     ## For triangular kernel, maximum bw is given by end of support, so we
     ## expect to find minimum at boundary
-    expect_equal(r1$hp, max(abs(c(d$Xp, d$Xm))))
+    expect_equal(r1$h, max(abs(c(d$Xp, d$Xm))))
 
     d <- RDData(lee08, cutoff=0)
     r1 <- NPRHonest.fit(d, M=0, kern="uniform", opt.criterion="MSE")
@@ -33,7 +33,7 @@ test_that("FRD data example check", {
     r2 <- NPRHonest.fit(d, M, kern="triangular", opt.criterion="MSE",
                         T0=r1$estimate)
     ## With positive T0, expect greater effective M, and thus smaller bandwidth
-    expect_lt(r2$hp, r1$hp)
+    expect_lt(r2$h, r1$h)
     ## On travis, only the first 6 digits match, not sure why
     expect_equal(round(r2$estimate, 6), -0.188134)
 })
@@ -61,7 +61,7 @@ test_that("FRD with almost perfect first stage", {
     r2 <- NPRHonest.fit(RDData(lee08, cutoff=0), unname(M[1]),
                         kern="triangular", opt.criterion="MSE")
     expect_lt(abs(r1$estimate*r1$fs-r2$estimate), 1e-2)
-    expect_lt(abs(r1$hp-r2$hp), 0.1)
+    expect_lt(abs(r1$h-r2$h), 0.1)
     expect_lt(abs(r0$hl-r1$hl), 0.01)
 })
 
@@ -94,6 +94,5 @@ test_that("FRD interface", {
                         T0=r1$estimate)
     p4 <- FRDOptBW(log(cn)~retired | elig_year, data=rcp1, cutoff=0, M=M,
                     kern="triangular", opt.criterion="OCI", T0=p1$estimate)
-    ## r4[1] because something weird happens on codecov.io
-    expect_equal(capture.output(print(r4))[1], capture.output(print(p4))[7])
+    expect_equal(r4$h-p4$h, 0L)
 })

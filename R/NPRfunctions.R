@@ -138,12 +138,11 @@ NPRreg.fit <- function(d, h, kern="triangular", order=1, se.method="nn",
 
     if (inherits(d, "LPPData")) {
         ## Keep only positive kernel weights
-        W <- if (h[1]<=0) 0*d$X else K(d$X/h[1]) # kernel weights
+        W <- if (h<=0) 0*d$X else K(d$X/h) # kernel weights
         d$X <- d$X[W>0]
     } else {
-        if (length(h)==1) h <- c(m=unname(h), p=unname(h))
-        Wm <- if (h["m"]<=0) 0*d$Xm else K(d$Xm/h["m"])
-        Wp <- if (h["p"]<=0) 0*d$Xp else K(d$Xp/h["p"])
+        Wm <- if (h<=0) 0*d$Xm else K(d$Xm/h)
+        Wp <- if (h<=0) 0*d$Xp else K(d$Xp/h)
         d$Xp <- d$Xp[Wp>0]
         d$Xm <- d$Xm[Wm>0]
         if(!is.null(d$sigma2p)) d$sigma2p <- as.matrix(d$sigma2p)
@@ -160,16 +159,16 @@ NPRreg.fit <- function(d, h, kern="triangular", order=1, se.method="nn",
                 "independent variable with positive weights")
 
     if (inherits(d, "LPPData")) {
-        r <- LPReg(d$X, d$Y[W>0], h[1], K, order, se.method, d$sigma2[W>0],
+        r <- LPReg(d$X, d$Y[W>0], h, K, order, se.method, d$sigma2[W>0],
                    J, weights=d$w[W>0])
         ## Estimation weights
         W[W>0] <- r$w
         return(list(estimate=r$theta, se=c(sqrt(r$var), plugin=NA), w=W,
                     sigma2=r$sigma2, eff.obs=r$eff.obs))
     }
-    rm <- LPReg(d$Xm, as.matrix(d$Ym)[Wm>0, ], h["m"], K, order, se.method,
+    rm <- LPReg(d$Xm, as.matrix(d$Ym)[Wm>0, ], h, K, order, se.method,
                 d$sigma2m[Wm>0, ], J, weights=d$wm[Wm>0])
-    rp <- LPReg(d$Xp, as.matrix(d$Yp)[Wp>0, ], h["p"], K, order, se.method,
+    rp <- LPReg(d$Xp, as.matrix(d$Yp)[Wp>0, ], h, K, order, se.method,
                 d$sigma2p[Wp>0, ], J, weights=d$wp[Wp>0])
     Wm[Wm>0] <- rm$w
     Wp[Wp>0] <- rp$w
@@ -181,9 +180,9 @@ NPRreg.fit <- function(d, h, kern="triangular", order=1, se.method="nn",
             ## we kept original outcomes, but only kept X's receiving positive
             ## weight
             N <- length(d$Yp) + length(d$Ym)
-            f0 <- sum(length(d$Xp)+length(d$Xm)) / (N*(h[1]+h[2]))
-            plugin <- nu0 * (mean(rp$sigma2)/h["p"] +
-                             mean(rm$sigma2)/h["m"]) / (N*f0)
+            f0 <- sum(length(d$Xp)+length(d$Xm)) / (N*(2*h))
+            plugin <- nu0 * (mean(rp$sigma2)/h +
+                             mean(rm$sigma2)/h) / (N*f0)
         }
         ret$estimate <- rp$theta-rm$theta
         ret$se <- sqrt(c(rm$var+rp$var, plugin=plugin))

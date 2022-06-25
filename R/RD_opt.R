@@ -102,14 +102,14 @@ RDEstimator <- function(d, f, alpha=0.05, se.method="supplied.var", J=3) {
     maxbias <- b - q/den                # b-q/den
     lower <- Lhat - maxbias - stats::qnorm(1-alpha)*sd
     upper <- Lhat + maxbias + stats::qnorm(1-alpha)*sd
-    hl <- CVb(maxbias/sd, alpha)$cv * sd # Half-length
+    hl <- CVb(maxbias/sd, alpha) * sd # Half-length
 
     ## Effective number of observations
     eff.obs <- 1/sum(Wp^2) + 1/sum(Wm^2)
 
-    structure(list(estimate=Lhat, lff=f, maxbias=maxbias, sd=sd, lower=lower,
+    structure(list(estimate=Lhat, maxbias=maxbias, sd=sd, lower=lower,
                    upper=upper, hl=hl, delta=sqrt(4*q), omega=2*b,
-                   eff.obs=eff.obs),
+                   eff.obs=eff.obs, lff=f),
               class="NPRResults")
 }
 
@@ -156,7 +156,7 @@ RDTOpt.fit <- function(d, M, opt.criterion, alpha=0.05, beta=0.5,
             den <- sum(r$p(d$Xp) / d$sigma2p) # denominator
             hse <- sqrt(q1)/den                   # standard deviation
             maxbias <- b - q1/den                # b-q/den
-            CVb(maxbias/hse, alpha)$cv * hse # Half-length
+            CVb(maxbias/hse, alpha) * hse # Half-length
         }
         ## eq is convex, start around MSE optimal b
         bs <- RDTOpt.fit(d, M, "MSE", alpha, beta)$omega/2
@@ -165,6 +165,7 @@ RDTOpt.fit <- function(d, M, opt.criterion, alpha=0.05, beta=0.5,
 
     ## Compute optimal estimator
     r <- RDEstimator(d, lff, alpha, se.method, J)
+    ## TODO: Why not just llf$m(0)?
     r$hm <- (r$lff$m(0)/C)^(1/2)
     r$hp <- (r$lff$p(0)/C)^(1/2)
     r

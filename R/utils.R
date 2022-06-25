@@ -244,21 +244,3 @@ gss <- function(f, xs) {
     supp <- xs[a:b]
     supp[which.min(vapply(supp, f, numeric(1)))]
 }
-
-
-## ## Split function into k bits and optimize on each bit in case not convex
-## CarefulOptim <- function(f, interval, k=10) {
-##     ## intervals
-##     s <- seq(interval[1], interval[2], length.out=k+1)
-##     s <- matrix(c(s[-length(s)], s[-1]), ncol=2)
-
-##     obj <- rep(0, k)
-##     arg <- rep(0, k)
-##     for (j in 1:k) {
-##         r <- stats::optimize(f, s[j, ])
-##         arg[j] <- r$minimum
-##         obj[j] <- r$objective
-##     }
-##     jopt <- which.min(obj)
-##     list(objective=obj[jopt], minimum=arg[jopt])
-## }

@@ -13,8 +13,7 @@ RDHonest(
   M,
   kern = "triangular",
   na.action,
-  opt.criterion,
-  bw.equal = TRUE,
+  opt.criterion = "MSE",
   h,
   se.method = "nn",
   alpha = 0.05,
@@ -74,15 +73,8 @@ contain \code{NA}s. The default is set by the \code{na.action} setting of
     conditional variance is estimated using the method specified by
     \code{se.initial}.}
 
-\item{bw.equal}{logical specifying whether bandwidths on either side of
-cutoff should be constrained to equal to each other.}
-
-\item{h}{bandwidth, a scalar parameter. For fuzzy or sharp RD, it can be a
-named vector of length two with names \code{"p"} and \code{"m"}, in which
-case the bandwidth \code{h["m"]} is used for observations strictly below
-the cutoff, and the bandwidth \code{h["p"]} is used for observations
-weakly above the cutoff. If not supplied, optimal bandwidth is computed
-according to criterion given by \code{opt.criterion}.}
+\item{h}{bandwidth, a scalar parameter. If not supplied, optimal bandwidth is
+computed according to criterion given by \code{opt.criterion}.}
 
 \item{se.method}{Vector with methods for estimating standard error of
 estimate. If \code{NULL}, standard errors are not computed. The elements of
@@ -179,7 +171,7 @@ Returns an object of class \code{"NPRResults"}. The function
   \item{\code{eff.obs}}{Effective number of observations used by
             \code{estimate}}
 
-  \item{\code{hp}, \code{hm}}{Bandwidths used above and below the cutoff}
+  \item{\code{h}}{Bandwidth used}
 
   \item{\code{naive}}{Coverage of CI that ignores bias and uses
                \code{qnorm(1-alpha/2)} as critical value}
@@ -191,17 +183,16 @@ Returns an object of class \code{"NPRResults"}. The function
 }
 }
 \description{
-Calculate estimators and one- and two-sided CIs based on local polynomial
-estimator in RD under second-order Taylor or Hölder smoothness class. If
-\code{kern="optimal"}, calculate optimal estimators under second-order Taylor
-smoothness class.
+Calculate estimators and bias-aware one- and two-sided CIs for the sharp RD
+parameter.
 }
 \details{
 The bandwidth is calculated to be optimal for a given performance criterion,
 as specified by \code{opt.criterion}. For local polynomial estimators, this
 optimal bandwidth is calculated using the function \code{\link{RDOptBW}}.
 Alternatively, for local polynomial estimators, the bandwidths above and
-below the cutoff can be specified by \code{h}.
+below the cutoff can be specified by \code{h}. If \code{kern="optimal"},
+calculate optimal estimators under second-order Taylor smoothness class.
 }
 \section{Note}{
 
@@ -212,8 +203,7 @@ that is first in \code{data} and then in the environment of \code{formula}.
 \examples{
 
 # Lee dataset
-RDHonest(voteshare ~ margin, data = lee08, kern = "uniform", M = 0.1,
-         h = 10, sclass = "T")
+RDHonest(voteshare ~ margin, data = lee08, kern = "uniform", M = 0.1, h = 10)
 }
 \references{
 {

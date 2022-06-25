@@ -81,7 +81,7 @@ RDSmoothnessBound <- function(d, s, separate=TRUE, multiple=TRUE, alpha=0.05,
     ## Critical value
     cv <- function(M, Z, sd, alpha) {
         if (ncol(Z)==1) {
-            return(CVb(M/sd, alpha=alpha)$cv)
+            return(CVb(M/sd, alpha=alpha))
         } else {
             S <- Z+M*outer(rep(1, nrow(Z)), 1/sd)
             maxS <- abs(S[cbind(seq_len(nrow(Z)), max.col(S))])

@@ -9,7 +9,6 @@
 ##   - hp, hm
 ## - RDoptBW
 ##   - opt.criterion
-##   - bw.equal=TRUE
 ##   - beta=0.8
 ##   - alpha
 ## - RDse

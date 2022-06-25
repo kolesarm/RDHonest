@@ -29,3 +29,47 @@ if (!requireNamespace("remotes")) {
 }
 remotes::install_github("kolesarm/RDHonest")
 ```
+
+
+TODO:
+   - Format output
+   - effective observations -> lindeberg weights.
+   - allow for clustering
+   - allow for covariates; For ROT: take the bandwidth that's optimal without
+     covariates, for example, use it to compute the initial gamma, and then run
+     the global quartic using the covariate adjusted outcome.
+
+- DONE: cvb.R, documentation.R
+
+
+
+Cbound.R
+FRD_lp.R
+LPP_lp.R
+NPRfunctions.R
+NPR_lp.R
+RD_bme.R
+RD_lp.R
+RD_opt.R
+cvb.R
+documentation.R
+kernels.R
+plots.R
+utils.R
+
+
+- simplify output of CVb function
+
+- make low-level functions internal
+
+TODO
+- remove FRDOptBW etc.
+
+
+CHANGES
+- simplify output of CVb function. No longer accept vector alpha as argument
+- remove print method for NPRBW
+- make NPRHonest.fit and NPROptbw.fit internal
+- remove option to have different bandwidths on each side of cutoff.
+- do not return lff
+- fix bug with LPPOptBW whereby arguments to NPROptBW.fit not passed correctly

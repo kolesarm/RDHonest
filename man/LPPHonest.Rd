@@ -74,12 +74,8 @@ contain \code{NA}s. The default is set by the \code{na.action} setting of
     conditional variance is estimated using the method specified by
     \code{se.initial}.}
 
-\item{h}{bandwidth, a scalar parameter. For fuzzy or sharp RD, it can be a
-named vector of length two with names \code{"p"} and \code{"m"}, in which
-case the bandwidth \code{h["m"]} is used for observations strictly below
-the cutoff, and the bandwidth \code{h["p"]} is used for observations
-weakly above the cutoff. If not supplied, optimal bandwidth is computed
-according to criterion given by \code{opt.criterion}.}
+\item{h}{bandwidth, a scalar parameter. If not supplied, optimal bandwidth is
+computed according to criterion given by \code{opt.criterion}.}
 
 \item{se.method}{Vector with methods for estimating standard error of
 estimate. If \code{NULL}, standard errors are not computed. The elements of
@@ -175,8 +171,7 @@ Returns an object of class \code{"NPResults"}. The function
   \item{\code{eff.obs}}{Effective number of observations used by
             \code{estimate}}
 
-  \item{\code{hp}, \code{hm}}{Bandwidth used, both numbers are equal (i.e.
-  \code{hp=hm})}
+  \item{\code{h}}{Bandwidth used}
 
   \item{\code{naive}}{Coverage of CI that ignores bias and uses
                \code{qnorm(1-alpha/2)} as critical value}

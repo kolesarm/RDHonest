@@ -1,15 +1,14 @@
 #' Honest inference in RD
 #'
-#' Calculate estimators and one- and two-sided CIs based on local polynomial
-#' estimator in RD under second-order Taylor or Hölder smoothness class. If
-#' \code{kern="optimal"}, calculate optimal estimators under second-order Taylor
-#' smoothness class.
+#' Calculate estimators and bias-aware one- and two-sided CIs for the sharp RD
+#' parameter.
 #'
 #' The bandwidth is calculated to be optimal for a given performance criterion,
 #' as specified by \code{opt.criterion}. For local polynomial estimators, this
 #' optimal bandwidth is calculated using the function \code{\link{RDOptBW}}.
 #' Alternatively, for local polynomial estimators, the bandwidths above and
-#' below the cutoff can be specified by \code{h}.
+#' below the cutoff can be specified by \code{h}. If \code{kern="optimal"},
+#' calculate optimal estimators under second-order Taylor smoothness class.
 #'
 #' @template RDFormula
 #' @template RDse
@@ -17,7 +16,6 @@
 #' @template RDBW
 #' @template RDclass
 #' @template Kern
-#' @template bwequal
 #' @template RDseInitial
 #' @return Returns an object of class \code{"NPRResults"}. The function
 #'     \code{print} can be used to obtain and print a summary of the results. An
@@ -46,7 +44,7 @@
 #'   \item{\code{eff.obs}}{Effective number of observations used by
 #'             \code{estimate}}
 #'
-#'   \item{\code{hp}, \code{hm}}{Bandwidths used above and below the cutoff}
+#'   \item{\code{h}}{Bandwidth used}
 #'
 #'   \item{\code{naive}}{Coverage of CI that ignores bias and uses
 #'                \code{qnorm(1-alpha/2)} as critical value}
@@ -78,12 +76,11 @@
 #' @examples
 #'
 #' # Lee dataset
-#' RDHonest(voteshare ~ margin, data = lee08, kern = "uniform", M = 0.1,
-#'          h = 10, sclass = "T")
+#' RDHonest(voteshare ~ margin, data = lee08, kern = "uniform", M = 0.1, h = 10)
 #' @export
 RDHonest <- function(formula, data, subset, weights, cutoff=0, M,
-                     kern="triangular", na.action, opt.criterion, bw.equal=TRUE,
-                     h, se.method="nn", alpha=0.05, beta=0.8, J=3, sclass="H",
+                     kern="triangular", na.action, opt.criterion="MSE", h,
+                     se.method="nn", alpha=0.05, beta=0.8, J=3, sclass="H",
                      order=1, se.initial="EHW") {
 
     ## construct model frame
@@ -97,23 +94,20 @@ RDHonest <- function(formula, data, subset, weights, cutoff=0, M,
     d <- RDData(mf, cutoff)
 
     if (kern=="optimal") {
-        ret <- RDTOpt.fit(d, M, opt.criterion=opt.criterion,
-                         alpha=alpha, beta=beta,
-                         se.method=se.method, J=J, se.initial=se.initial)
+        ret <- RDTOpt.fit(d, M, opt.criterion=opt.criterion, alpha=alpha,
+                          beta=beta, se.method=se.method, J=J,
+                          se.initial=se.initial)
     } else if (!missing(h)) {
-        ret <- NPRHonest.fit(d, M, kern, h, alpha=alpha,
-                            se.method=se.method, J=J, sclass=sclass,
-                            order=order, se.initial=se.initial)
+        ret <- NPRHonest.fit(d, M, kern, h, alpha=alpha, se.method=se.method,
+                             J=J, sclass=sclass, order=order,
+                             se.initial=se.initial)
     } else {
         ret <- NPRHonest.fit(d, M, kern, opt.criterion=opt.criterion,
-                            bw.equal=bw.equal, alpha=alpha, beta=beta,
-                            se.method=se.method, J=J,
-                            sclass=sclass, order=order, se.initial=se.initial)
+                             alpha=alpha, beta=beta, se.method=se.method, J=J,
+                             sclass=sclass, order=order, se.initial=se.initial)
     }
 
     ret$call <- cl
-    ret$na.action <- attr(mf, "na.action")
-
     ret
 }
 
@@ -128,18 +122,14 @@ RDHonest <- function(formula, data, subset, weights, cutoff=0, M,
 #' @template RDoptBW
 #' @template RDclass
 #' @template Kern
-#' @template bwequal
 #' @template RDseInitial
 #' @return Returns an object of class \code{"RDBW"}. The function \code{print}
 #'     can be used to obtain and print a summary of the results. An object of
 #'     class \code{"RDBW"} is a list containing the following components:
 #'
 #'     \describe{
-#'     \item{\code{hp}}{bandwidth for observations strictly above cutoff}
-#'
-#'     \item{\code{hm}}{bandwidth for observations weakly below cutoff, equal to
-#'     \code{hp} unless \code{bw.equal==FALSE}}
-#'
+#'     \item{\code{h}}{bandwidth}
+
 #'     \item{\code{sigma2m}, \code{sigma2p}}{estimate of conditional variance
 #'     just above and just below cutoff, \eqn{\sigma^2_+(0)} and
 #'     \eqn{\sigma^2_{-}(0)}}
@@ -179,9 +169,8 @@ RDHonest <- function(formula, data, subset, weights, cutoff=0, M,
 #'         M = 0.1, opt.criterion = "MSE", sclass = "H")
 #' @export
 RDOptBW <- function(formula, data, subset, weights, cutoff=0, M,
-                    kern="triangular", na.action, opt.criterion, bw.equal=TRUE,
-                    alpha=0.05, beta=0.8, sclass="H", order=1,
-                    se.initial="EHW") {
+                    kern="triangular", na.action, opt.criterion, alpha=0.05,
+                    beta=0.8, sclass="H", order=1, se.initial="EHW") {
 
     ## construct model frame
     cl <- mf <- match.call(expand.dots = FALSE)
@@ -193,7 +182,7 @@ RDOptBW <- function(formula, data, subset, weights, cutoff=0, M,
     mf$weights  <- mf$"(weights)"
     d <- RDData(mf, cutoff)
 
-    ret <- NPROptBW.fit(d, M, kern, opt.criterion, bw.equal, alpha, beta,
+    ret <- NPROptBW.fit(d, M, kern, opt.criterion, alpha, beta,
                         sclass, order, se.initial=se.initial)
     ret$call <- cl
     ret$na.action <- attr(mf, "na.action")

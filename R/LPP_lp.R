@@ -42,8 +42,7 @@
 #'   \item{\code{eff.obs}}{Effective number of observations used by
 #'             \code{estimate}}
 #'
-#'   \item{\code{hp}, \code{hm}}{Bandwidth used, both numbers are equal (i.e.
-#'   \code{hp=hm})}
+#'   \item{\code{h}}{Bandwidth used}
 #'
 #'   \item{\code{naive}}{Coverage of CI that ignores bias and uses
 #'                \code{qnorm(1-alpha/2)} as critical value}

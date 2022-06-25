@@ -14,7 +14,6 @@
 #' @template RDBW
 #' @template RDclass
 #' @template Kern
-#' @template bwequal
 #' @template RDseInitial
 #' @param T0 Initial estimate of the treatment effect for calculating the
 #'     optimal bandwidth. Only relevant for Fuzzy RD.
@@ -44,7 +43,7 @@
 #'   \item{\code{eff.obs}}{Effective number of observations used by
 #'             \code{estimate}}
 #'
-#'   \item{\code{hp}, \code{hm}}{Bandwidths used above and below the cutoff}
+#'   \item{\code{h}}{Bandwidth used}
 #'
 #'   \item{\code{naive}}{Coverage of CI that ignores bias and uses
 #'                \code{qnorm(1-alpha/2)} as critical value}
@@ -71,9 +70,9 @@
 #'           kern="triangular", opt.criterion="MSE", T0=0)
 #' @export
 FRDHonest <- function(formula, data, subset, weights, cutoff=0, M,
-                      kern="triangular", na.action, opt.criterion,
-                      bw.equal=TRUE, h, se.method="nn", alpha=0.05, beta=0.8,
-                      J=3, sclass="H", order=1, se.initial="EHW", T0=0) {
+                      kern="triangular", na.action, opt.criterion, h,
+                      se.method="nn", alpha=0.05, beta=0.8, J=3, sclass="H",
+                      order=1, se.initial="EHW", T0=0) {
 
     ## construct model frame
     cl <- mf <- match.call(expand.dots = FALSE)
@@ -96,10 +95,9 @@ FRDHonest <- function(formula, data, subset, weights, cutoff=0, M,
                             order=order, se.initial=se.initial, T0=T0)
     } else {
         ret <- NPRHonest.fit(d, M, kern, opt.criterion=opt.criterion,
-                            bw.equal=bw.equal, alpha=alpha, beta=beta,
-                            se.method=se.method, J=J,
-                            sclass=sclass, order=order, se.initial=se.initial,
-                            T0=T0)
+                             alpha=alpha, beta=beta, se.method=se.method, J=J,
+                             sclass=sclass, order=order, se.initial=se.initial,
+                             T0=T0)
     }
 
     ret$call <- cl
@@ -119,7 +117,6 @@ FRDHonest <- function(formula, data, subset, weights, cutoff=0, M,
 #' @template RDoptBW
 #' @template RDclass
 #' @template Kern
-#' @template bwequal
 #' @template RDseInitial
 #' @param T0 Initial estimate of the treatment effect for calculating the
 #'     optimal bandwidth. Only relevant for Fuzzy RD.
@@ -128,10 +125,7 @@ FRDHonest <- function(formula, data, subset, weights, cutoff=0, M,
 #'     class \code{"RDBW"} is a list containing the following components:
 #'
 #'     \describe{
-#'     \item{\code{hp}}{bandwidth for observations weakly above cutoff}
-#'
-#'     \item{\code{hm}}{bandwidth for observations strictly below cutoff, equal
-#'     to \code{hp} unless \code{bw.equal==FALSE}}
+#'     \item{\code{h}}{bandwidth}
 #'
 #'     \item{\code{sigma2m}, \code{sigma2p}}{estimate of conditional variance
 #'     just above and just below cutoff, \eqn{\sigma^2_+(0)} and
@@ -170,9 +164,8 @@ FRDHonest <- function(formula, data, subset, weights, cutoff=0, M,
 #'           kern="triangular", opt.criterion="FLCI")
 #' @export
 FRDOptBW <- function(formula, data, subset, weights, cutoff=0, M,
-                     kern="triangular", na.action, opt.criterion, bw.equal=TRUE,
-                     alpha=0.05, beta=0.8, sclass="H", order=1,
-                     se.initial="EHW", T0=0) {
+                     kern="triangular", na.action, opt.criterion, alpha=0.05,
+                     beta=0.8, sclass="H", order=1, se.initial="EHW", T0=0) {
 
     ## construct model frame
     cl <- mf <- match.call(expand.dots = FALSE)
@@ -189,8 +182,8 @@ FRDOptBW <- function(formula, data, subset, weights, cutoff=0, M,
     mf$weights  <- mf$"(weights)"
     d <- FRDData(mf, cutoff)
 
-    ret <- NPROptBW.fit(d, M, kern, opt.criterion, bw.equal, alpha, beta,
-                        sclass, order, se.initial=se.initial, T0=T0)
+    ret <- NPROptBW.fit(d, M, kern, opt.criterion, alpha, beta, sclass, order,
+                        se.initial=se.initial, T0=T0)
     ret$call <- cl
     ret$na.action <- attr(mf, "na.action")
 

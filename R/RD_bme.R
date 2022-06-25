@@ -51,7 +51,6 @@ RDlpformula <- function(order) {
 #' @export
 RDHonestBME <- function(formula, data, subset, weights, cutoff=0, na.action,
                         h=Inf, alpha=0.05, order=0, regformula) {
-    if (length(h)==1) h <- c(m=h, p=h)
     ## construct model frame
     cl <- mf <- match.call(expand.dots = FALSE)
     m <- match(c("formula", "data", "subset", "na.action"),
@@ -66,7 +65,7 @@ RDHonestBME <- function(formula, data, subset, weights, cutoff=0, na.action,
 
     x <- mf[, 2]-cutoff
     ## drop observations outside bw
-    ind <- (x <= h["p"]) & (x >= -h["m"])
+    ind <- (x <= h) & (x >= -h)
     x <- x[ind]
     y <- stats::model.response(mf, "numeric")[ind]
 
