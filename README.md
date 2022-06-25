@@ -39,32 +39,32 @@ TODO:
      covariates, for example, use it to compute the initial gamma, and then run
      the global quartic using the covariate adjusted outcome.
 
-- DONE: cvb.R, documentation.R
+S3method(print,NPRResults)
+S3method(print,RDBMEresults)
+S3method(print,RDSmoothnessBound)
+export(CVb)
+export(EqKern)
+export(FRDData)
+export(FRDHonest)
+export(IKBW.fit)
+export(KernMoment)
+export(LPPData)
+export(LPPHonest)
+export(NPRPrelimVar.fit)
+export(NPR_MROT.fit)
+export(NPRreg.fit)
+export(RDData)
+export(RDHonest)
+export(RDHonestBME)
+export(RDSmoothnessBound)
+export(RDTEfficiencyBound)
+export(RDTOpt.fit)
+export(ROTBW.fit)
+export(plot_RDscatter)
 
-
-
-Cbound.R
-FRD_lp.R
-LPP_lp.R
-NPRfunctions.R
-NPR_lp.R
-RD_bme.R
-RD_lp.R
-RD_opt.R
-cvb.R
-documentation.R
-kernels.R
-plots.R
-utils.R
-
-
-- simplify output of CVb function
-
-- make low-level functions internal
 
 TODO
-- remove FRDOptBW etc.
-
+- make class constructors internal
 
 CHANGES
 - simplify output of CVb function. No longer accept vector alpha as argument
@@ -73,3 +73,4 @@ CHANGES
 - remove option to have different bandwidths on each side of cutoff.
 - do not return lff
 - fix bug with LPPOptBW whereby arguments to NPROptBW.fit not passed correctly
+- remove functions FRDOptBW, RDOptBW and LPPOptBw

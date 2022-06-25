@@ -111,23 +111,10 @@ RDHonest <- function(formula, data, subset, weights, cutoff=0, M,
 }
 
 
-#' Imbens and Kalyanaraman bandwidth
-#'
-#' Calculate bandwidth for sharp RD based on local linear regression using
-#' method by Imbens and Kalyanaraman (2012)
-#' @param d object of class \code{"RDData"}
-#' @template Kern
-#' @param verbose Print details of calculation?
-#' @return Imbens and Kalyanaraman bandwidth
-#' @references{
-#' \cite{Imbens, Guido, and Kalyanaraman, Karthik. 2012.
-#' "Optimal bandwidth choice for the regression discontinuity estimator." The
-#' Review of Economic Studies 79 (3): 933-959.}
-#' }
-#' @examples
-#' ## Reproduce bandwidth from Section 6.2 in Imbens and Kalyanaraman (2012)
-#' IKBW.fit(RDData(lee08, cutoff=0))
-#' @export
+## Imbens and Kalyanaraman bandwidth. Only used by NPRPrelimVar.fit
+##
+##  Reproduce bandwidth from Section 6.2 in Imbens and Kalyanaraman (2012)
+## IKBW.fit(RDData(lee08, cutoff=0))
 IKBW.fit <- function(d, kern="triangular", order=1, verbose=FALSE) {
     if (order!=1)
         stop("Only works for local linear regression.")
