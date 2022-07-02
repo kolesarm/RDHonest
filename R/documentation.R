@@ -121,7 +121,7 @@
 #'     2209–26.}
 #' }
 #' @source American Economic Review data archive,
-#' \doi{doi.org/10.1257/aer.99.5.2209}
+#' \doi{10.1257/aer.99.5.2209}
 "rcp"
 
 #' Constants for common kernels.

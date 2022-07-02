@@ -1,6 +1,6 @@
 Package: RDHonest
 Title: Honest Inference in Regression Discontinuity Designs
-Version: 0.3.2
+Version: 0.4.0.9000
 Authors@R:
     c(person(given = "Michal",
             family = "Kolesár",

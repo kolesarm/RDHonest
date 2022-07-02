@@ -51,20 +51,21 @@ jobs:
         shell: Rscript {0}
 
       - name: Restore R package cache
+        if: runner.os != 'Windows'
         uses: actions/cache@v2
         with:
           path: ${{ env.R_LIBS_USER }}
           key: ${{ runner.os }}-${{ hashFiles('.github/R-version') }}-1-${{ hashFiles('.github/depends.Rds') }}
           restore-keys: ${{ runner.os }}-${{ hashFiles('.github/R-version') }}-1-
 
-      - name: Install system dependencies
+      - name: Install Linux system dependencies
         if: runner.os == 'Linux'
         run: |
           while read -r cmd
           do
             eval sudo $cmd
           done < <(Rscript -e 'writeLines(remotes::system_requirements("ubuntu", "20.04"))')
-          sudo apt-get install -y ghostscript
+          sudo apt-get update && sudo apt-get install -y ghostscript libcurl4-openssl-dev
       - name: Install Mac OS system dependencies
         if: matrix.config.os == 'macOS-latest'
         run: |
@@ -77,7 +78,15 @@ jobs:
           # Install knitr because Ubuntu-release is not finding it for some reason
           remotes::install_cran("formatR", "knitr")
         shell: Rscript {0}
-
+      - name: Session info
+        run: |
+          options(width = 100)
+          pkgs <- .packages(TRUE)
+          sessioninfo::session_info(pkgs, include_base = TRUE)
+          rmarkdown::find_pandoc()
+          tinytex::tlmgr("--version")
+          tinytex::tl_pkgs()
+        shell: Rscript {0}
       - name: Check
         env:
           _R_CHECK_CRAN_INCOMING_REMOTE_: false

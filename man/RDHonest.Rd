@@ -91,9 +91,6 @@ the vector can consist of the following methods:
         estimated intercept from the outcome (and not subtracting the
         estimated slope). Local polynomial estimators only.}
 
-   \item{"plugin"}{Plug-in estimate based on asymptotic variance. Local
-        polynomial estimators in sharp RD only.}
-
    \item{"supplied.var"}{Use conditional variance supplied by \code{sigma2} or
         \code{d} instead of computing residuals}
 

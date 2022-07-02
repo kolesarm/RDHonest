@@ -24,8 +24,7 @@ EqKern <- function(kernel = "uniform", boundary = TRUE, order = 0) {
         EqKernN(K, boundary = boundary, order = order)
     } else {
         type <- paste0(order, boundary, kernel)
-        switch(type,
-               "0FALSEuniform" = function(u) su(u) / 2,
+        switch(type, "0FALSEuniform" = function(u) su(u) / 2,
                "0FALSEtriangular" = function(u) (1 - abs(u)) * su(u),
                "0FALSEepanechnikov" = function(u) (3 / 4) * (1 - u^2) * su(u),
                "0TRUEuniform" = function(u) su(u),
@@ -35,20 +34,19 @@ EqKern <- function(kernel = "uniform", boundary = TRUE, order = 0) {
                "1FALSEtriangular" = function(u) (1 - abs(u)) * su(u),
                "1FALSEepanechnikov" = function(u) 3/4 * (1 - u^2) * su(u),
                "1TRUEuniform" = function(u) (4 - 6*u) * su(u),
-               "1TRUEtriangular" = function(u)
-                   6*(1 - 2*u) * (1 - u) * su(u),
-               "1TRUEepanechnikov" = function(u)
-                   6/19 * (16-30*u) * (1-u^2) * su(u),
+               "1TRUEtriangular" = function(u) 6*(1 - 2*u) * (1 - u) * su(u),
+               "1TRUEepanechnikov" =
+                   function(u) 6/19 * (16-30*u) * (1-u^2) * su(u),
                "2FALSEuniform" = function(u) (9 - 15 * u^2) / 8 * su(u),
-               "2FALSEtriangular" = function(u)
-                   6/7 * (2-5*u^2) * (1-abs(u)) * su(u),
-               "2FALSEepanechnikov" = function(u)
-                   15/32 * (3-7*u^2) * (1-u^2) * su(u),
+               "2FALSEtriangular" =
+                   function(u) 6/7 * (2-5*u^2) * (1-abs(u)) * su(u),
+               "2FALSEepanechnikov" =
+                   function(u) 15/32 * (3-7*u^2) * (1-u^2) * su(u),
                "2TRUEuniform" = function(u) (9 - 36*u + 30*u^2) * su(u),
-               "2TRUEtriangular" = function(u)
-                   12 * (1-5*u+5*u^2) * (1-u) * su(u),
-               "2TRUEepanechnikov" = function(u)
-                   1/8 * (85 - 400*u + 385*u^2) * (1-u^2) * su(u))
+               "2TRUEtriangular" =
+                   function(u) 12 * (1-5*u+5*u^2) * (1-u) * su(u),
+               "2TRUEepanechnikov" =
+                   function(u) 1/8 * (85 - 400*u + 385*u^2) * (1-u^2) * su(u))
     }
 }
 

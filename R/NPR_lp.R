@@ -143,7 +143,7 @@ NPROptBW.fit <- function(d, M, kern="triangular", opt.criterion, alpha=0.05,
 print.NPRResults <- function(x, digits = getOption("digits"), ...) {
     if (!is.null(x$call))
         cat("Call:\n", deparse(x$call), "\n\n", sep = "", fill=TRUE)
-    bw <- if (class(x$lff) != "RDLFFunction")
+    bw <- if (!inherits(x$lff, "RDLFFunction"))
               "Bandwidth" else "Smoothing parameter"
 
     cat("Inference by se.method:\n")

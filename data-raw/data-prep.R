@@ -8,7 +8,8 @@ lee08 <- data.frame(voteshare=100*lee$demsharenext[s$ix], margin=100*s$x)
 devtools::use_data(lee08, overwrite=TRUE, internal=FALSE)
 
 ## 2. Oreopoulos data from AER website
-dir2 <- "~/teaching/Datasets/Oreopoulos2006/uk/combined general household survey.dta"
+dir2 <- paste0("~/teaching/Datasets/Oreopoulos2006/uk/",
+               "combined general household survey.dta")
 cghs <- readstata13::read.dta13(dir2, generate.factors=TRUE,
                                 nonint.factors=TRUE)
 
@@ -67,7 +68,8 @@ d <- d[!is.na(d$povrate60), ]
 ## left with 3128 observations
 
 ## Add county names to dataset
-url <- "https://www2.census.gov/geo/docs/reference/codes/files/national_county.txt"
+url <- paste0("https://www2.census.gov/geo/docs/reference/codes",
+              "/files/national_county.txt")
 if (!file.exists("fips.txt")) download.file(url, destfile="fips.txt")
 fips <- read.csv("fips.txt", header=FALSE)
 names(fips) <- c("statepc", "statefp", "countyfp", "county", "classfp")
@@ -80,7 +82,8 @@ fips$cfips <- 1000*fips$statefp+fips$countyfp
 ## classfp         FIPS Class Code         H1
 ## drop non-us
 
-## Add deleted counties, see https://www.census.gov/geo/reference/county-changes.html
+## Add deleted counties, see
+## https://www.census.gov/geo/reference/county-changes.html
 fips <- rbind(fips,
               data.frame(statepc=c("AK", "MT", "VA", "FL", "AK", "AL"),
                          statefp=c(2, 30, 51, 12, 2, 2),
@@ -134,7 +137,8 @@ headst <- headst[headst$oldcode!=27057, ] # Yellowstone National Park
 devtools::use_data(headst, overwrite=TRUE, internal=FALSE)
 
 ## 4. Battistin et al data from AER website
-rcp <- readstata13::read.dta13("~/teaching/Datasets/BattistinEtAl2009/datapaper_ab.dta", generate.factors=TRUE, nonint.factors=TRUE)
+dir5 <- "~/teaching/Datasets/BattistinEtAl2009/datapaper_ab.dta"
+rcp <- readstata13::read.dta13(dir5, generate.factors=TRUE, nonint.factors=TRUE)
 rcp <- rcp[, c(2, 29, 27, 8, 4, 6)]
 ## Survey year
 names(rcp) <- c("survey_year", "elig_year", "retired", "food", "c", "cn")
