@@ -156,17 +156,12 @@ $B(\hat{\beta}_{h_+,h_-})$ from the point estimate, in addition to adding and su
 The function `CVb` gives these critical values:
 
 ```{r, }
-## Usual critical value
-CVb(0, alpha=0.05) # returns a list
-CVb(1/2, alpha=0.05)$cv # extract critical value
+CVb(0, alpha=0.05) ## Usual critical value
+CVb(1/2, alpha=0.05)
 
-## Tabulate critical values for different significance levels
-## when bias-sd ratio equals 1/4
-knitr::kable(CVb(1/4, alpha=c(0.01, 0.05, 0.1)), caption="Critical values")
+## Tabulate critical values for different bias levels
+CVb(0:5, alpha=0.1)
 ```
-
-The field `TeXDescription` is useful for plotting, or for exporting to \LaTeX,
-as in the table above.
 
 ### Parameter space
 
@@ -221,18 +216,9 @@ optimality criterion:
 ```{r}
 RDHonest(voteshare ~ margin, data=lee08, kern="triangular",
     M=0.1, opt.criterion="MSE", sclass="H")
-## Choose bws optimal for length of CI, allowing for different bws
-## on either side of cutoff
+## Choose bws optimal for length of CI
 RDHonest(voteshare ~ margin, data=lee08, kern="triangular", M=0.1,
-    opt.criterion="FLCI", sclass="H", bw.equal=FALSE)
-```
-
-It is also possible to compute the optimal bandwidths directly using the function
-`RDOptBW`
-
-```{r}
-RDOptBW(voteshare ~ margin, data=lee08, kern="triangular",
-    M=0.1, opt.criterion="MSE", sclass="H")
+    opt.criterion="FLCI", sclass="H")
 ```
 
 ### Inference when running variable is discrete
@@ -501,14 +487,6 @@ r <- FRDHonest(log(cn) ~ retired | elig_year, data=rcp, kern="triangular", M=c(0
 FRDHonest(log(cn) ~ retired | elig_year, data=rcp, kern="triangular", M=c(0.001, 0.002), opt.criterion="MSE", sclass="H", T0=r$estimate)
 ```
 
-
-It is also possible to compute the optimal bandwidths directly using the function
-`RDOptBW`
-
-```{r}
-FRDOptBW(log(cn) ~ retired | elig_year, data=rcp, kern="triangular", M=c(0.001, 0.002), opt.criterion="MSE", sclass="H", T0=r$estimate)
-```
-
 ## Data-driven choice of smoothness constant
 
 Like in the sharp RD case, Without further restrictions, the smoothness
@@ -532,7 +510,7 @@ parameter space under which this method yields honest inference.
 
 # Inference at a point
 
-The package also contains functions `LPPHonest` and `LPPOptBW` for inference at
+The package also contains function `LPPHonest` for inference at
 a point, and optimal bandwidth selection for inference at a point. Suppose, for example, one
 was interested in the vote share for candidates with margin of victory equal to
 20 points:

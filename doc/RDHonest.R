@@ -28,13 +28,11 @@ f2 <- plot_RDscatter(do, avg=Inf, xlab="Year aged 14", ylab="Log earnings",
 f2 + ggplot2::scale_size_area(max_size = 4)
 
 ## -----------------------------------------------------------------------------
-## Usual critical value
-CVb(0, alpha=0.05) # returns a list
-CVb(1/2, alpha=0.05)$cv # extract critical value
+CVb(0, alpha=0.05) ## Usual critical value
+CVb(1/2, alpha=0.05)
 
-## Tabulate critical values for different significance levels
-## when bias-sd ratio equals 1/4
-knitr::kable(CVb(1/4, alpha=c(0.01, 0.05, 0.1)), caption="Critical values")
+## Tabulate critical values for different bias levels
+CVb(0:5, alpha=0.1)
 
 ## -----------------------------------------------------------------------------
 RDHonest(voteshare ~ margin, data=lee08, kern="uniform", M=0.1, h=10, sclass="T")
@@ -43,14 +41,9 @@ RDHonest(voteshare ~ margin, data=lee08, kern="uniform", M=0.1, h=10, sclass="H"
 ## -----------------------------------------------------------------------------
 RDHonest(voteshare ~ margin, data=lee08, kern="triangular",
     M=0.1, opt.criterion="MSE", sclass="H")
-## Choose bws optimal for length of CI, allowing for different bws
-## on either side of cutoff
+## Choose bws optimal for length of CI
 RDHonest(voteshare ~ margin, data=lee08, kern="triangular", M=0.1,
-    opt.criterion="FLCI", sclass="H", bw.equal=FALSE)
-
-## -----------------------------------------------------------------------------
-RDOptBW(voteshare ~ margin, data=lee08, kern="triangular",
-    M=0.1, opt.criterion="MSE", sclass="H")
+    opt.criterion="FLCI", sclass="H")
 
 ## -----------------------------------------------------------------------------
 ## Replicate Table 2, column (10)
@@ -119,9 +112,6 @@ dr <- FRDData(cbind(logf=log(rcp[, 6]), rcp[, c(3, 2)]), cutoff=0)
 r <- FRDHonest(log(cn) ~ retired | elig_year, data=rcp, kern="triangular", M=c(0.001, 0.002), opt.criterion="MSE", sclass="H", T0=0)
 ## Use it to compute optimal bandwidth
 FRDHonest(log(cn) ~ retired | elig_year, data=rcp, kern="triangular", M=c(0.001, 0.002), opt.criterion="MSE", sclass="H", T0=r$estimate)
-
-## -----------------------------------------------------------------------------
-FRDOptBW(log(cn) ~ retired | elig_year, data=rcp, kern="triangular", M=c(0.001, 0.002), opt.criterion="MSE", sclass="H", T0=r$estimate)
 
 ## -----------------------------------------------------------------------------
 ## Data-driven choice of M

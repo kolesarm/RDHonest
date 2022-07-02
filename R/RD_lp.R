@@ -4,11 +4,10 @@
 #' parameter.
 #'
 #' The bandwidth is calculated to be optimal for a given performance criterion,
-#' as specified by \code{opt.criterion}. For local polynomial estimators, this
-#' optimal bandwidth is calculated using the function \code{\link{RDOptBW}}.
-#' Alternatively, for local polynomial estimators, the bandwidths above and
-#' below the cutoff can be specified by \code{h}. If \code{kern="optimal"},
-#' calculate optimal estimators under second-order Taylor smoothness class.
+#' as specified by \code{opt.criterion}. Alternatively, for local polynomial
+#' estimators, the bandwidth can be specified by \code{h}. If
+#' \code{kern="optimal"}, calculate optimal estimators under second-order Taylor
+#' smoothness class.
 #'
 #' @template RDFormula
 #' @template RDse

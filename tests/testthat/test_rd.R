@@ -160,7 +160,7 @@ test_that("Honest inference in Lee and LM data",  {
     r2 <- RDHonest(voteshare ~ margin, data = lee08, kern = "uniform",
                   M = 0.01, opt.criterion = "MSE", sclass = "H",
                   se.initial="SilvermanNN")
-    h3 <- NPROptBW.fit(RDData(lee08, cutoff=0), kern = "uniform", M = 0.1,
+    r3 <- NPROptBW.fit(RDData(lee08, cutoff=0), kern = "uniform", M = 0.1,
                        opt.criterion = "MSE", sclass = "T",
                        se.initial="Silverman")
     expect_equal(unname(r1$h), 12.6576125622)

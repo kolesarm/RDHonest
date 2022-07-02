@@ -26,5 +26,5 @@ distributed with variance equal to \eqn{1} and maximum bias at most \eqn{B}.
 ## 90\% critical value:
 CVb(B = 1, alpha = 0.1)
 ## Returns data frame with 4 rows
-CVb(B = c(0, 0.5, 1), alpha = c(0.05, 0.1))
+CVb(B = c(0, 0.5, 1), alpha = 0.05)
 }
