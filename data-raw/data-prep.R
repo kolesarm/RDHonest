@@ -1,5 +1,6 @@
 ## 1. Lee data from Mostly Harmless Econometrics website
-lee <- readstata13::read.dta13("~/teaching/Datasets/Lee2008/table_two_final.dta")
+dir1 <- "~/teaching/Datasets/Lee2008/table_two_final.dta"
+lee <- readstata13::read.dta13(dir1)
 lee <- subset(lee, difdemshare!=0 & use ==1)
 s <- sort(lee$difdemshare, index.return=TRUE)       # sort
 
@@ -7,7 +8,9 @@ lee08 <- data.frame(voteshare=100*lee$demsharenext[s$ix], margin=100*s$x)
 devtools::use_data(lee08, overwrite=TRUE, internal=FALSE)
 
 ## 2. Oreopoulos data from AER website
-cghs <- readstata13::read.dta13("~/teaching/Datasets/Oreopoulos2006/uk/combined general household survey.dta", generate.factors=TRUE, nonint.factors=TRUE)
+dir2 <- "~/teaching/Datasets/Oreopoulos2006/uk/combined general household survey.dta"
+cghs <- readstata13::read.dta13(dir2, generate.factors=TRUE,
+                                nonint.factors=TRUE)
 
 cghs$yearat14 <- cghs$yobirth+14
 d <- within(cghs,
@@ -19,7 +22,8 @@ devtools::use_data(cghs, overwrite=TRUE, internal=FALSE)
 
 ## 3. Lalive data from Rafael Lalive's website,
 ## https://sites.google.com/site/rafaellalive/research
-rebp <- readstata13::read.dta13("~/teaching/Datasets/Lalive2008/releaseData.dta")
+dir3 <- "~/teaching/Datasets/Lalive2008/releaseData.dta"
+rebp <- readstata13::read.dta13(dir3)
 ## Only treated region
 rebp <- rebp[rebp$tr==1, c("age", "period", "female", "unemployment_duration")]
 names(rebp)[4] <- "duration"
@@ -31,10 +35,10 @@ devtools::use_data(rebp, overwrite=TRUE, internal=FALSE)
 
 ## 4. LM data from Douglas Miller's website
 
-dir <- "~/teaching/Datasets/LudwigMiller2007/analysis data/"
+dir4 <- "~/teaching/Datasets/LudwigMiller2007/analysis data/"
 ## Table 3 and 4
-d3 <- foreign::read.dta(paste0(dir, "census3.dta"))
-d4 <- foreign::read.dta(paste0(dir, "census_1990.dta"))
+d3 <- foreign::read.dta(paste0(dir4, "census3.dta"))
+d4 <- foreign::read.dta(paste0(dir4, "census_1990.dta"))
 
 ## observation 3133 is full of NA's
 d4 <- d4[!is.na(d4$oldcode), ]

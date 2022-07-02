@@ -79,7 +79,7 @@ test_that("Optimal bandwidth calculations", {
     expect_equal(r[13], "Bandwidth: 13.41")
     r2 <- NPROptBW.fit(dp, M=2*Mh, opt.criterion="MSE")$h
     expect_identical(r2,  r1$h)
-    expect_equal(r2,  13.4109132)
+    expect_lt(abs(r2- 13.4109133), 1e-6)
     expect_equal(unname(NPRHonest.fit(dp, M=Mh, kern="uniform",
                                       opt.criterion="FLCI")$upper),
                  55.24963853)

@@ -89,7 +89,8 @@ NPRHonest.fit <- function(d, M, kern="triangular", h, opt.criterion, alpha=0.05,
 ##
 ## Basic computing engine to compute the optimal bandwidth
 NPROptBW.fit <- function(d, M, kern="triangular", opt.criterion, alpha=0.05,
-                         beta=0.8, sclass="H", order=1, se.initial="EHW", T0=0) {
+                         beta=0.8, sclass="H", order=1, se.initial="EHW",
+                         T0=0) {
 
     ## First check if sigma2 is supplied
     if (is.null(d$sigma2) & (is.null(d$sigma2p) | is.null(d$sigma2m)))

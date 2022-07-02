@@ -96,7 +96,8 @@ LPPHonest <- function(formula, data, subset, weights, point=0, M,
 }
 
 
-## Rule of thumb bandwidth for inference at a point. Only used by NPRPrelimVar.fit
+## Rule of thumb bandwidth for inference at a point. Only used by
+## NPRPrelimVar.fit
 ##
 ## Calculate bandwidth for inference at a point with local linear regression
 ## using method in Fan and Gijbels (1996, Chapter 4.2).

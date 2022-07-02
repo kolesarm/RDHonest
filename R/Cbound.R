@@ -39,7 +39,7 @@
 RDSmoothnessBound <- function(d, s, separate=TRUE, multiple=TRUE, alpha=0.05,
                               sclass="T") {
     ## First estimate variance
-    if (is.null(d$sigma2p) | is.null(d$sigma2m))
+    if (is.null(d$sigma2p) || is.null(d$sigma2m))
         d <- NPRPrelimVar.fit(d, se.initial="nn")
 
     ## Curvature estimate based on jth set of three points closest to zero
@@ -98,13 +98,13 @@ RDSmoothnessBound <- function(d, s, separate=TRUE, multiple=TRUE, alpha=0.05,
         if (max(ts) < cv(0, Z, D[2, ], 1/2)) {
             hatM <- lower <- 0
         } else {
-            hatM <- FindZero(function(m)
-                max(ts)-cv(m, Z, D[2, ], 1/2), negative=FALSE)
+            hatM <- FindZero(function(m) max(ts)-cv(m, Z, D[2, ], 1/2),
+                             negative=FALSE)
             if (max(ts) < cv(0, Z, D[2, ], alpha)) {
                 lower <- 0
             } else {
-                lower <- FindZero(function(m)
-                    max(ts)-cv(m, Z, D[2, ], alpha), negative=FALSE)
+                lower <- FindZero(function(m) max(ts)-cv(m, Z, D[2, ], alpha),
+                                  negative=FALSE)
             }
         }
         list(hatM=hatM, lower=lower, Delta=maxt[1], sdDelta=maxt[2],

@@ -48,7 +48,7 @@ test_that("FRD with almost perfect first stage", {
     r2 <- NPRHonest.fit(RDData(lee08, cutoff=0), unname(M[1]),
                         kern="triangular", opt.criterion="FLCI")
     expect_lt(max(abs(c(r1$estimate, r1$sd, r1$hl)-
-                      c(r2$estimate, r2$sd, r2$hl))), 1e-7)
+                      c(r2$estimate, r2$sd, r2$hl))), 3e-7)
 
     df <- data.frame(y=lee08$voteshare,
                      d=lee08$margin+rnorm(n=length(lee08$margin), sd=0.1)>0,

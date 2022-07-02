@@ -56,18 +56,5 @@ kernC$pMSE[kernC$order==1] <- (kernC$nu0[kernC$order==1] /
 kernC$pMSE[kernC$order==2] <- (6 * kernC$nu0[kernC$order==2] /
                                    kernC$mu3[kernC$order==2]^2)^(1/7)
 
-
-## Unclear whether this is needed
-## C[-1,1]=\int_[-1,1] ( k'(u)u-k(u)/2 )^2 du
-## kernC$Cint <- c(1/8, 26, 297/2, 1/2, 12, 36, 3/4, 6258/361, 1735/32,
-##                 rep(0,9))
-
-
-## for (j in 1:nrow(kernC)) {
-##     K <- function(u) Kern(u, kernC$kernel[j], kernC$boundary[j],
-##                           kernC$order[j])
-##     kernC$pi4t[j] <- KernMoment(K, moment = 4, kernC$boundary[j], type = "absolute")
-## }
-
 ## Save it
 devtools::use_data(kernC, overwrite=TRUE, internal=FALSE)
