@@ -253,20 +253,11 @@ NPRPrelimVar.fit <- function(d, se.initial="EHW") {
     d
 }
 
-#' Rule of thumb for choosing M
-#'
-#' Use global quartic regression to estimate a bound on the second derivative
-#' for inference under under second order Hölder class. For RD, use a separate
-#' regression on either side of the cutoff
-#'
-#' @param d object of class \code{"RDData"}, \code{"FRDData"}, or
-#'     \code{"LPPData"}.
-#' @examples
-#' NPR_MROT.fit(RDData(lee08, cutoff=0))
-#' NPR_MROT.fit(LPPData(lee08[lee08$margin>0, ], point=0))
-#' d <- FRDData(cbind(logcn=log(rcp[, 6 ]), rcp[, c(3, 2)]), cutoff=0)
-#' NPR_MROT.fit(d)
-#' @export
+## Rule of thumb for choosing M
+##
+## Use global quartic regression to estimate a bound on the second derivative
+## for inference under under second order Hölder class. For RD, use a separate
+## regression on either side of the cutoff
 NPR_MROT.fit <- function(d) {
     if (inherits(d, "RDData")) {
         max(NPR_MROT.fit(LPPData(data.frame(Y=d$Yp, X=d$Xp), 0)),

@@ -7,7 +7,7 @@
 EqKern(kernel = "uniform", boundary = TRUE, order = 0)
 }
 \arguments{
-\item{kernel}{kernel type. Can be a function supported on \eqn{[0, 1]}
+\item{kernel}{Kernel type. Can be a function supported on \eqn{[0, 1]}
 (boundary kernel) or \eqn{[-1, 1]} (interior kernel), or else one of
 \code{"triangular"} (\eqn{k(u)=(1-|u|)_{+}}), \code{"epanechnikov"}
 (\eqn{k(u)=(3/4)(1-u^2)_{+}}), or \code{"uniform"} (\eqn{k(u)=

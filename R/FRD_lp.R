@@ -86,6 +86,8 @@ FRDHonest <- function(formula, data, subset, weights, cutoff=0, M,
     mf <- eval(mf, parent.frame())
     mf$weights  <- mf$"(weights)"
     d <- FRDData(mf, cutoff)
+    if (missing(M))
+        M <- NPR_MROT.fit(d)
 
     if (!missing(h)) {
         ret <- NPRHonest.fit(d, M, kern, h, alpha=alpha,

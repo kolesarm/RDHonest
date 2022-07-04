@@ -6,23 +6,19 @@ knitr::opts_chunk$set(tidy = TRUE, collapse=TRUE, comment = "#>",
 
 ## -----------------------------------------------------------------------------
 library("RDHonest")
-## Assumes first column in the data frame corresponds to outcome,
-## and second to running variable
-dl <- RDData(lee08, cutoff = 0)
-
-## Transform earnings to log earnings
-do <- RDData(data.frame(logearn=log(cghs$earnings),
-                        year14=cghs$yearat14), cutoff = 1947)
 
 ## ---- fig.width=4.5, fig.height=3.5, fig.cap="Lee (2008) data"----------------
 ## plot 25-bin averages in for observations 50 at most points away from the cutoff.
 ## See Figure 1
-plot_RDscatter(dl, avg=25, window = 50, xlab="Margin of victory",
-    ylab="Vote share in next election")
+plot_RDscatter(voteshare~margin, data=lee08, subset=abs(lee08$margin)<=50,
+            avg=50, propdotsize=FALSE,
+            xlab="Margin of victory",
+            ylab="Vote share in next election")
 
 ## ---- fig.width=4.5, fig.height=3.5, fig.cap="Oreopoulos (2006) data"---------
 ## see Figure 2
-f2 <- plot_RDscatter(do, avg=Inf, xlab="Year aged 14", ylab="Log earnings",
+f2 <- plot_RDscatter(I(log(earnings))~yearat14, data=cghs, cutoff=1947,
+    avg=Inf, xlab="Year aged 14", ylab="Log earnings",
     propdotsize=TRUE)
 ## Adjust size of dots if they are too big
 f2 + ggplot2::scale_size_area(max_size = 4)
@@ -61,27 +57,28 @@ RDHonestBME(log(earnings) ~ yearat14, cutoff=1947,
 
 ## -----------------------------------------------------------------------------
 ## Data-driven choice of M
-M <- NPR_MROT.fit(dl)
-RDHonest(voteshare ~ margin, data=lee08, kern="uniform", M=M, sclass="H", opt.criterion="MSE")
+RDHonest(voteshare ~ margin, data=lee08, kern="uniform", sclass="H", opt.criterion="MSE")
 
 ## -----------------------------------------------------------------------------
-2*RDHonest(voteshare ~ margin, data=lee08, kern="optimal", M=0.1, opt.criterion="FLCI", se.initial="Silverman", se.method="nn")$hl
+2*RDHonest(voteshare ~ margin, data=lee08, kern="optimal", M=0.1,
+           opt.criterion="FLCI", se.initial="Silverman", se.method="nn")$hl
 
-2*RDHonest(voteshare ~ margin, data=lee08, kern="triangular", M=0.1, opt.criterion="FLCI", se.initial="Silverman", se.method="nn", sclass="T")$hl
-
+2*RDHonest(voteshare ~ margin, data=lee08, kern="triangular", M=0.1,
+           opt.criterion="FLCI", se.initial="Silverman", se.method="nn",
+           sclass="T")$hl
 
 ## -----------------------------------------------------------------------------
 ## Add variance estimate to the Lee (2008) data so that the RDSmoothnessBound
 ## function doesn't have to compute them each time
-dl <- NPRPrelimVar.fit(dl, se.initial="nn")
+## dl <- NPRPrelimVar.fit(dl, se.initial="nn")
 
 ### Only use three point-average for averages of a 100 points closest to cutoff,
 ### and report results separately for points above and below cutoff
-RDSmoothnessBound(dl, s=100, separate=TRUE, multiple=FALSE, sclass="T")
+## RDSmoothnessBound(dl, s=100, separate=TRUE, multiple=FALSE, sclass="T")
 
 ### Pool estimates based on observations below and above cutoff, and
 ### use three-point averages over the entire support of the running variable
-RDSmoothnessBound(dl, s=100, separate=FALSE, multiple=TRUE, sclass="H")
+## RDSmoothnessBound(dl, s=100, separate=FALSE, multiple=TRUE, sclass="H")
 
 ## -----------------------------------------------------------------------------
 d <- cghs
@@ -105,7 +102,7 @@ RDHonest(y~x, cutoff=1947, weights=weights, h=5, data=dd, M=0.1, se.method=c("EH
 ## Assumes first column in the data frame corresponds to outcome,
 ##  second to the treatment variable, and third to the running variable
 ## Outcome here is log of non-durables consumption
-dr <- FRDData(cbind(logf=log(rcp[, 6]), rcp[, c(3, 2)]), cutoff=0)
+## dr <- FRDData(cbind(logf=log(rcp[, 6]), rcp[, c(3, 2)]), cutoff=0)
 
 ## -----------------------------------------------------------------------------
 ## Initial estimate of treatment effect for optimal bandwidth calculations
@@ -115,15 +112,13 @@ FRDHonest(log(cn) ~ retired | elig_year, data=rcp, kern="triangular", M=c(0.001,
 
 ## -----------------------------------------------------------------------------
 ## Data-driven choice of M
-M <- NPR_MROT.fit(dr)
-print(M)
-FRDHonest(log(cn) ~ retired | elig_year, data=rcp, kern="triangular", M=M, opt.criterion="MSE", sclass="H", T0=r$estimate)
+FRDHonest(log(cn) ~ retired | elig_year, data=rcp, kern="triangular",
+          opt.criterion="MSE", sclass="H", T0=r$estimate)
 
 ## -----------------------------------------------------------------------------
 ## Transform data, specify we're interested in inference at x0=20, and drop observations below cutoff
 leep <- lee08[lee08$margin>0, ]
 ## Data-driven choice of M
-M <- NPR_MROT.fit(LPPData(leep, point = 20))
-print(M)
-LPPHonest(voteshare ~ margin, data=leep, point=20, kern="uniform", M=M, opt.criterion="MSE", sclass="H")
+LPPHonest(voteshare ~ margin, data=leep, point=20, kern="uniform",
+          opt.criterion="MSE", sclass="H")
 

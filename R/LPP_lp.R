@@ -78,6 +78,8 @@ LPPHonest <- function(formula, data, subset, weights, point=0, M,
     mf <- eval(mf, parent.frame())
     mf$weights  <- mf$"(weights)"
     d <- LPPData(mf, point)
+    if (missing(M))
+        M <- NPR_MROT.fit(d)
 
     if (!missing(h)) {
         ret <- NPRHonest.fit(d, M, kern, h, alpha=alpha,
@@ -106,8 +108,8 @@ ROTBW.fit <- function(d, kern="triangular", order=1, boundary=NULL) {
     X <- d$X
 
     if(is.null(boundary))
-        boundary <- if ((min(X)>=0) | (max(X)<=0)) TRUE else FALSE
-    if((boundary==TRUE) & (order %% 2 ==0))
+        boundary <- if ((min(X)>=0) || (max(X)<=0)) TRUE else FALSE
+    if((boundary==TRUE) && (order %% 2 ==0))
         warning("ROT method for computing bandwidth requires either\n",
                 "order to be odd or else a boundary point")
     N <- length(d$X)

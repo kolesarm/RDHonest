@@ -90,6 +90,8 @@ RDHonest <- function(formula, data, subset, weights, cutoff=0, M,
     mf <- eval(mf, parent.frame())
     mf$weights  <- mf$"(weights)"
     d <- RDData(mf, cutoff)
+    if (missing(M))
+        M <- NPR_MROT.fit(d)
 
     if (kern=="optimal") {
         ret <- RDTOpt.fit(d, M, opt.criterion=opt.criterion, alpha=alpha,

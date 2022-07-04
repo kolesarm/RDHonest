@@ -5,8 +5,7 @@
 ## \eqn{\omega^{-1}(2b)^2/4=sum_{i} g(x_i)^2/sigma^2(x_i)},
 ## @param d Object of class \code{"RDData"}
 ## @param f Least favorable function of class \code{"RDLFFunction"}
-Q <- function(d, f)
-    sum(f$m(d$Xm)^2/d$sigma2m)+ sum(f$p(d$Xp)^2/d$sigma2p)
+Q <- function(d, f) sum(f$m(d$Xm)^2/d$sigma2m)+ sum(f$p(d$Xp)^2/d$sigma2p)
 
 
 ## Solution to inverse modulus problem in RD under Taylor(2) class
@@ -24,9 +23,9 @@ RDgbC <- function(d, b, C) {
     SY <- function(x, b, d, C) pmax(b+d*x-C*x^2, 0) + pmin(b+d*x+C*x^2, 0)
 
     ## Find d for SY function
-    dstar <- function(X, b, C, sigma2)
+    dstar <- function(X, b, C, sigma2) {
         FindZero(function(d) sum(SY(X, b, d, C)*X/sigma2))
-
+    }
     ## Find b_{-}
     eq <- function(bm) {
         dm <- dstar(d$Xm, bm,   C, d$sigma2m)
@@ -56,10 +55,10 @@ RDgbC <- function(d, b, C) {
 ## @param delta \eqn{\delta}
 ## @inheritParams RDgbC
 ## @return Object of class \code{"RDLFFunction"}
-RDLFFunction <- function(d, C, delta)
+RDLFFunction <- function(d, C, delta) {
     RDgbC(d, FindZero(function(b) 4*Q(d, RDgbC(d, b, C)) - delta^2,
                       negative=FALSE), C)
-
+}
 
 ## Compute optimal estimator based on solution to modulus problem, and CIs
 ## around it
@@ -122,7 +121,7 @@ RDTEstimator <- function(d, f, alpha=0.05, se.method="supplied.var", J=3) {
 RDTOpt.fit <- function(d, M, opt.criterion, alpha=0.05, beta=0.5,
                        se.method="supplied.var", J=3, se.initial="IKEHW") {
     ## First check if sigma2 is supplied
-    if (is.null(d$sigma2p) | is.null(d$sigma2m))
+    if (is.null(d$sigma2p) || is.null(d$sigma2m))
         d <- NPRPrelimVar.fit(d, se.initial)
 
     C <-  M/2
@@ -189,7 +188,7 @@ RDTEfficiencyBound <- function(d, M, opt.criterion="FLCI",
                                alpha=0.05, beta=0.5, se.initial="EHW") {
     C <- M/2
     ## First check if sigma2 is supplied
-    if (is.null(d$sigma2p) | is.null(d$sigma2m))
+    if (is.null(d$sigma2p) || is.null(d$sigma2m))
         d <- NPRPrelimVar.fit(d, se.initial)
 
     if (opt.criterion=="OCI") {
@@ -203,9 +202,9 @@ RDTEfficiencyBound <- function(d, M, opt.criterion="FLCI",
         ## two-class modulus omega{delta, F, 1}, or omega{delta, 1, F},
         ## depending on whether t > 0 or < 0.
         deltat <- function(t) sqrt(Q(d, RDgbC(d, t, C))) # delta_t
-        integrand <- function(t)
+        integrand <- function(t) {
             stats::pnorm(stats::qnorm(1-alpha)-vapply(t, deltat, numeric(1)))
-
+        }
         ## By symmetry, half-length is given by value of integral over R_+. The
         ## integrand equals 1-alpha at zero, need upper cutoff
         upper <- 10

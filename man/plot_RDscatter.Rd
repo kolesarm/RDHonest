@@ -5,17 +5,30 @@
 \title{Scatterplot of binned raw observations}
 \usage{
 plot_RDscatter(
-  d,
+  formula,
+  data,
+  subset,
+  cutoff = 0,
   avg = 10,
   xlab = NULL,
   ylab = NULL,
-  window = NULL,
   vert = TRUE,
   propdotsize = FALSE
 )
 }
 \arguments{
-\item{d}{Object of class \code{"RDdata"}}
+\item{formula}{object of class \code{"formula"} (or one that can be coerced
+to that  class) of the form \code{y ~ x}}
+
+\item{data}{optional data frame, list or environment (or object coercible by
+\code{as.data.frame} to a data frame) containing the outcome and running
+variables in the model. If not found in \code{data}, the variables are
+taken from \code{environment(formula)}, typically the environment from
+which the function is called.}
+
+\item{subset}{optional vector specifying a subset of observations to be used}
+
+\item{cutoff}{specifies the RD cutoff in the running variable.}
 
 \item{avg}{Number of observations to average over. If set to \code{Inf}, then
 take averages for each possible value of the running variable (convenient
@@ -23,21 +36,20 @@ when the running variable is discrete).}
 
 \item{xlab, ylab}{x- and y-axis labels}
 
-\item{window}{Width of a window around cutoff to which the graph should be
-restricted. If not specified, full data range will be plotted}
-
 \item{vert}{Draw a vertical line at cutoff?}
 
 \item{propdotsize}{If \code{TRUE}, then size of points is proportional to
 number of observations that the point averages over (useful when
 \code{avg=Inf}). Otherwise the size of points is constant.}
 }
+\value{
+A \code{"ggplot"} object.
+}
 \description{
 Scatterplot of raw observations in which each point corresponds to an binned
 average.
 }
 \examples{
-plot_RDscatter(RDData(lee08, cutoff=0), avg=20)
-plot_RDscatter(RDData(data.frame(y=log(cghs$earnings), x=cghs$yearat14),
-               cutoff=1947), avg=Inf, propdotsize=TRUE)
+plot_RDscatter(I(log(earnings))~yearat14, data=cghs, cutoff=1947,
+               avg=Inf, propdotsize=TRUE)
 }

@@ -53,12 +53,12 @@ test_that("IK bandwidth calculations", {
 test_that("Plots", {
     if (requireNamespace("ggplot2", quietly = TRUE)) {
         expect_silent(invisible(plot_RDscatter(
-            RDData(data.frame(y=log(cghs$earnings),
-                              x=cghs$yearat14),
-                   cutoff=1947), avg=Inf, propdotsize=TRUE)))
+            earnings~yearat14, data=cghs,
+                   cutoff=1947, avg=Inf, propdotsize=TRUE)))
         expect_silent(invisible(plot_RDscatter(
-            RDData(lee08, cutoff=0), avg=50, propdotsize=FALSE,
-            window=50, xlab="margin", ylab="effect")))
+            voteshare~margin, data=lee08, subset=abs(lee08$margin)<=50,
+            avg=50, propdotsize=FALSE,
+            xlab="margin", ylab="effect")))
         }
 })
 

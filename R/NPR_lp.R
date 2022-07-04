@@ -12,8 +12,8 @@ NPRHonest.fit <- function(d, M, kern="triangular", h, opt.criterion, alpha=0.05,
                           beta=0.8, se.method="nn", J=3, sclass="H", order=1,
                           se.initial="EHW", T0=0, T0bias=FALSE) {
     ## Initial se estimate
-    if (is.null(d$sigma2) & (is.null(d$sigma2p) | is.null(d$sigma2m)) &
-        ("supplied.var" %in% se.method | missing(h)))
+    if (is.null(d$sigma2) && (is.null(d$sigma2p) || is.null(d$sigma2m)) &&
+        ("supplied.var" %in% se.method || missing(h)))
         d <- NPRPrelimVar.fit(d, se.initial=se.initial)
 
     if (missing(h))
@@ -45,11 +45,11 @@ NPRHonest.fit <- function(d, M, kern="triangular", h, opt.criterion, alpha=0.05,
         lower <- -upper
     } else {
         sd <- r1$se[se.method]
-        if (T0bias==TRUE & inherits(d, "FRDData")) {
+        if (T0bias==TRUE && inherits(d, "FRDData")) {
             ## rescale bias and sd to make it free of r1$fs, use T0
             sd <- sd*abs(r1$fs)
             M <- unname((M[1]+M[2]*abs(T0)))
-        } else if (T0bias==FALSE & inherits(d, "FRDData")) {
+        } else if (T0bias==FALSE && inherits(d, "FRDData")) {
             M <- unname(M[1]+M[2]*abs(r1$estimate)) / abs(r1$fs)
         }
 
@@ -57,17 +57,17 @@ NPRHonest.fit <- function(d, M, kern="triangular", h, opt.criterion, alpha=0.05,
             bias <- Inf
         } else if (sclass=="T")  {
             bias <- M/2 * (sum(abs(wt*xx^2)))
-        } else if (sclass=="H" & order==1 & bd) {
+        } else if (sclass=="H" && order==1 && bd) {
             ## At boundary we know form of least favorable function
             bias <- -M/2 * (sum(wt*xx^2))
         } else {
             ## Else need to find numerically
             w2p <- function(s) abs(sum((wt*(xx-s))[xx>=s]))
             w2m <- function(s) abs(sum((wt*(s-xx))[xx<=s]))
-            bp <- stats::integrate(function(s)
-                vapply(s, w2p, numeric(1)), 0, h)$value
-            bm <- stats::integrate(function(s)
-                vapply(s, w2m, numeric(1)), -h, 0)$value
+            bp <- stats::integrate(function(s) vapply(s, w2p, numeric(1)), 0,
+                                   h)$value
+            bm <- stats::integrate(function(s) vapply(s, w2m, numeric(1)), -h,
+                                   0)$value
             bias <- M*(bp+bm)
         }
         lower <- r1$estimate - bias - stats::qnorm(1-alpha)*sd
@@ -93,7 +93,7 @@ NPROptBW.fit <- function(d, M, kern="triangular", opt.criterion, alpha=0.05,
                          T0=0) {
 
     ## First check if sigma2 is supplied
-    if (is.null(d$sigma2) & (is.null(d$sigma2p) | is.null(d$sigma2m)))
+    if (is.null(d$sigma2) && (is.null(d$sigma2p) || is.null(d$sigma2m)))
         d <- NPRPrelimVar.fit(d, se.initial=se.initial)
 
     ## Objective function for optimizing bandwidth

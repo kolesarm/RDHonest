@@ -1,7 +1,7 @@
 #' Equivalent kernel for local linear regression.
 #'
 #' Calculates equivalent kernel for local polynomial regression.
-#' @param kernel kernel type. Can be a function supported on \eqn{[0, 1]}
+#' @param kernel Kernel type. Can be a function supported on \eqn{[0, 1]}
 #'     (boundary kernel) or \eqn{[-1, 1]} (interior kernel), or else one of
 #'     \code{"triangular"} (\eqn{k(u)=(1-|u|)_{+}}), \code{"epanechnikov"}
 #'     (\eqn{k(u)=(3/4)(1-u^2)_{+}}), or \code{"uniform"} (\eqn{k(u)=
@@ -81,17 +81,17 @@ KernMoment <- function(K, moment = 0, boundary = TRUE, type = "raw") {
 KernM <- function(K, order = 2, boundary = boundary) {
     M <- outer(0:order, 0:order, "+")
 
-    matrix(vapply(M, function(j)
-        KernMoment(K, moment = j, boundary = boundary), numeric(1)),
-           nrow = (order + 1))
+    matrix(vapply(M, function(j) KernMoment(K, moment = j, boundary),
+                  numeric(1)),
+           nrow = order + 1)
 }
 
 ## Compute Equivalent kernel numerically
-## @inheritParams EqKern
-## @param K original kernel
 EqKernN <- function(K, boundary = TRUE, order = 0) {
     s <- drop(solve(KernM(K, order = order, boundary = boundary))[1, ])
 
-    function(u)
-        Reduce("+", lapply(seq_along(s), function(j) s[j] * u^(j - 1))) * K(u)
+    function(u) {
+        Reduce("+", lapply(seq_along(s),
+                           function(j) s[j] * u^(j - 1))) * K(u)
+    }
 }

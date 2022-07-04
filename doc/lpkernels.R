@@ -2,7 +2,7 @@
 library("RDHonest")
 EqKern("uniform", boundary = TRUE, order = 2)(0.5)
 # Equivalent call
-EqKern(function(u) u <= 1, boundary = TRUE, order = 2 )(0.5)
+EqKern(function(u) u <= 1, boundary = TRUE, order = 2)(0.5)
 
 ## -----------------------------------------------------------------------------
 ## mu_1, should be 0
