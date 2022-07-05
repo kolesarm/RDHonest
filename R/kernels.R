@@ -62,7 +62,7 @@ EqKern <- function(kernel = "uniform", boundary = TRUE, order = 0) {
 #'     k(u)}, and "raw2" computes \eqn{\int_X u^j k(u)^2}{integral_X u^j
 #'     k(u)^2}.
 #' @inheritParams EqKern
-#' @return Integral value (a scalar).
+#' @return A scalar numeric value of the moment.
 #' @examples
 #' KernMoment(function(u) abs(u) < 1, moment = 3, boundary = FALSE)
 #' KernMoment(EqKern(kernel = "triangular", order = 2), moment = 3)

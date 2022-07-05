@@ -86,11 +86,6 @@ the vector can consist of the following methods:
     \item{"EHW"}{Eicker-Huber-White, with residuals from local regression
     (local polynomial estimators only).}
 
-    \item{"demeaned"}{Like EHW, but instead of using the regression
-        residuals, estimate \eqn{\sigma^2_i}{sigma^2_i} by subtracting the
-        estimated intercept from the outcome (and not subtracting the
-        estimated slope). Local polynomial estimators only.}
-
    \item{"supplied.var"}{Use conditional variance supplied by \code{sigma2} or
         \code{d} instead of computing residuals}
 
@@ -125,18 +120,10 @@ intervals; otherwise ignored.}
             fuzzy and sharp RD). For fuzzy RD, the IK bandwidth is based on
             the reduced-form regression.}
 
-\item{"demeaned"}{Like EHW, but instead of using the regression residuals,
-            estimate \eqn{\sigma^2_i}{sigma^2_i} by subtracting the estimated
-            intercept from the outcome (and not subtracting the estimated
-            slope). }
-
 \item{"Silverman"}{Use residuals from local constant regression with uniform
 kernel and bandwidth selected using Silverman's rule of thumb, as in Equation
 (14) in Imbens and Kalyanaraman (2012)}
-\item{"SilvermanNN"}{Use Silverman's rule of thumb to pick the bandwidth, but
-use nearest neighbor estimates, rather than the residuals.}
 
-\item{"nn"}{Use nearest neighbor estimates, without assuming homoskedasticity}
 }}
 }
 \value{

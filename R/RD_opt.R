@@ -87,16 +87,14 @@ RDTEstimator <- function(d, f, alpha=0.05, se.method="supplied.var", J=3) {
     b <- f$m(0)+f$p(0)
 
     ## standard deviation
-    sd <- c(NA, NA, NA, NA)
-    names(sd) <- c("supplied.var", "nn", "EHW", "demeaned")
+    sd <- c(NA, NA, NA)
+    names(sd) <- c("supplied.var", "nn", "EHW")
     sdL <- function(s2p, s2m) sqrt(sum(Wp^2 * s2p) + sum(Wm^2 * s2m))
 
     if ("supplied.var" %in% se.method)
         sd[1] <- sdL(d$sigma2p, d$sigma2m)
     if ("nn" %in% se.method)
         sd[2] <- sdL(sigmaNN(d$Xp, d$Yp, J=J), sigmaNN(d$Xm, d$Ym, J=J))
-    if ("demeaned" %in% se.method)
-        sd[4] <- sdL((d$Yp - sum(Wp*d$Yp))^2, (d$Ym - sum(Wm*d$Ym))^2)
     sd <- sd[se.method]
     maxbias <- b - q/den                # b-q/den
     lower <- Lhat - maxbias - stats::qnorm(1-alpha)*sd

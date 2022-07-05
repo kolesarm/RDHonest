@@ -154,9 +154,10 @@
 #' @source Computed analytically using symbolic math software
 #' @references{
 #'
-#' \cite{Fan , J., and I. Gijbels (1996): Local Polynomial Modelling and Its
-#' Applications, Monographs on Statistics and Applied Probability. Chapman &
-#' Hall/CRC, New York, NY.}
+#' \cite{Jianqing Fan and Irène Gijbels. Local Polynomial Modelling and Its
+#'       Applications. Number 66 in Monographs on Statistics and Applied
+#'       Probability. Chapman & Hall/CRC, New York, NY, 1996.
+#'       \doi{10.1201/9780203748725}}
 #'
 #' }
 "kernC"

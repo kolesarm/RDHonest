@@ -45,9 +45,9 @@ test_that("IK bandwidth calculations", {
 
     r <- NPRreg.fit(d, h=IKBW.fit(d, kern="uniform"), kern="uniform")
     expect_equal(r$estimate, 8.0770003749)
-    d <- NPRPrelimVar.fit(RDData(lee08, cutoff=0), se.initial="demeaned")
-    expect_equal(sqrt(mean(d$sigma2p)), 14.5030086128)
-    expect_equal(sqrt(mean(d$sigma2m)), 12.4627517531)
+    d <- NPRPrelimVar.fit(RDData(lee08, cutoff=0), se.initial="EHW")
+    expect_equal(sqrt(mean(d$sigma2p)), 12.58183131)
+    expect_equal(sqrt(mean(d$sigma2m)), 10.79067278)
 })
 
 test_that("Plots", {
@@ -65,7 +65,7 @@ test_that("Plots", {
 
 test_that("Honest inference in Lee and LM data",  {
 
-    ## Replicate 1606.01200v2
+    ## Replicate 1606.01200v2, except we no longer provide SilvermanNN
     r <- RDHonest(mortHS ~ povrate60, data=headst,
                   kern="uniform", h=18, M=0.1, se.method=c("EHW", "nn"))
     r0 <- capture.output(print(r, digits=4))
@@ -78,12 +78,12 @@ test_that("Honest inference in Lee and LM data",  {
     es <- function(kern, se.method) {
         NPRHonest.fit(d, M=0.0076085544, kern=kern, sclass="H",
                       se.method=se.method, J=3, alpha=0.05, opt.criterion="MSE",
-                      se.initial="SilvermanNN")
+                      se.initial="Silverman")
     }
     ff <- function(h, kern, se.method) {
         NPRHonest.fit(d, M=0.0076085544, kern=kern, sclass="H",
                       se.method=se.method, J=3, alpha=0.05, h=h,
-                      se.initial="SilvermanNN")
+                      se.initial="Silverman")
     }
 
     ## In this case the objective is not unimodal, but the modification still
@@ -93,32 +93,36 @@ test_that("Honest inference in Lee and LM data",  {
     ## Old algorithm
     ## expect_equal(unname(r$lower), -2.716800146662)
     ## expect_equal(unname(r1$estimate-r1$hl), -2.7294671445)
-    ## New algorithm
-    expect_equal(unname(r$lower), -2.6908821020)
-    expect_equal(unname(r$h), 17.5696563721)
-    expect_equal(unname(r1$estimate-r1$hl), -2.7106778586)
+    ## Using SilvermanNN
+    ## expect_equal(unname(r$lower), -2.6908821020)
+    ## expect_equal(unname(r$h), 17.5696563721)
+    ## expect_equal(unname(r1$estimate-r1$hl), -2.7106778586)
+    expect_equal(unname(r$lower), -2.60568291)
+    expect_equal(unname(r$h), 17.46128082)
+    expect_equal(unname(r1$estimate-r1$hl), -2.701699411)
 
     ## Just a sanity check
     expect_equal(r$maxbias, ff(r$h, "uniform", "supplied.var")$maxbias)
 
     r <- es("triangular", "nn")
-    expect_lt(abs(r$h- 22.80882408), 5e-7)
-    expect_lt(unname(r$estimate+r$hl- 0.05476609), 1e-7)
+    expect_lt(abs(r$h- 22.21108064), 5e-7)
+    expect_lt(unname(r$estimate+r$hl- 0.04129612), 1e-7)
     ## End replication
 
-    ## Replicate 1511.06028v2
+    ## Replicate 1511.06028v2, except we not longer allow se.initial=demeaned
     r <- RDHonest(voteshare ~ margin, data=lee08, kern="optimal",
                   M=0.2, opt.criterion="MSE", se.method="supplied.var",
-                  se.initial="demeaned")
-    expect_equal(unname(r$lower), 2.2838100315)
+                  se.initial="EHW")
+    ## expect_equal(unname(r$lower), 2.2838100315)
+    expect_equal(unname(r$lower), 2.983141711)
     r <- RDHonest(voteshare ~ margin, data=lee08, kern="optimal",
              M=0.04, opt.criterion="OCI", se.method="supplied.var",
-             se.initial="demeaned", beta=0.8)
-    expect_equal(r$lower, c("supplied.var"=2.2802786871))
+             se.initial="EHW", beta=0.8)
+    expect_equal(r$lower, c("supplied.var"=2.761343298))
     r <- RDHonest(voteshare ~ margin, data=lee08, kern="optimal",
                   M=0.04, opt.criterion="FLCI", se.method="supplied.var",
-                  se.initial="demeaned")
-    expect_equal(r$estimate-r$hl, c("supplied.var"=2.3786060461))
+                  se.initial="EHW")
+    expect_equal(r$estimate-r$hl, c("supplied.var"=2.664608675))
 
     ## We no longer allow different bw below and above cutoff
     ## r <- RDHonest(voteshare ~ margin, data=lee08, kern="triangular",
@@ -156,16 +160,16 @@ test_that("Honest inference in Lee and LM data",  {
     ## Decrease M, these results are not true minima...
     r1 <- RDHonest(voteshare ~ margin, data = lee08, kern = "uniform",
                  M = 0.01, opt.criterion = "MSE", sclass = "T",
-                 se.initial="SilvermanNN")
+                 se.initial="Silverman")
     r2 <- RDHonest(voteshare ~ margin, data = lee08, kern = "uniform",
                   M = 0.01, opt.criterion = "MSE", sclass = "H",
-                  se.initial="SilvermanNN")
+                  se.initial="Silverman")
     r3 <- NPROptBW.fit(RDData(lee08, cutoff=0), kern = "uniform", M = 0.1,
                        opt.criterion = "MSE", sclass = "T",
                        se.initial="Silverman")
-    expect_equal(unname(r1$h), 12.6576125622)
-    expect_equal(unname(r2$lower), 6.0484981004)
-    expect_equal(unname(r3$h), 5.0866454840)
+    expect_equal(unname(r1$h), 12.85186708)
+    expect_equal(unname(r2$lower), 6.056860266)
+    expect_equal(unname(r3$h), 5.086645484)
 })
 
 test_that("BME CIs match paper", {

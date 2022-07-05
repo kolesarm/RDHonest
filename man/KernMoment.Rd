@@ -19,7 +19,7 @@ k(u)}, and "raw2" computes \eqn{\int_X u^j k(u)^2}{integral_X u^j
 k(u)^2}.}
 }
 \value{
-Integral value (a scalar).
+A scalar numeric value of the moment.
 }
 \description{
 Computes moments of a kernel over \eqn{X=[0, 1]} (boundary case), or

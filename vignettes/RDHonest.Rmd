@@ -430,9 +430,10 @@ RDHonest(y~x, cutoff=1947, weights=weights, h=5, data=dd, M=0.1,
 Note the variance estimates don't quite match, since the variance estimator is
 different, but the worst-case bias and the point estimate are identical.
 
-# Pre-estimation
+# Initial bandwidth estimation
 
-We use @FaGi96 rule of thumb and @ImKa12 bandwidth selectors for preliminary variance estimation.
+We use @FaGi96 rule of thumb and @ImKa12 bandwidth selectors for preliminary
+variance estimation.
 
 
 # Fuzzy RD

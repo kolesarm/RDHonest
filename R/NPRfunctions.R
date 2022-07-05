@@ -61,8 +61,8 @@ LPReg <- function(X, Y, h, K, order=1, se.method=NULL, sigma2, J=3,
     hsigma2 <- sig(Y - R %*% beta)
 
     ## Robust variance-based formulae
-    v <- matrix(nrow=NCOL(hsigma2), ncol=4)
-    colnames(v) <- c("supplied.var", "nn", "EHW", "demeaned")
+    v <- matrix(nrow=NCOL(hsigma2), ncol=3)
+    colnames(v) <- c("supplied.var", "nn", "EHW")
     EHW <- function(sigma2) {
         if (NCOL(sigma2)==1)
             sum(w^2 * sigma2)
@@ -71,11 +71,6 @@ LPReg <- function(X, Y, h, K, order=1, se.method=NULL, sigma2, J=3,
     }
     if("EHW" %in% se.method) v[, 3] <- EHW(hsigma2)
     if("supplied.var" %in% se.method) v[, 1] <- EHW(sigma2)
-    if("demeaned" %in% se.method) {
-        ## Only intercept, return this hsigma2
-        hsigma2 <- sig(Y - outer(rep(1, length(X)), beta[1, ]))
-        v[, 4] <- EHW(hsigma2)
-    }
     if("nn" %in% se.method) {
         hsigma2 <- sigmaNN(X, Y, J=J, weights)
         v[, 2] <- EHW(hsigma2)
@@ -109,9 +104,9 @@ LPReg <- function(X, Y, h, K, order=1, se.method=NULL, sigma2, J=3,
 ##     \item{sigma2}{Estimate of \eqn{\sigma^2(X)}{sigma^2(X)} for values of
 ##             \eqn{X} receiving positive kernel weight. By default, estimates
 ##             are based on squared regression residuals, as used in
-##             \code{"EHW"}. If \code{se.method="demeaned"} or
-##             \code{se.method="nn"} is specified, estimates are based on that
-##             method, with \code{"nn"} method used if both are specified.}
+##             \code{"EHW"}. If \code{se.method="nn"} is specified, estimates
+##             are based on that method, with \code{"nn"} method used if both
+##             are specified.}
 ##
 ##      \item{eff.obs}{Number of effective observations}
 ##
@@ -175,29 +170,15 @@ NPRreg.fit <- function(d, h, kern="triangular", order=1, se.method="nn",
     ret
 }
 
-## Compute preliminary estimate of variance
+## Compute preliminary estimate of variance: nn, EHW, Silverman
 ##
 ## Compute estimate of variance, which can then be used in optimal bandwidth
-## calculations. Except for \code{se.initial="nn"}, these estimates are
-## unweighted.
-##
-## @param d object of class \code{"RDData"}, \code{"FRDData"}, or
-##     \code{"LPPData"}
-## @template RDseInitial
+## calculations. These estimates are unweighted.
 NPRPrelimVar.fit <- function(d, se.initial="EHW") {
-    if (se.initial == "nn") {
-        if (inherits(d, "LPPData")) {
-            d$sigma2 <- sigmaNN(d$X, d$Y, J=3, d$w)
-        } else {
-            d$sigma2p <- sigmaNN(d$Xp, d$Yp, J=3, d$wp)
-            d$sigma2m <- sigmaNN(d$Xm, d$Ym, J=3, d$wm)
-        }
-        return(d)
-    }
     ## Pilot bandwidth: either IK/ROT, or else Silverman for uniform kernel,
     ## making sure this results in enough distinct values on either side of
     ## threshold
-    if (se.initial == "EHW" || se.initial == "demeaned") {
+    if (se.initial == "EHW") {
         drf <- d
         ## Use reduced form for FRD
         if (inherits(d, "FRDData")) {
@@ -211,7 +192,7 @@ NPRPrelimVar.fit <- function(d, se.initial="EHW") {
             h1 <- Inf
         }
         r1 <- NPRreg.fit(d, h1, se.method=se.initial)
-    } else if (se.initial == "Silverman" || se.initial == "SilvermanNN") {
+    } else if (se.initial == "Silverman") {
         X <- if (inherits(d, "LPPData")) d$X else c(d$Xm, d$Xp)
         Xmin <- if (inherits(d, "LPPData")) {
                     sort(abs(unique(d$X)))[2]
@@ -219,21 +200,15 @@ NPRPrelimVar.fit <- function(d, se.initial="EHW") {
                     max(sort(unique(d$Xp))[2], sort(abs(unique(d$Xm)))[2])
                 }
         h1 <- max(1.84*stats::sd(X)/sum(length(X))^(1/5), Xmin)
-        if (se.initial=="Silverman") {
-            r1 <- NPRreg.fit(d=d, h=h1, kern="uniform", order=0,
-                             se.method="EHW")
-            ## Variance adjustment for backward compatibility
-            if (inherits(d, "LPPData")) {
-                r1$sigma2 <- r1$sigma2*length(r1$sigma2) / (length(r1$sigma2)-1)
-            } else {
-                r1$sigma2p <- r1$sigma2p*length(r1$sigma2p) /
-                    (length(r1$sigma2p)-1)
-                r1$sigma2m <- r1$sigma2m*length(r1$sigma2m) /
-                    (length(r1$sigma2m)-1)
-            }
+        r1 <- NPRreg.fit(d=d, h=h1, kern="uniform", order=0, se.method="EHW")
+        ## Variance adjustment for backward compatibility
+        if (inherits(d, "LPPData")) {
+            r1$sigma2 <- r1$sigma2*length(r1$sigma2) / (length(r1$sigma2)-1)
         } else {
-            ## order doesn't matter for nn method
-            r1 <- NPRreg.fit(d=d, h=h1, kern="uniform", order=1, se.method="nn")
+            r1$sigma2p <- r1$sigma2p*length(r1$sigma2p) /
+                (length(r1$sigma2p)-1)
+            r1$sigma2m <- r1$sigma2m*length(r1$sigma2m) /
+                (length(r1$sigma2m)-1)
         }
     } else {
         stop("Unknown method for estimating initial variance")
