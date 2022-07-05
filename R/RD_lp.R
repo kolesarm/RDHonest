@@ -115,7 +115,6 @@ RDHonest <- function(formula, data, subset, weights, cutoff=0, M,
 ## Imbens and Kalyanaraman bandwidth. Only used by NPRPrelimVar.fit
 ##
 ##  Reproduce bandwidth from Section 6.2 in Imbens and Kalyanaraman (2012)
-## IKBW.fit(RDData(lee08, cutoff=0))
 IKBW.fit <- function(d, kern="triangular", order=1, verbose=FALSE) {
     if (order!=1)
         stop("Only works for local linear regression.")

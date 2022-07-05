@@ -181,12 +181,16 @@ test_that("BME CIs match paper", {
 
     r1 <- RDHonestBME(log(earnings)~yearat14, cghs, cutoff=1947,
                       regformula="y~I(x>=0)+x+I(x^2)+I(x^3)+I(x^4)")
-    expect_equal(r1$CI, c(-0.23749230603, 0.34429708773))
+    ## expect_equal(r1$CI, c(-0.23749230603, 0.34429708773))
+    ## Slightly different numbers with bug fixed
+    expect_equal(r1$CI, c(-0.24733863, 0.35480036))
     r3 <- RDHonestBME(log(cghs$earnings)~yearat14, data=cghs, h=3,
                       cutoff=1947, order=0, regformula="y~I(x>=0)")
     r4 <- RDHonestBME(log(cghs$earnings)~yearat14, data=cghs, h=3, order=0,
                       cutoff=1947)
     expect_equal(r3$CI, r4$CI)
+
+
 })
 
 test_that("Optimizing bw", {

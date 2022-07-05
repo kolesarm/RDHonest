@@ -2,8 +2,7 @@
 % Please edit documentation in R/RD_bme.R
 \name{RDHonestBME}
 \alias{RDHonestBME}
-\title{CIs in sharp RD with discrete regressors under bounded misspecification error
-class}
+\title{Honest CIs in sharp RD with discrete regressors under BME function class}
 \usage{
 RDHonestBME(
   formula,
@@ -56,9 +55,11 @@ the outcome and the running variable, and cutoff is normalized to
 \code{order+2}th element of the design matrix}
 }
 \description{
-Computes honest CIs for local linear regression with uniform kernel under the
-bounded misspecification error class of functions, as considered in Kolesár
-and Rothe (2018)
+Computes honest CIs for local polynomial regression with uniform kernel under
+the assumption that the conditional mean liest in the bounded
+misspecification error (BME) class of functions, as considered in Kolesár and
+Rothe (2018). Heuristically, this class imposes that the fit of the chosen
+model is no worse at the cutoff than elsewhere in the estimation window.
 }
 \details{
 The parameter \code{weights} is ignored, it is only included to keep a
@@ -80,9 +81,10 @@ RDHonestBME(log(cghs$earnings)~yearat14, data=cghs, h=3,
 \references{
 {
 
-\cite{Kolesár, Michal, and Christoph Rothe. 2018. "Inference in Regression
-Discontinuity Designs with a Discrete Running Variable." American Economic
-Review 108 (8): 2277–2304.}
+\cite{Michal Kolesár and Christoph Rothe. Inference in regression
+      discontinuity designs with a discrete running variable. American
+      Economic Review, 108(8):2277—-2304, August 2018.
+      \doi{10.1257/aer.20160945.}}
 
 }
 }
