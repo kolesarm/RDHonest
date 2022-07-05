@@ -17,8 +17,7 @@ A data frame with 30,006 rows and 6 variables:
 }
 }
 \source{
-American Economic Review data archive,
-\doi{10.1257/aer.99.5.2209}
+American Economic Review data archive, \doi{10.1257/aer.99.5.2209}
 }
 \usage{
 rcp
@@ -29,10 +28,12 @@ puzzle dataset
 }
 \references{
 {
-\cite{Battistin, Erich, Agar Brugiavini, Enrico Rettore, and
-    Guglielmo Weber. 2009. “The Retirement Consumption Puzzle: Evidence from
-    a Regression Discontinuity Approach.” American Economic Review 99 (5):
-    2209–26.}
+
+\cite{Erich Battistin, Agar Brugiavini, Enrico Rettore, and Guglielmo Weber.
+     The retirement consumption puzzle: Evidence from a regression
+     discontinuity approach. American Economic Review, 99(5):2209–2226, 2009.
+     \doi{10.1257/aer.99.5.2209}}
+
 }
 }
 \keyword{datasets}

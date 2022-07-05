@@ -27,10 +27,9 @@ program
 \references{
 {
 
-\cite{Lalive, R. (2008):
-      "How Do Extended Benefits Affect Unemployment Duration?
-       A Regression Discontinuity Approach."
-      Journal of Econometrics, 142 (2): 785-806.}
+\cite{Rafael Lalive. How do extended benefits affect unemployment duration? A
+      regression discontinuity approach. Journal of Econometrics,
+      142(2):785–806, February 2008. \doi{10.1016/j.jeconom.2007.05.013}}
 
 }
 }

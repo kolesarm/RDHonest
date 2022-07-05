@@ -24,10 +24,9 @@ Lee (2008) US House elections dataset
 \references{
 {
 
-\cite{Lee , D. S. (2008):
-      "Randomized experiments from non-random selection in U.S.
-       House elections,"
-      Journal of Econometrics, 142 (2), 675-697.}
+\cite{David S. Lee. Randomized experiments from non-random selection in U.S.
+      House elections. Journal of Econometrics, 142(2):675–697, 2008.
+      \doi{10.1016/j.jeconom.2007.05.004}}
 
 }
 }

@@ -27,13 +27,14 @@
 #' \item{statepc}{State postal code}
 #' \item{county}{County name}
 #' }
-#' @source Douglas Miller's website,
-#' \url{http://faculty.econ.ucdavis.edu/faculty/dlmiller/statafiles/}
+#' @source Douglas Miller's former website,
+#' \url{http://web.archive.org/web/20190619165949/http://faculty.econ.ucdavis.edu:80/faculty/dlmiller/statafiles/}
 #' @references{
 #'
-#' \cite{Ludwig , J., and D. L. Miller (2007): "Does Head Start improve
-#'       children's life chances? Evidence from a regression discontinuity
-#'       design," Quarterly Journal of Economics, 122 (1), 159-208.}
+#' \cite{Jens Ludwig and Douglas L. Miller. Does head start improve children's
+#'       life chances? Evidence from a regression discontinuity design.
+#'       Quarterly Journal of Economics, 122(1):159–208, February 2007.
+#'       \doi{10.1162/qjec.122.1.159}}
 #'
 #' }
 "headst"
@@ -53,10 +54,9 @@
 #'  }
 #' @references{
 #'
-#' \cite{Lalive, R. (2008):
-#'       "How Do Extended Benefits Affect Unemployment Duration?
-#'        A Regression Discontinuity Approach."
-#'       Journal of Econometrics, 142 (2): 785-806.}
+#' \cite{Rafael Lalive. How do extended benefits affect unemployment duration? A
+#'       regression discontinuity approach. Journal of Econometrics,
+#'       142(2):785–806, February 2008. \doi{10.1016/j.jeconom.2007.05.013}}
 #'
 #' }
 #' @source Rafael Lalive's website,
@@ -75,10 +75,9 @@
 #' \url{https://economics.mit.edu/faculty/angrist/data1/mhe}
 #' @references{
 #'
-#' \cite{Lee , D. S. (2008):
-#'       "Randomized experiments from non-random selection in U.S.
-#'        House elections,"
-#'       Journal of Econometrics, 142 (2), 675-697.}
+#' \cite{David S. Lee. Randomized experiments from non-random selection in U.S.
+#'       House elections. Journal of Econometrics, 142(2):675–697, 2008.
+#'       \doi{10.1016/j.jeconom.2007.05.004}}
 #'
 #' }
 "lee08"
@@ -92,9 +91,10 @@
 #'  }
 #' @references{
 #'
-#' \cite{Oreopoulos, P. (2006): "Estimating Average and Local Average Treatment
-#'       Effects When Compulsory Education Schooling Laws Really Matter",
-#'       American Economic Review, 96 (1), 152-175}
+#' \cite{Philip Oreopoulos. Estimating average and local average treatment
+#'       effects when compulsory education schooling laws really matter.
+#'       American Economic Review, 96(1):152–175, 2006.
+#'       \doi{10.1257/000282806776157641}}
 #'
 #' }
 #' @source American Economic Review data archive,
@@ -115,13 +115,14 @@
 #' }
 #'
 #' @references{
-#' \cite{Battistin, Erich, Agar Brugiavini, Enrico Rettore, and
-#'     Guglielmo Weber. 2009. “The Retirement Consumption Puzzle: Evidence from
-#'     a Regression Discontinuity Approach.” American Economic Review 99 (5):
-#'     2209–26.}
+#'
+#' \cite{Erich Battistin, Agar Brugiavini, Enrico Rettore, and Guglielmo Weber.
+#'      The retirement consumption puzzle: Evidence from a regression
+#'      discontinuity approach. American Economic Review, 99(5):2209–2226, 2009.
+#'      \doi{10.1257/aer.99.5.2209}}
+#'
 #' }
-#' @source American Economic Review data archive,
-#' \doi{10.1257/aer.99.5.2209}
+#' @source American Economic Review data archive, \doi{10.1257/aer.99.5.2209}
 "rcp"
 
 #' Constants for common kernels.

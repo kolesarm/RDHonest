@@ -8,8 +8,8 @@ knitr::opts_chunk$set(tidy = TRUE, collapse=TRUE, comment = "#>",
 library("RDHonest")
 
 ## ---- fig.width=4.5, fig.height=3.5, fig.cap="Lee (2008) data"----------------
-## plot 25-bin averages in for observations 50 at most points away from the cutoff.
-## See Figure 1
+## plot 25-bin averages in for observations 50 at most points
+## away from the cutoff. See Figure 1.
 plot_RDscatter(voteshare~margin, data=lee08, subset=abs(lee08$margin)<=50,
             avg=50, propdotsize=FALSE,
             xlab="Margin of victory",
@@ -31,8 +31,8 @@ CVb(1/2, alpha=0.05)
 CVb(0:5, alpha=0.1)
 
 ## -----------------------------------------------------------------------------
-RDHonest(voteshare ~ margin, data=lee08, kern="uniform", M=0.1, h=10, sclass="T")
-RDHonest(voteshare ~ margin, data=lee08, kern="uniform", M=0.1, h=10, sclass="H")
+RDHonest(voteshare~margin, data=lee08, kern="uniform", M=0.1, h=10, sclass="T")
+RDHonest(voteshare~margin, data=lee08, kern="uniform", M=0.1, h=10, sclass="H")
 
 ## -----------------------------------------------------------------------------
 RDHonest(voteshare ~ margin, data=lee08, kern="triangular",
@@ -57,7 +57,8 @@ RDHonestBME(log(earnings) ~ yearat14, cutoff=1947,
 
 ## -----------------------------------------------------------------------------
 ## Data-driven choice of M
-RDHonest(voteshare ~ margin, data=lee08, kern="uniform", sclass="H", opt.criterion="MSE")
+RDHonest(voteshare ~ margin, data=lee08, kern="uniform", sclass="H",
+         opt.criterion="MSE")
 
 ## -----------------------------------------------------------------------------
 2*RDHonest(voteshare ~ margin, data=lee08, kern="optimal", M=0.1,
@@ -95,8 +96,10 @@ for (j in unique(d$cell)){
 }
 
 ## -----------------------------------------------------------------------------
-RDHonest(log(earnings)~yearat14, cutoff=1947, h=5, data=cghs, M=0.1, se.method=c("EHW", "nn"))
-RDHonest(y~x, cutoff=1947, weights=weights, h=5, data=dd, M=0.1, se.method=c("EHW", "nn"))
+RDHonest(log(earnings)~yearat14, cutoff=1947, h=5, data=cghs, M=0.1,
+         se.method=c("EHW", "nn"))
+RDHonest(y~x, cutoff=1947, weights=weights, h=5, data=dd, M=0.1,
+         se.method=c("EHW", "nn"))
 
 ## -----------------------------------------------------------------------------
 ## Assumes first column in the data frame corresponds to outcome,
@@ -106,9 +109,11 @@ RDHonest(y~x, cutoff=1947, weights=weights, h=5, data=dd, M=0.1, se.method=c("EH
 
 ## -----------------------------------------------------------------------------
 ## Initial estimate of treatment effect for optimal bandwidth calculations
-r <- FRDHonest(log(cn) ~ retired | elig_year, data=rcp, kern="triangular", M=c(0.001, 0.002), opt.criterion="MSE", sclass="H", T0=0)
+r <- FRDHonest(log(cn) ~ retired | elig_year, data=rcp, kern="triangular",
+               M=c(0.001, 0.002), opt.criterion="MSE", sclass="H", T0=0)
 ## Use it to compute optimal bandwidth
-FRDHonest(log(cn) ~ retired | elig_year, data=rcp, kern="triangular", M=c(0.001, 0.002), opt.criterion="MSE", sclass="H", T0=r$estimate)
+FRDHonest(log(cn) ~ retired | elig_year, data=rcp, kern="triangular",
+          M=c(0.001, 0.002), opt.criterion="MSE", sclass="H", T0=r$estimate)
 
 ## -----------------------------------------------------------------------------
 ## Data-driven choice of M
@@ -116,7 +121,8 @@ FRDHonest(log(cn) ~ retired | elig_year, data=rcp, kern="triangular",
           opt.criterion="MSE", sclass="H", T0=r$estimate)
 
 ## -----------------------------------------------------------------------------
-## Transform data, specify we're interested in inference at x0=20, and drop observations below cutoff
+## Transform data, specify we're interested in inference at x0=20,
+## and drop observations below cutoff
 leep <- lee08[lee08$margin>0, ]
 ## Data-driven choice of M
 LPPHonest(voteshare ~ margin, data=leep, point=20, kern="uniform",

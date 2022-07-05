@@ -1,8 +1,8 @@
 ---
 output:
   pdf_document:
-    citation_package: natbib
     latex_engine: pdflatex
+    citation_package: natbib
     template: mk_Rpackage_template.tex
     toc: true
     toc_depth: 2
@@ -77,8 +77,8 @@ some noise, the function plots averages over `avg` number of observations. The
 function takes an `RDData` object as an argument
 
 ```{r, fig.width=4.5, fig.height=3.5, fig.cap="Lee (2008) data"}
-## plot 25-bin averages in for observations 50 at most points away from the cutoff.
-## See Figure 1
+## plot 25-bin averages in for observations 50 at most points
+## away from the cutoff. See Figure 1.
 plot_RDscatter(voteshare~margin, data=lee08, subset=abs(lee08$margin)<=50,
             avg=50, propdotsize=FALSE,
             xlab="Margin of victory",
@@ -196,8 +196,8 @@ when the parameter space is given by a Taylor and Hölder smoothness class,
 respectively, with $M=0.1$:
 
 ```{r}
-RDHonest(voteshare ~ margin, data=lee08, kern="uniform", M=0.1, h=10, sclass="T")
-RDHonest(voteshare ~ margin, data=lee08, kern="uniform", M=0.1, h=10, sclass="H")
+RDHonest(voteshare~margin, data=lee08, kern="uniform", M=0.1, h=10, sclass="T")
+RDHonest(voteshare~margin, data=lee08, kern="uniform", M=0.1, h=10, sclass="H")
 ```
 
 The confidence intervals use the nearest-neighbor method to estimate the
@@ -352,7 +352,8 @@ considered in Section 3.4.1 in @ArKo16honest based on a global polynomial
 approximation:
 ```{r}
 ## Data-driven choice of M
-RDHonest(voteshare ~ margin, data=lee08, kern="uniform", sclass="H", opt.criterion="MSE")
+RDHonest(voteshare ~ margin, data=lee08, kern="uniform", sclass="H",
+         opt.criterion="MSE")
 ```
 See @ArKo16honest for a discussion of the restrictions on the
 parameter space under which this method yields honest inference.
@@ -420,12 +421,19 @@ over. In this case, if we weight the observations using `weights`, we can
 recover the original estimates (and the same worst-case bias):
 
 ```{r}
-RDHonest(log(earnings)~yearat14, cutoff=1947, h=5, data=cghs, M=0.1, se.method=c("EHW", "nn"))
-RDHonest(y~x, cutoff=1947, weights=weights, h=5, data=dd, M=0.1, se.method=c("EHW", "nn"))
+RDHonest(log(earnings)~yearat14, cutoff=1947, h=5, data=cghs, M=0.1,
+         se.method=c("EHW", "nn"))
+RDHonest(y~x, cutoff=1947, weights=weights, h=5, data=dd, M=0.1,
+         se.method=c("EHW", "nn"))
 ```
 
 Note the variance estimates don't quite match, since the variance estimator is
 different, but the worst-case bias and the point estimate are identical.
+
+# Pre-estimation
+
+We use @FaGi96 rule of thumb and @ImKa12 bandwidth selectors for preliminary variance estimation.
+
 
 # Fuzzy RD
 
@@ -479,9 +487,11 @@ estimator of the treatment effect
 
 ```{r}
 ## Initial estimate of treatment effect for optimal bandwidth calculations
-r <- FRDHonest(log(cn) ~ retired | elig_year, data=rcp, kern="triangular", M=c(0.001, 0.002), opt.criterion="MSE", sclass="H", T0=0)
+r <- FRDHonest(log(cn) ~ retired | elig_year, data=rcp, kern="triangular",
+               M=c(0.001, 0.002), opt.criterion="MSE", sclass="H", T0=0)
 ## Use it to compute optimal bandwidth
-FRDHonest(log(cn) ~ retired | elig_year, data=rcp, kern="triangular", M=c(0.001, 0.002), opt.criterion="MSE", sclass="H", T0=r$estimate)
+FRDHonest(log(cn) ~ retired | elig_year, data=rcp, kern="triangular",
+          M=c(0.001, 0.002), opt.criterion="MSE", sclass="H", T0=r$estimate)
 ```
 
 ## Data-driven choice of smoothness constant
@@ -511,7 +521,8 @@ a point, and optimal bandwidth selection for inference at a point. Suppose, for 
 was interested in the vote share for candidates with margin of victory equal to
 20 points:
 ```{r}
-## Transform data, specify we're interested in inference at x0=20, and drop observations below cutoff
+## Transform data, specify we're interested in inference at x0=20,
+## and drop observations below cutoff
 leep <- lee08[lee08$margin>0, ]
 ## Data-driven choice of M
 LPPHonest(voteshare ~ margin, data=leep, point=20, kern="uniform",

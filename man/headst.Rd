@@ -26,8 +26,8 @@ A data frame with 3,127 rows and 9 variables:
 }
 }
 \source{
-Douglas Miller's website,
-\url{http://faculty.econ.ucdavis.edu/faculty/dlmiller/statafiles/}
+Douglas Miller's former website,
+\url{http://web.archive.org/web/20190619165949/http://faculty.econ.ucdavis.edu:80/faculty/dlmiller/statafiles/}
 }
 \usage{
 headst
@@ -45,9 +45,10 @@ county labels may not be correct. Mortality data is missing for Alaska.
 \references{
 {
 
-\cite{Ludwig , J., and D. L. Miller (2007): "Does Head Start improve
-      children's life chances? Evidence from a regression discontinuity
-      design," Quarterly Journal of Economics, 122 (1), 159-208.}
+\cite{Jens Ludwig and Douglas L. Miller. Does head start improve children's
+      life chances? Evidence from a regression discontinuity design.
+      Quarterly Journal of Economics, 122(1):159–208, February 2007.
+      \doi{10.1162/qjec.122.1.159}}
 
 }
 }

@@ -24,9 +24,10 @@ Oreopoulos (2006) UK general household survey dataset
 \references{
 {
 
-\cite{Oreopoulos, P. (2006): "Estimating Average and Local Average Treatment
-      Effects When Compulsory Education Schooling Laws Really Matter",
-      American Economic Review, 96 (1), 152-175}
+\cite{Philip Oreopoulos. Estimating average and local average treatment
+      effects when compulsory education schooling laws really matter.
+      American Economic Review, 96(1):152–175, 2006.
+      \doi{10.1257/000282806776157641}}
 
 }
 }

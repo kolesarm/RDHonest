@@ -1,16 +1,14 @@
 ## Formula for local polynomial regression
-## @param order order of local polynomial
-## @return Regression formula for local polynomial regression of order
-##     \code{order}
 RDlpformula <- function(order) {
-        f1 <- if (order>0) {
-                  f1 <- paste(vapply(seq_len(order), function(p)
-                      paste0("I(x^", p, ")"), character(1)), collapse="+")
-                  paste0("(", f1, ")*I(x>=0)")
-              } else  {
-                  paste0("I(x>=0)")
-              }
-        paste("y ~ ", f1)
+    f1 <- if (order>0) {
+              f1 <- vapply(seq_len(order),
+                           function(p) paste0("I(x^", p, ")"),
+                           character(1))
+              paste0("(", paste(f1, collapse="+"), ") * I(x>=0)")
+          } else  {
+              paste0("I(x>=0)")
+          }
+    paste0("y ~ ", f1)
 }
 
 
