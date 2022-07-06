@@ -8,7 +8,6 @@ RDHonestBME(
   formula,
   data,
   subset,
-  weights,
   cutoff = 0,
   na.action,
   h = Inf,
@@ -30,40 +29,35 @@ which the function is called.}
 \item{subset}{optional vector specifying a subset of observations to be used
 in the fitting process.}
 
-\item{weights}{Optional vector of weights to weight the observations
-(useful for aggregated data). Disregarded if optimal kernel is used.}
-
 \item{cutoff}{specifies the RD cutoff in the running variable.}
 
 \item{na.action}{function which indicates what should happen when the data
 contain \code{NA}s. The default is set by the \code{na.action} setting of
 \code{options} (usually \code{na.omit}).}
 
-\item{h}{bandwidth, a scalar parameter. If not supplied, optimal bandwidth is
-computed according to criterion given by \code{opt.criterion}.}
+\item{h}{bandwidth, a scalar parameter.}
 
 \item{alpha}{determines confidence level, \eqn{1-\alpha}{1-alpha}}
 
 \item{order}{Order of local regression \code{1} for linear, \code{2} for
-quadratic.}
+quadratic, etc.}
 
 \item{regformula}{Explicitly specify regression formula to use instead of
-running a local linear regression, with \code{y} and \code{x} denoting
-the outcome and the running variable, and cutoff is normalized to
-\code{0}. Local linear regression (\code{order = 1}) is equivalent to
+running a local polynomial regression, with \code{y} and \code{x}
+denoting the outcome and the running variable, and cutoff is normalized
+to \code{0}. Local linear regression (\code{order = 1}) is equivalent to
 \code{regformula = "y~x*I(x>0)"}. Inference is done on the
 \code{order+2}th element of the design matrix}
 }
+\value{
+An \code{"RDRresults"} object. TODO
+}
 \description{
 Computes honest CIs for local polynomial regression with uniform kernel under
-the assumption that the conditional mean liest in the bounded
-misspecification error (BME) class of functions, as considered in Kolesár and
-Rothe (2018). Heuristically, this class imposes that the fit of the chosen
-model is no worse at the cutoff than elsewhere in the estimation window.
-}
-\details{
-The parameter \code{weights} is ignored, it is only included to keep a
-unified interface with \code{\link{RDHonest}}.
+the assumption that the conditional mean lies in the bounded misspecification
+error (BME) class of functions, as considered in Kolesár and Rothe (2018).
+This class formalizes the notion that the fit of the chosen model is no worse
+at the cutoff than elsewhere in the estimation window.
 }
 \section{Note}{
 

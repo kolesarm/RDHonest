@@ -74,14 +74,31 @@ NPRHonest.fit <- function(d, M, kern="triangular", h, opt.criterion, alpha=0.05,
         upper <- r1$estimate + bias + stats::qnorm(1-alpha)*sd
         hl <- CVb(bias/sd, alpha)*sd
     }
+    term <- if(inherits(d, "LPPData")) {
+                "Value of conditional mean"
+            } else if (inherits(d, "RDData")) {
+                "Sharp RD Parameter"
+            } else {
+                "Fuzzy RD Parameter"
+            }
+    coef <- data.frame(
+        term=term,
+        estimate=r1$estimate,
+        std.error=sd,
+        maximum.bias=bias,
+        conf.low=r1$estimate-hl,
+        conf.high=r1$estimate+hl,
+        conf.low.onesided=lower,
+        conf.high.onesided=upper,
+        bandwidth=h,
+        eff.obs=r1$eff.obs, # TODO
+        cv=NA,
+        alpha=alpha,
+        method=if (sclass=="H") "Holder" else "Taylor"
+    )
 
-    ## Finally, calculate coverage of naive CIs
-    z <- stats::qnorm(1-alpha/2)
-    naive <- stats::pnorm(z-bias/sd)-stats::pnorm(-z- bias/sd)
-
-    structure(list(estimate=r1$estimate, maxbias=bias, sd=sd, lower=lower,
-                   upper=upper, hl=hl, eff.obs=r1$eff.obs, h=h, naive=naive,
-                   fs=r1$fs), class="NPRResults")
+    structure(list(coefficients=coef,
+                   fs=r1$fs), class="RDResults")
 }
 
 
@@ -99,13 +116,14 @@ NPROptBW.fit <- function(d, M, kern="triangular", opt.criterion, alpha=0.05,
     ## Objective function for optimizing bandwidth
     obj <- function(h) {
         r <- NPRHonest.fit(d, M, kern, h, alpha=alpha, se.method="supplied.var",
-                           sclass=sclass, order=order, T0=T0, T0bias=TRUE)
+                           sclass=sclass, order=order, T0=T0,
+                           T0bias=TRUE)$coefficients
         if (opt.criterion=="OCI") {
-            2*r$maxbias+r$sd*(stats::qnorm(1-alpha)+stats::qnorm(beta))
+            2*r$maximum.bias+r$std.error*(stats::qnorm(1-alpha)+stats::qnorm(beta))
         } else if (opt.criterion=="MSE") {
-            r$maxbias^2+r$sd^2
+            r$maximum.bias^2+r$std.error^2
         } else if (opt.criterion=="FLCI") {
-            r$hl
+            r$conf.high-r$conf.low
         } else {
             stop(sprintf("optimality criterion %s not yet implemented",
                          opt.criterion))
@@ -140,30 +158,24 @@ NPROptBW.fit <- function(d, M, kern="triangular", opt.criterion, alpha=0.05,
 
 
 #' @export
-print.NPRResults <- function(x, digits = getOption("digits"), ...) {
+print.RDResults <- function(x, digits = getOption("digits"), ...) {
     if (!is.null(x$call))
         cat("Call:\n", deparse(x$call), "\n\n", sep = "", fill=TRUE)
-    bw <- if (!inherits(x$lff, "RDLFFunction"))
-              "Bandwidth" else "Smoothing parameter"
-
-    cat("Inference by se.method:\n")
-    r <- as.data.frame(x[c("estimate", "maxbias", "sd",
-                           "lower", "upper", "hl")])
-    names(r)[1:3] <- c("Estimate", "Maximum Bias", "Std. Error")
-    r$name <- rownames(r)
-    print.data.frame(as.data.frame(r[, 1:3]), digits=digits)
-    cat("\nConfidence intervals:\n")
     fmt <- function(x) format(x, digits=digits, width=digits+1)
-
-    for (j in seq_len(nrow(r)))
-        cat(format(r[j, 7], width=5), " (", fmt(r[j, 1]-r[j, 6]),
-            ", ", fmt(r[j, 1]+r[j, 6]), "), (", fmt(r[j, 4]),
-            ", Inf), (-Inf, ", fmt(r[j, 5]), ")\n", sep="")
-
-    cat("\n", bw, ": ", format(x$h, digits=digits), sep="")
-
+    y <- x$coefficients
+    cat("Estimates (using ", y$method, " class):\n", sep="")
+    nm <- c("Parameter", "Estimate", "Std. Error", "Maximum Bias")
+    names(y)[1:4] <- nm
+    y$"Confidence Interval" <- paste0("(", fmt(y$conf.low), ", ",
+                   fmt(y$conf.high), ")")
+    y$OCI <- paste0("(-Inf, ", fmt(y$conf.high.onesided), "), (",
+                    fmt(y$conf.low.onesided), ", Inf)")
+    print.data.frame(y[, c(nm, "Confidence Interval"), ],
+                     digits=digits, row.names=FALSE)
+    cat("\nOnesided CIs: ", y$OCI)
+    cat("\nBandwidth: ", format(y$bandwidth, digits=digits), sep="")
     cat("\nNumber of effective observations:",
-        format(x$eff.obs, digits=digits), "\n")
+        format(y$eff.obs, digits=digits), "\n")
 
     invisible(x)
 }

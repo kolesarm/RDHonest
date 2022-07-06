@@ -14,6 +14,7 @@
 #' @template RDoptBW
 #' @template RDBW
 #' @template RDclass
+#' @template RDweights
 #' @template Kern
 #' @template RDseInitial
 #' @return Returns an object of class \code{"NPRResults"}. The function

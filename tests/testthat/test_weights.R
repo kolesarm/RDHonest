@@ -37,23 +37,24 @@ test_that("Test weighting using cghs", {
     v1 <- sqrt(sum(wp1^2/np)*mean(r2$sigma2p)+sum(wm1^2/nm)*mean(r2$sigma2m))
 
     m2 <- NPRHonest.fit(d2, M=1, kern="triangular", h=5,
-                        se.method=c("nn", "supplied.var", "EHW"))
+                        se.method="supplied.var")$coefficients
     m1 <- NPRHonest.fit(d1, M=1, kern="triangular", h=5,
-                        se.method=c("nn", "supplied.var", "EHW"))
-    expect_equal(v1, unname(m2$sd["supplied.var"]))
-    expect_equal(m2$sd["supplied.var"], m1$sd["supplied.var"])
-    expect_equal(c(m2$estimate, m2$maxbias), c(m1$estimate, m1$maxbias))
+                        se.method="supplied.var")$coefficients
+    expect_equal(v1, m1$std.error)
+    expect_equal(m1[2:6], m2[2:6])
 
     ## Same thing with RDHonest
-    s1 <- RDHonest(log(earnings)~yearat14, cutoff=1947, h=5, data=cghs, M=1)
-    s2 <- RDHonest(y~x, cutoff=1947, weights=weights, h=5, data=dd, M=1)
-    expect_equal(c(s2$estimate, s2$maxbias),
-                 c(s1$estimate, s1$maxbias))
+    s1 <- RDHonest(log(earnings)~yearat14, cutoff=1947, h=5,
+                   data=cghs, M=1)$coefficients
+    s2 <- RDHonest(y~x, cutoff=1947, weights=weights, h=5,
+                   data=dd, M=1)$coefficients
+    expect_equal(c(s2$estimate, s2$maximum.bias),
+                 c(s1$estimate, s1$maximum.bias))
     ## LPP Honest
     t1 <- LPPHonest(log(earnings)~yearat14, point=1947, h=5,
-                    data=cghs[cghs$yearat14>=1947, ], M=1)
+                    data=cghs[cghs$yearat14>=1947, ], M=1)$coefficients
     t2 <- LPPHonest(y~x, point=1947, h=5, data=dd[dd$x>=1947, ], M=1,
-                    weights=weights)
-    expect_equal(c(t2$estimate, t2$maxbias),
-                 c(t1$estimate, t1$maxbias))
+                    weights=weights)$coefficients
+    expect_equal(c(t2$estimate, t2$maximum.bias),
+                 c(t1$estimate, t1$maximum.bias))
 })

@@ -11,6 +11,7 @@
 #' @template RDse
 #' @template RDoptBW
 #' @template RDBW
+#' @template RDweights
 #' @template RDclass
 #' @template Kern
 #' @template RDseInitial

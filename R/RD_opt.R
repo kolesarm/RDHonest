@@ -86,7 +86,7 @@ RDTEstimator <- function(d, f, alpha=0.05, se.method="supplied.var", J=3) {
     q <- Q(d, f)
     b <- f$m(0)+f$p(0)
 
-    ## standard deviation
+    ## standard deviation. TODO: only one
     sd <- c(NA, NA, NA)
     names(sd) <- c("supplied.var", "nn", "EHW")
     sdL <- function(s2p, s2m) sqrt(sum(Wp^2 * s2p) + sum(Wm^2 * s2m))
@@ -95,19 +95,22 @@ RDTEstimator <- function(d, f, alpha=0.05, se.method="supplied.var", J=3) {
         sd[1] <- sdL(d$sigma2p, d$sigma2m)
     if ("nn" %in% se.method)
         sd[2] <- sdL(sigmaNN(d$Xp, d$Yp, J=J), sigmaNN(d$Xm, d$Ym, J=J))
-    sd <- sd[se.method]
+    sd <- unname(sd[se.method])
     maxbias <- b - q/den                # b-q/den
     lower <- Lhat - maxbias - stats::qnorm(1-alpha)*sd
     upper <- Lhat + maxbias + stats::qnorm(1-alpha)*sd
     hl <- CVb(maxbias/sd, alpha) * sd # Half-length
 
     ## Effective number of observations
-    eff.obs <- 1/sum(Wp^2) + 1/sum(Wm^2)
+    ## eff.obs <- 1/sum(Wp^2) + 1/sum(Wm^2)
+    coef <- data.frame(term="Sharp RD parameter", estimate=Lhat, std.error=sd,
+                       maximum.bias=maxbias, conf.low=Lhat-hl,
+                       conf.high=Lhat+hl, conf.low.onesided=lower,
+                       conf.high.onesided=upper, eff.obs=NA, #TODO
+                       cv=CVb(maxbias/sd, alpha), alpha=alpha, method="Taylor")
 
-    structure(list(estimate=Lhat, maxbias=maxbias, sd=sd, lower=lower,
-                   upper=upper, hl=hl, delta=sqrt(4*q), omega=2*b,
-                   eff.obs=eff.obs),
-              class="NPRResults")
+    structure(list(coefficients=coef, delta=sqrt(4*q), omega=2*b),
+              class="RDResults")
 }
 
 ## Optimal inference in RD under Taylor class
@@ -152,8 +155,8 @@ RDTOpt.fit <- function(d, M, opt.criterion, alpha=0.05, beta=0.5,
     ## Compute optimal estimator
     r <- RDTEstimator(d, lff, alpha, se.method, J)
     ## Two bandwidths in this case
-    r$hm <- (lff$m(0)/C)^(1/2)
-    r$hp <- (lff$p(0)/C)^(1/2)
+    r$coefficients$bandwidth.m <- (lff$m(0)/C)^(1/2)
+    r$coefficients$bandwidth.p <- (lff$p(0)/C)^(1/2)
     r
 }
 
@@ -193,7 +196,7 @@ RDTEfficiencyBound <- function(d, M, opt.criterion="FLCI",
         delta <- stats::qnorm(1-alpha)+stats::qnorm(beta)
         r1 <- RDTEstimator(d, RDLFFunction(d, C, delta))
         r2 <- RDTEstimator(d, RDLFFunction(d, C, 2*delta))
-        return(r2$omega/(r1$delta*r1$sd+r1$omega))
+        return(r2$omega/(r1$delta*r1$coefficients$std.error+r1$omega))
     } else {
         ## From proof of Pratt result, it follows that the expected length is
         ## int pnorm(z_{1-alpha}-delta_t) dt, where delta_t is value of inverse
@@ -207,7 +210,9 @@ RDTEfficiencyBound <- function(d, M, opt.criterion="FLCI",
         ## integrand equals 1-alpha at zero, need upper cutoff
         upper <- 10
         while(integrand(upper)>1e-10) upper <- 2*upper
-        return(stats::integrate(integrand, 1e-6, upper)$value /
-                   RDTOpt.fit(d, 2*C, opt.criterion="FLCI", alpha=alpha)$hl)
+        den <- RDTOpt.fit(d, 2*C, opt.criterion="FLCI",
+                          alpha=alpha)$coefficients
+        den <- (den$conf.high-den$conf.low)/2
+        return(stats::integrate(integrand, 1e-6, upper)$value / den)
     }
 }

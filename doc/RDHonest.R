@@ -61,12 +61,14 @@ RDHonest(voteshare ~ margin, data=lee08, kern="uniform", sclass="H",
          opt.criterion="MSE")
 
 ## -----------------------------------------------------------------------------
-2*RDHonest(voteshare ~ margin, data=lee08, kern="optimal", M=0.1,
-           opt.criterion="FLCI", se.initial="Silverman", se.method="nn")$hl
-
-2*RDHonest(voteshare ~ margin, data=lee08, kern="triangular", M=0.1,
+r1 <- RDHonest(voteshare ~ margin, data=lee08, kern="optimal", M=0.1,
+           opt.criterion="FLCI", se.initial="Silverman",
+           se.method="nn")$coefficients
+r2 <- RDHonest(voteshare ~ margin, data=lee08, kern="triangular", M=0.1,
            opt.criterion="FLCI", se.initial="Silverman", se.method="nn",
-           sclass="T")$hl
+           sclass="T")$coefficients
+r1$conf.high-r1$conf.low
+r2$conf.high-r2$conf.low
 
 ## -----------------------------------------------------------------------------
 ## Add variance estimate to the Lee (2008) data so that the RDSmoothnessBound
@@ -113,12 +115,13 @@ r <- FRDHonest(log(cn) ~ retired | elig_year, data=rcp, kern="triangular",
                M=c(0.001, 0.002), opt.criterion="MSE", sclass="H", T0=0)
 ## Use it to compute optimal bandwidth
 FRDHonest(log(cn) ~ retired | elig_year, data=rcp, kern="triangular",
-          M=c(0.001, 0.002), opt.criterion="MSE", sclass="H", T0=r$estimate)
+          M=c(0.001, 0.002), opt.criterion="MSE", sclass="H",
+          T0=r$coefficients$estimate)
 
 ## -----------------------------------------------------------------------------
 ## Data-driven choice of M
 FRDHonest(log(cn) ~ retired | elig_year, data=rcp, kern="triangular",
-          opt.criterion="MSE", sclass="H", T0=r$estimate)
+          opt.criterion="MSE", sclass="H", T0=r$coefficients$estimate)
 
 ## -----------------------------------------------------------------------------
 ## Transform data, specify we're interested in inference at x0=20,

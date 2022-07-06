@@ -15,25 +15,23 @@ RDlpformula <- function(order) {
 #' Honest CIs in sharp RD with discrete regressors under BME function class
 #'
 #' Computes honest CIs for local polynomial regression with uniform kernel under
-#' the assumption that the conditional mean liest in the bounded
-#' misspecification error (BME) class of functions, as considered in Kolesár and
-#' Rothe (2018). Heuristically, this class imposes that the fit of the chosen
-#' model is no worse at the cutoff than elsewhere in the estimation window.
-#'
-#' The parameter \code{weights} is ignored, it is only included to keep a
-#' unified interface with \code{\link{RDHonest}}.
+#' the assumption that the conditional mean lies in the bounded misspecification
+#' error (BME) class of functions, as considered in Kolesár and Rothe (2018).
+#' This class formalizes the notion that the fit of the chosen model is no worse
+#' at the cutoff than elsewhere in the estimation window.
 #'
 #' @template RDFormula
-#' @template RDBW
+#' @param h bandwidth, a scalar parameter.
 #' @param alpha determines confidence level, \eqn{1-\alpha}{1-alpha}
 #' @param order Order of local regression \code{1} for linear, \code{2} for
-#'     quadratic.
+#'     quadratic, etc.
 #' @param regformula Explicitly specify regression formula to use instead of
-#'     running a local linear regression, with \code{y} and \code{x} denoting
-#'     the outcome and the running variable, and cutoff is normalized to
-#'     \code{0}. Local linear regression (\code{order = 1}) is equivalent to
+#'     running a local polynomial regression, with \code{y} and \code{x}
+#'     denoting the outcome and the running variable, and cutoff is normalized
+#'     to \code{0}. Local linear regression (\code{order = 1}) is equivalent to
 #'     \code{regformula = "y~x*I(x>0)"}. Inference is done on the
 #'     \code{order+2}th element of the design matrix
+#' @return An \code{"RDRresults"} object. TODO
 #' @examples
 #' RDHonestBME(log(cghs$earnings)~yearat14, data=cghs, h=3,
 #'             order=1, cutoff=1947)
@@ -49,7 +47,7 @@ RDlpformula <- function(order) {
 #'
 #' }
 #' @export
-RDHonestBME <- function(formula, data, subset, weights, cutoff=0, na.action,
+RDHonestBME <- function(formula, data, subset, cutoff=0, na.action,
                         h=Inf, alpha=0.05, order=0, regformula) {
     ## construct model frame
     cl <- mf <- match.call(expand.dots = FALSE)
@@ -106,31 +104,31 @@ RDHonestBME <- function(formula, data, subset, weights, cutoff=0, na.action,
     dev <- drop(selvec[, -ncol(selvec)] %*% delta)
 
     ## Upper and lower CIs
-    CI.l <- stats::coef(m1)[order+2]+dev-stats::qnorm(0.975)*se
-    CI.u <- stats::coef(m1)[order+2]+dev+stats::qnorm(0.975)*se
+    CI.l <- stats::coef(m1)[order+2]+dev-stats::qnorm(1-alpha/2)*se
+    CI.u <- stats::coef(m1)[order+2]+dev+stats::qnorm(1-alpha/2)*se
+    ## Onesided
+    OCI.l <- stats::coef(m1)[order+2]+dev-stats::qnorm(1-alpha)*se
+    OCI.u <- stats::coef(m1)[order+2]+dev+stats::qnorm(1-alpha)*se
 
-    l <- gr[which.min(CI.l), ]
-    deltamin <- c(support[l[1:2]], dev[which.min(CI.l)], se[which.min(CI.l)])
-    u <- gr[which.max(CI.u), ]
-    deltamax <- c(support[u[1:2]], dev[which.max(CI.u)], se[which.max(CI.u)])
-    names(deltamin) <- names(deltamax) <- c("x_{-}", "x_{+}", "delta", "se")
-
-    ret <- list(estimate=unname(m1$coefficients[order+2]),
-                CI=unname(c(min(CI.l), max(CI.u))), delta.l=deltamin,
-                delta.u=deltamax, call=cl, na.action=attr(mf, "na.action"))
-    class(ret) <- "RDBMEresults"
+    l <- which.min(CI.l)
+    u <- which.max(CI.u)
+    coef <- data.frame(
+        term="Sharp RD parameter",
+        estimate=unname(m1$coefficients[order +2]),
+        std.error=sqrt(vdt["e2", "e2"]),
+        maximum.bias=max(abs(c(dev[u], dev[l]))),
+        conf.low=CI.l[l],
+        conf.high=CI.u[u],
+        conf.low.onesided=min(OCI.l),
+        conf.high.onesided=max(OCI.u),
+        bandwidth=h,
+        eff.obs=length(x),
+        cv=NA,
+        alpha=alpha,
+        method="BME"
+    )
+    ret <- list(coefficients=coef, call=cl, na.action=attr(mf, "na.action"))
+    class(ret) <- "RDResults"
 
     ret
-}
-
-#' @export
-print.RDBMEresults <- function(x, digits = getOption("digits"), ...) {
-    if (!is.null(x$call))
-        cat("Call:\n", deparse(x$call), "\n\n", sep = "", fill=TRUE)
-    fmt <- function(x) format(x, digits=digits, width=digits+1)
-
-    cat("Confidence interval:\n")
-    cat("(", fmt(x$CI[1]), ", ", fmt(x$CI[2]), ")\n", sep="")
-
-    invisible(x)
 }

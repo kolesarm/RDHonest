@@ -2,30 +2,34 @@ context("Test Inference at a point")
 
 test_that("Inference at point agrees with RD", {
     d <- RDData(lee08, cutoff=0)
-    rde <- NPRHonest.fit(d, h=5, M=2)
+    rde <- NPRHonest.fit(d, h=5, M=2)$coefficients
     dp <- LPPData(lee08[lee08$margin>0, ], point=0)
     dm <- LPPData(lee08[lee08$margin<0, ], point=0)
-    pp <- NPRHonest.fit(dp, h=5, M=2)
-    mm <- NPRHonest.fit(dm, h=5, M=2)
+    p0 <- NPRHonest.fit(dp, h=5, M=2)
+    pp <- p0$coefficients
+    mm <- NPRHonest.fit(dm, h=5, M=2)$coefficients
     expect_equal(pp$estimate-mm$estimate, rde$estimate)
-    expect_equal(pp$sd^2+mm$sd^2, rde$sd^2)
-    expect_equal(pp$maxbias+mm$maxbias, rde$maxbias)
+    expect_equal(pp$std.error^2+mm$std.error^2, rde$std.error^2)
+    expect_equal(pp$maximum.bias+mm$maximum.bias, rde$maximum.bias)
     expect_equal(mm$eff.obs+pp$eff.obs, rde$eff.obs)
 
     p2 <- LPPHonest(voteshare~margin, data=lee08, subset=margin>=0, h=5, M=2)
     ## 1:9 since something weird happens on codecov.io if lintr is included
-    expect_equal(capture.output(print(pp))[1:9],
-                 capture.output(print(p2))[6:14])
+    expect_equal(capture.output(print(p0))[1:7],
+                 capture.output(print(p2))[6:12])
     ## Local constant yields infinite bias
-    expect_equal(NPRHonest.fit(d, h=5, M=2, order=0)$maxbias, Inf)
-    expect_equal(NPRHonest.fit(dp, h=10, M=0.1, order=0)$maxbias, Inf)
+    expect_equal(NPRHonest.fit(d, h=5, M=2,
+                               order=0)$coefficients$maximum.bias, Inf)
+    expect_equal(NPRHonest.fit(dp, h=10, M=0.1,
+                               order=0)$coefficients$maximum.bias, Inf)
 
     ## Compare RDHonest and LPPHonest when order=2
-    r <- NPRHonest.fit(d, h=7, M=2, order=2)
-    rm <- NPRHonest.fit(dp, h=7, M=2, order=2)
-    rp <- NPRHonest.fit(dm, h=7, M=2, order=2)
-    expect_equal(r$maxbias, rm$maxbias+rp$maxbias)
-    expect_equal(sqrt(rp$sd^2+rm$sd^2), r$sd)
+    r <- NPRHonest.fit(d, h=7, M=2, order=2)$coefficients
+    rm <- NPRHonest.fit(dp, h=7, M=2, order=2)$coefficients
+    rp <- NPRHonest.fit(dm, h=7, M=2, order=2)$coefficients
+    expect_equal(r$maximum.bias,
+                 rm$maximum.bias+rp$maximum.bias)
+    expect_equal(sqrt(rp$std.error^2+rm$std.error^2), r$std.error)
 })
 
 test_that("MROT matches paper", {
@@ -76,12 +80,12 @@ test_that("Optimal bandwidth calculations", {
     r1 <- LPPHonest(voteshare~margin, data=lee08, subset=margin>0, point=0,
                     M=2*Mh, opt.criterion="MSE")
     r <- capture.output(print(r1, digits=4))
-    expect_equal(r[13], "Bandwidth: 13.41")
+    expect_equal(r[11], "Bandwidth: 13.41")
     r2 <- NPROptBW.fit(dp, M=2*Mh, opt.criterion="MSE")$h
-    expect_identical(r2,  r1$h)
+    expect_identical(r2,  r1$coefficients$bandwidth)
     expect_lt(abs(r2- 13.4109133), 1e-6)
-    expect_equal(unname(NPRHonest.fit(dp, M=Mh, kern="uniform",
-                                      opt.criterion="FLCI")$upper),
+    rr <- NPRHonest.fit(dp, M=Mh, kern="uniform", opt.criterion="FLCI")
+    expect_equal(rr$coefficients$conf.high.onesided,
                  55.24963853)
 
     ## Make sure we're getting positive worst-case bias
@@ -89,5 +93,5 @@ test_that("Optimal bandwidth calculations", {
     M <- NPR_MROT.fit(LPPData(leep, point = 20))
     r <- LPPHonest(voteshare ~ margin, data=leep, point=20, kern="uniform", M=M,
                    opt.criterion="MSE", sclass="H")
-    expect_equal(r$maxbias, 0.2482525)
+    expect_equal(r$coefficients$maximum.bias, 0.2482525)
 })
