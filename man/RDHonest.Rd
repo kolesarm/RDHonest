@@ -20,7 +20,8 @@ RDHonest(
   beta = 0.8,
   J = 3,
   sclass = "H",
-  order = 1
+  order = 1,
+  T0 = 0
 )
 }
 \arguments{
@@ -104,6 +105,9 @@ intervals; otherwise ignored.}
 \code{"H"} for Hölder class.}
 
 \item{order}{Order of local regression 1 for linear, 2 for quadratic.}
+
+\item{T0}{Initial estimate of the treatment effect for calculating the
+optimal bandwidth. Only relevant for Fuzzy RD.}
 }
 \value{
 Returns an object of class \code{"NPRResults"}. The function
@@ -140,20 +144,20 @@ Returns an object of class \code{"NPRResults"}. The function
 
   \item{\code{call}}{the matched call}
 
-  \item{\code{fs}}{Not relevant for sharp RD}
+  \item{\code{fs}}{Estimate of the first-stage coefficient (sharp RD only)}
 
 }
 }
 \description{
-Calculate estimators and bias-aware one- and two-sided CIs for the sharp RD
-parameter.
+Calculate estimators and bias-aware one- and two-sided CIs for the sharp or
+fuzzy RD parameter.
 }
 \details{
 The bandwidth is calculated to be optimal for a given performance criterion,
 as specified by \code{opt.criterion}. Alternatively, for local polynomial
 estimators, the bandwidth can be specified by \code{h}. If
 \code{kern="optimal"}, calculate optimal estimators under second-order Taylor
-smoothness class.
+smoothness class (sharp RD only).
 }
 \section{Note}{
 
@@ -165,6 +169,8 @@ that is first in \code{data} and then in the environment of \code{formula}.
 
 # Lee dataset
 RDHonest(voteshare ~ margin, data = lee08, kern = "uniform", M = 0.1, h = 10)
+RDHonest(cn~retired | elig_year, data=rcp, cutoff=0, M=c(4, 0.4),
+          kern="triangular", opt.criterion="MSE", T0=0, h=20)
 }
 \references{
 {

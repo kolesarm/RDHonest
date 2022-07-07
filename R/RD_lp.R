@@ -1,13 +1,13 @@
 #' Honest inference in RD
 #'
-#' Calculate estimators and bias-aware one- and two-sided CIs for the sharp RD
-#' parameter.
+#' Calculate estimators and bias-aware one- and two-sided CIs for the sharp or
+#' fuzzy RD parameter.
 #'
 #' The bandwidth is calculated to be optimal for a given performance criterion,
 #' as specified by \code{opt.criterion}. Alternatively, for local polynomial
 #' estimators, the bandwidth can be specified by \code{h}. If
 #' \code{kern="optimal"}, calculate optimal estimators under second-order Taylor
-#' smoothness class.
+#' smoothness class (sharp RD only).
 #'
 #' @template RDFormula
 #' @template RDse
@@ -16,6 +16,8 @@
 #' @template RDclass
 #' @template RDweights
 #' @template Kern
+#' @param T0 Initial estimate of the treatment effect for calculating the
+#'     optimal bandwidth. Only relevant for Fuzzy RD.
 #' @return Returns an object of class \code{"NPRResults"}. The function
 #'     \code{print} can be used to obtain and print a summary of the results. An
 #'     object of class \code{"NPRResults"} is a list containing the following
@@ -50,7 +52,7 @@
 #'
 #'   \item{\code{call}}{the matched call}
 #'
-#'   \item{\code{fs}}{Not relevant for sharp RD}
+#'   \item{\code{fs}}{Estimate of the first-stage coefficient (sharp RD only)}
 #'
 #' }
 #' @references{
@@ -75,21 +77,32 @@
 #'
 #' # Lee dataset
 #' RDHonest(voteshare ~ margin, data = lee08, kern = "uniform", M = 0.1, h = 10)
+#' RDHonest(cn~retired | elig_year, data=rcp, cutoff=0, M=c(4, 0.4),
+#'           kern="triangular", opt.criterion="MSE", T0=0, h=20)
 #' @export
 RDHonest <- function(formula, data, subset, weights, cutoff=0, M,
                      kern="triangular", na.action, opt.criterion="MSE", h,
                      se.method="nn", alpha=0.05, beta=0.8, J=3, sclass="H",
-                     order=1) {
+                     order=1, T0=0) {
 
     ## construct model frame
     cl <- mf <- match.call(expand.dots = FALSE)
     m <- match(c("formula", "data", "subset", "weights", "na.action"),
                names(mf), 0L)
     mf <- mf[c(1L, m)]
+    ## NEW
+    formula <- Formula::as.Formula(formula)
+    stopifnot(length(formula)[1] == 1L, length(formula)[2] <= 2)
+    mf$formula <- formula
+
     mf[[1L]] <- quote(stats::model.frame)
     mf <- eval(mf, parent.frame())
     mf$weights  <- mf$"(weights)"
-    d <- RDData(mf, cutoff)
+    d <- if (length(formula)[2] == 2)
+        FRDData(mf, cutoff)
+    else
+        RDData(mf, cutoff)
+
     if (missing(M))
         M <- NPR_MROT.fit(d)
 
@@ -97,11 +110,11 @@ RDHonest <- function(formula, data, subset, weights, cutoff=0, M,
         ret <- RDTOpt.fit(d, M, opt.criterion, alpha, beta, se.method, J)
     } else if (!missing(h)) {
         ret <- NPRHonest.fit(d, M, kern, h, alpha=alpha, se.method=se.method,
-                             J=J, sclass=sclass, order=order)
+                             J=J, sclass=sclass, order=order, T0=T0)
     } else {
         ret <- NPRHonest.fit(d, M, kern, opt.criterion=opt.criterion,
                              alpha=alpha, beta=beta, se.method=se.method, J=J,
-                             sclass=sclass, order=order)
+                             sclass=sclass, order=order, T0=T0)
     }
     ret$data <- d
     ret$call <- cl

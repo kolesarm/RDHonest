@@ -21,9 +21,9 @@ test_that("Test class constructor sorting", {
                           M=0, h=2)$coefficients$estimate,
                  -RDHonest(voteshare ~ I(-margin), data=lee08,
                            M=0, h=2)$coefficients$estimate)
-    expect_equal(FRDHonest(cn~retired | elig_year, data=rcp, cutoff=0,
+    expect_equal(RDHonest(cn~retired | elig_year, data=rcp, cutoff=0,
                            M=c(1, 0.1), h=3)$coefficients$estimate,
-                 FRDHonest(cn~retired | I(2*elig_year), data=rcp, cutoff=0,
+                 RDHonest(cn~retired | I(2*elig_year), data=rcp, cutoff=0,
                            M=c(1, 0.1), h=6)$coefficients$estimate)
 })
 

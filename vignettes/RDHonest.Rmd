@@ -470,7 +470,7 @@ into an appropriate format:
 
 ## Inference based on local polynomial estimates
 
-The function `FRDHonest` constructs one- and two-sided confidence intervals
+The function `RDHonest` constructs one- and two-sided confidence intervals
 (CIs) around local linear and local quadratic estimators using either a
 user-supplied bandwidth (which is allowed to differ on either side of the
 cutoff), or bandwidth that is optimized for a given performance criterion.
@@ -478,7 +478,7 @@ cutoff), or bandwidth that is optimized for a given performance criterion.
 ### Parameter space and initial estimate
 
 To implement the honest CIs, one needs to specify the parameter space
-$\mathcal{F}$ for $f_1$ and $f_2$. The function `FRDHonest` computes honest CIs
+$\mathcal{F}$ for $f_1$ and $f_2$. The function `RDHonest` computes honest CIs
 when $f_1$ and $f_2$ both lie in a second-order Taylor or second-order Hölder
 smoothness class, $\mathcal{F}_{T}(M_1, M_2)$ and
 $\mathcal{F}_{\text{Hölder}}(M_1, M_2)$, where the smoothness constants $M_1$
@@ -490,10 +490,10 @@ estimator of the treatment effect
 
 ```{r}
 ## Initial estimate of treatment effect for optimal bandwidth calculations
-r <- FRDHonest(log(cn) ~ retired | elig_year, data=rcp, kern="triangular",
+r <- RDHonest(log(cn) ~ retired | elig_year, data=rcp, kern="triangular",
                M=c(0.001, 0.002), opt.criterion="MSE", sclass="H", T0=0)
 ## Use it to compute optimal bandwidth
-FRDHonest(log(cn) ~ retired | elig_year, data=rcp, kern="triangular",
+RDHonest(log(cn) ~ retired | elig_year, data=rcp, kern="triangular",
           M=c(0.001, 0.002), opt.criterion="MSE", sclass="H",
           T0=r$coefficients$estimate)
 ```
@@ -512,7 +512,7 @@ considered in Section 3.4.1 in @ArKo16honest based on a global polynomial
 approximation:
 ```{r}
 ## Data-driven choice of M
-FRDHonest(log(cn) ~ retired | elig_year, data=rcp, kern="triangular",
+RDHonest(log(cn) ~ retired | elig_year, data=rcp, kern="triangular",
           opt.criterion="MSE", sclass="H", T0=r$coefficients$estimate)
 ```
 See @ArKo16honest for a discussion of the restrictions on the

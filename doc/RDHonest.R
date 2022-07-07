@@ -111,16 +111,16 @@ RDHonest(y~x, cutoff=1947, weights=weights, h=5, data=dd, M=0.1,
 
 ## -----------------------------------------------------------------------------
 ## Initial estimate of treatment effect for optimal bandwidth calculations
-r <- FRDHonest(log(cn) ~ retired | elig_year, data=rcp, kern="triangular",
+r <- RDHonest(log(cn) ~ retired | elig_year, data=rcp, kern="triangular",
                M=c(0.001, 0.002), opt.criterion="MSE", sclass="H", T0=0)
 ## Use it to compute optimal bandwidth
-FRDHonest(log(cn) ~ retired | elig_year, data=rcp, kern="triangular",
+RDHonest(log(cn) ~ retired | elig_year, data=rcp, kern="triangular",
           M=c(0.001, 0.002), opt.criterion="MSE", sclass="H",
           T0=r$coefficients$estimate)
 
 ## -----------------------------------------------------------------------------
 ## Data-driven choice of M
-FRDHonest(log(cn) ~ retired | elig_year, data=rcp, kern="triangular",
+RDHonest(log(cn) ~ retired | elig_year, data=rcp, kern="triangular",
           opt.criterion="MSE", sclass="H", T0=r$coefficients$estimate)
 
 ## -----------------------------------------------------------------------------

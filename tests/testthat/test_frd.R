@@ -73,13 +73,13 @@ test_that("FRD interface", {
     M <- NPR_MROT.fit(d)
     rcp1 <- rcp[1:10000, ]
     r1 <- NPRHonest.fit(d, M, kern="triangular", opt.criterion="OCI", T0=0)
-    p1 <- FRDHonest(log(cn)~retired | elig_year, data=rcp1, cutoff=0, M=M,
+    p1 <- RDHonest(log(cn)~retired | elig_year, data=rcp1, cutoff=0, M=M,
                     kern="triangular", opt.criterion="OCI", T0=0)
     expect_equal(r1$coefficients$estimate, p1$coefficients$estimate)
 
     r2 <- NPRHonest.fit(d, M, kern="triangular", opt.criterion="OCI",
                         T0=r1$coefficients$estimate)
-    p2 <- FRDHonest(log(cn)~retired | elig_year, data=rcp1, cutoff=0, M=M,
+    p2 <- RDHonest(log(cn)~retired | elig_year, data=rcp1, cutoff=0, M=M,
                     kern="triangular", opt.criterion="OCI",
                     T0=p1$coefficients$estimate)
     expect_equal(r2$coefficients$estimate, p2$coefficients$estimate)
@@ -89,14 +89,14 @@ test_that("FRD interface", {
 
     r3 <- NPRHonest.fit(d, M, kern="triangular", h=7,
                         T0=r1$coefficients$estimate)
-    p3 <- FRDHonest(log(cn)~retired | elig_year, data=rcp1, cutoff=0, M=M,
+    p3 <- RDHonest(log(cn)~retired | elig_year, data=rcp1, cutoff=0, M=M,
                     kern="triangular", opt.criterion="OCI",
                     T0=p1$coefficients$estimate, h=7)
     expect_equal(r3$coefficients$estimate, p3$coefficients$estimate)
 
     r4 <- NPROptBW.fit(d, M, kern="triangular", opt.criterion="OCI",
                         T0=r1$coefficients$estimate)
-    p4 <- FRDHonest(log(cn)~retired | elig_year, data=rcp1, cutoff=0, M=M,
+    p4 <- RDHonest(log(cn)~retired | elig_year, data=rcp1, cutoff=0, M=M,
                     kern="triangular", opt.criterion="OCI",
                     T0=p1$coefficients$estimate)
     expect_identical(r4$h, p4$coefficients$bandwidth)
