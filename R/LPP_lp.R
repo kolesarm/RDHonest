@@ -14,7 +14,6 @@
 #' @template RDBW
 #' @template RDclass
 #' @template Kern
-#' @template RDseInitial
 #' @return Returns an object of class \code{"NPResults"}. The function
 #'     \code{print} can be used to obtain and print a summary of the results. An
 #'     object of class \code{"NPRResults"} is a list containing the following
@@ -67,7 +66,7 @@
 LPPHonest <- function(formula, data, subset, weights, point=0, M,
                       kern="triangular", na.action, opt.criterion, h,
                       se.method="nn", alpha=0.05, beta=0.8, J=3, sclass="H",
-                      order=1, se.initial="EHW") {
+                      order=1) {
 
     ## construct model frame
     cl <- mf <- match.call(expand.dots = FALSE)
@@ -75,6 +74,7 @@ LPPHonest <- function(formula, data, subset, weights, point=0, M,
                names(mf), 0L)
     mf <- mf[c(1L, m)]
     mf[[1L]] <- quote(stats::model.frame)
+
     mf <- eval(mf, parent.frame())
     mf$weights  <- mf$"(weights)"
     d <- LPPData(mf, point)
@@ -84,64 +84,15 @@ LPPHonest <- function(formula, data, subset, weights, point=0, M,
     if (!missing(h)) {
         ret <- NPRHonest.fit(d, M, kern, h, alpha=alpha,
                              se.method=se.method, J=J, sclass=sclass,
-                             order=order, se.initial=se.initial)
+                             order=order)
     } else {
         ret <- NPRHonest.fit(d, M, kern, opt.criterion=opt.criterion,
                              alpha=alpha, beta=beta, se.method=se.method, J=J,
-                             sclass=sclass, order=order, se.initial=se.initial)
+                             sclass=sclass, order=order)
     }
 
     ret$call <- cl
     ret$na.action <- attr(mf, "na.action")
 
     ret
-}
-
-
-## Rule of thumb bandwidth for inference at a point. Only used by
-## NPRPrelimVar.fit
-##
-## Calculate bandwidth for inference at a point with local linear regression
-## using method in Fan and Gijbels (1996, Chapter 4.2).
-ROTBW.fit <- function(d, kern="triangular", order=1, boundary=NULL) {
-    CheckClass(d, "LPPData")
-    X <- d$X
-
-    if(is.null(boundary))
-        boundary <- if ((min(X)>=0) || (max(X)<=0)) TRUE else FALSE
-    if((boundary==TRUE) && (order %% 2 ==0))
-        warning("ROT method for computing bandwidth requires either\n",
-                "order to be odd or else a boundary point")
-    N <- length(d$X)
-
-    ## STEP 0: Estimate f_X(0) using Silverman
-    h1 <- 1.843 *
-        min(stats::sd(X), (stats::quantile(X, 0.75) -
-                           stats::quantile(X, 0.25)) / 1.349) / N^(1/5)
-    f0 <- sum(abs(X) <= h1) / (2*N*h1)
-
-    ## STEP 1: Estimate (p+1)th derivative and sigma^2 using global polynomial
-    ## regression
-    r1 <- stats::lm(d$Y ~ 0 + outer(X, 0:(order+3), "^"))
-    deriv <- unname(r1$coefficients[order+2])
-    sigma2 <- stats::sigma(r1)^2
-
-    ## STEP 2: Kernel constants
-    if (is.function(kern)) {
-        ke <- EqKern(kern, boundary=boundary, order=order)
-        nu0 <- KernMoment(ke, moment=0, boundary=boundary, "raw2")
-        mup <- KernMoment(ke, moment=order+1, boundary=boundary, "raw")
-    } else {
-        s <- RDHonest::kernC[RDHonest::kernC$kernel==kern &
-                             RDHonest::kernC$order==order &
-                             RDHonest::kernC$boundary==boundary, ]
-        nu0 <- s$nu0
-        mup <- s[[paste0("mu", order+1)]]
-    }
-
-    ## STEP 3: Plug in
-    B <- deriv * mup
-    V <- sigma2 * nu0 /f0
-
-    (V/(B^2 * 2 * (order+1) * N))^(1/(2*order+3))
 }

@@ -84,15 +84,14 @@ test_that("Honest inference in Lee and LM data",  {
 
     d <- RDData(headst[!is.na(headst$mortHS), c("mortHS", "povrate60")],
                 cutoff=0)
+    d <- NPRPrelimVar.fit(d, se.initial="Silverman")
     es <- function(kern, se.method) {
         NPRHonest.fit(d, M=0.0076085544, kern=kern, sclass="H",
-                      se.method=se.method, J=3, alpha=0.05, opt.criterion="MSE",
-                      se.initial="Silverman")
+                      se.method=se.method, J=3, alpha=0.05, opt.criterion="MSE")
     }
     ff <- function(h, kern, se.method) {
         NPRHonest.fit(d, M=0.0076085544, kern=kern, sclass="H",
-                      se.method=se.method, J=3, alpha=0.05, h=h,
-                      se.initial="Silverman")
+                      se.method=se.method, J=3, alpha=0.05, h=h)
     }
 
     ## In this case the objective is not unimodal, but the modification still
@@ -122,19 +121,17 @@ test_that("Honest inference in Lee and LM data",  {
 
     ## Replicate 1511.06028v2, except we not longer allow se.initial=demeaned
     r <- RDHonest(voteshare ~ margin, data=lee08, kern="optimal",
-                  M=0.2, opt.criterion="MSE", se.method="supplied.var",
-                  se.initial="EHW")
+                  M=0.2, opt.criterion="MSE", se.method="supplied.var")
     ## expect_equal(unname(r$lower), 2.2838100315)
     expect_equal(unname(r$coefficients$conf.low.onesided), 2.983141711)
     r <- RDHonest(voteshare ~ margin, data=lee08, kern="optimal",
              M=0.04, opt.criterion="OCI", se.method="supplied.var",
-             se.initial="EHW", beta=0.8)
+             beta=0.8)
     expect_equal(r$coefficients$conf.low.onesided, 2.761343298)
     r <- RDHonest(voteshare ~ margin, data=lee08, kern="optimal", M=0.04,
-                  opt.criterion="FLCI", se.method="supplied.var",
-                  se.initial="EHW")
+                  opt.criterion="FLCI", se.method="supplied.var")
     ro <- capture.output(print(r, digits=8))
-    expect_equal(ro[9], paste0(" Sharp RD parameter 5.8864375  1.4472117",
+    expect_equal(ro[8], paste0(" Sharp RD parameter 5.8864375  1.4472117",
                                "   0.80247208 (2.6646087, 9.1082664)"))
     ## Try nn
     r1 <- RDHonest(voteshare ~ margin, data=lee08, kern="optimal", M=0.04,
@@ -176,15 +173,13 @@ test_that("Honest inference in Lee and LM data",  {
     ## expect_equal(r3$h, 5.0590753991)
 
     ## Decrease M, these results are not true minima...
-    r1 <- RDHonest(voteshare ~ margin, data = lee08, kern = "uniform",
-                 M = 0.01, opt.criterion = "MSE", sclass = "T",
-                 se.initial="Silverman")$coefficients
-    r2 <- RDHonest(voteshare ~ margin, data = lee08, kern = "uniform",
-                  M = 0.01, opt.criterion = "MSE", sclass = "H",
-                  se.initial="Silverman")$coefficients
-    r3 <- NPROptBW.fit(RDData(lee08, cutoff=0), kern = "uniform", M = 0.1,
-                       opt.criterion = "MSE", sclass = "T",
-                       se.initial="Silverman")
+    d <- NPRPrelimVar.fit(RDData(lee08, cutoff=0), se.initial="Silveman")
+    r1 <- NPRHonest.fit(d, M=0.01, kern="uniform", opt.criterion="MSE",
+                        beta=0.8, sclass="T")$coefficients
+    r2 <- NPRHonest.fit(d, M=0.01, kern="uniform", opt.criterion="MSE",
+                          beta=0.8, sclass="H")$coefficients
+    r3 <- NPROptBW.fit(d, kern = "uniform", M = 0.1,
+                       opt.criterion = "MSE", sclass = "T")
     expect_equal(unname(r1$bandwidth), 12.85186708)
     expect_equal(unname(r2$conf.low.onesided), 6.056860266)
     expect_equal(unname(r3$h), 5.086645484)

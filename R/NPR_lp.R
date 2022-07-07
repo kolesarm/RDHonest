@@ -10,15 +10,11 @@
 ##     \code{\link{FRDHonest}}.
 NPRHonest.fit <- function(d, M, kern="triangular", h, opt.criterion, alpha=0.05,
                           beta=0.8, se.method="nn", J=3, sclass="H", order=1,
-                          se.initial="EHW", T0=0, T0bias=FALSE) {
-    ## Initial se estimate
-    if (is.null(d$sigma2) && (is.null(d$sigma2p) || is.null(d$sigma2m)) &&
-        ("supplied.var" %in% se.method || missing(h)))
-        d <- NPRPrelimVar.fit(d, se.initial=se.initial)
-
+                          T0=0, T0bias=FALSE) {
     if (missing(h))
         h <- NPROptBW.fit(d, M, kern, opt.criterion, alpha, beta, sclass, order,
-                          se.initial, T0)$h
+                          T0)$h
+
 
     ## Suppress warnings about too few observations
     r1 <- NPRreg.fit(d, h, kern, order, se.method, TRUE, J)
@@ -107,12 +103,11 @@ NPRHonest.fit <- function(d, M, kern="triangular", h, opt.criterion, alpha=0.05,
 ##
 ## Basic computing engine to compute the optimal bandwidth
 NPROptBW.fit <- function(d, M, kern="triangular", opt.criterion, alpha=0.05,
-                         beta=0.8, sclass="H", order=1, se.initial="EHW",
-                         T0=0) {
+                         beta=0.8, sclass="H", order=1, T0=0) {
 
     ## First check if sigma2 is supplied
     if (is.null(d$sigma2) && (is.null(d$sigma2p) || is.null(d$sigma2m)))
-        d <- NPRPrelimVar.fit(d, se.initial=se.initial)
+        d <- NPRPrelimVar.fit(d, se.initial="EHW")
 
     ## Objective function for optimizing bandwidth
     obj <- function(h) {

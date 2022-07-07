@@ -16,7 +16,6 @@
 #' @template RDclass
 #' @template RDweights
 #' @template Kern
-#' @template RDseInitial
 #' @return Returns an object of class \code{"NPRResults"}. The function
 #'     \code{print} can be used to obtain and print a summary of the results. An
 #'     object of class \code{"NPRResults"} is a list containing the following
@@ -80,7 +79,7 @@
 RDHonest <- function(formula, data, subset, weights, cutoff=0, M,
                      kern="triangular", na.action, opt.criterion="MSE", h,
                      se.method="nn", alpha=0.05, beta=0.8, J=3, sclass="H",
-                     order=1, se.initial="EHW") {
+                     order=1) {
 
     ## construct model frame
     cl <- mf <- match.call(expand.dots = FALSE)
@@ -98,82 +97,15 @@ RDHonest <- function(formula, data, subset, weights, cutoff=0, M,
         ret <- RDTOpt.fit(d, M, opt.criterion, alpha, beta, se.method, J)
     } else if (!missing(h)) {
         ret <- NPRHonest.fit(d, M, kern, h, alpha=alpha, se.method=se.method,
-                             J=J, sclass=sclass, order=order,
-                             se.initial=se.initial)
+                             J=J, sclass=sclass, order=order)
     } else {
         ret <- NPRHonest.fit(d, M, kern, opt.criterion=opt.criterion,
                              alpha=alpha, beta=beta, se.method=se.method, J=J,
-                             sclass=sclass, order=order, se.initial=se.initial)
+                             sclass=sclass, order=order)
     }
     ret$data <- d
     ret$call <- cl
     ## NA action?
 
     ret
-}
-
-
-## Imbens and Kalyanaraman bandwidth. Only used by NPRPrelimVar.fit
-##
-##  Reproduce bandwidth from Section 6.2 in Imbens and Kalyanaraman (2012)
-IKBW.fit <- function(d, kern="triangular", order=1, verbose=FALSE) {
-    if (order!=1)
-        stop("Only works for local linear regression.")
-    CheckClass(d, "RDData")
-
-    X <- c(d$Xm, d$Xp)
-    Nm <- length(d$Xm)
-    Np <- length(d$Xp)
-    N <- Nm+Np
-
-    ## STEP 0: Kernel constant
-    if (is.character(kern)) {
-        s <- RDHonest::kernC[with(RDHonest::kernC,
-                        order==1 & boundary==TRUE & kernel==kern, ), ]
-    } else if (is.function(kern)) {
-        ke <- EqKern(kern, boundary=TRUE, order=1)
-        s <- list(mu2=KernMoment(ke, moment=2, boundary=TRUE, "raw"),
-                  nu0=KernMoment(ke, moment=0, boundary=TRUE, "raw2"))
-    }
-    const <- (s$nu0/s$mu2^2)^(1/5)
-
-    ## STEP 1: Estimate f(0), sigma^2_(0) and sigma^2_+(0), using Silverman
-    ## pilot bandwidth for uniform kernel
-    d <- NPRPrelimVar.fit(d, se.initial="Silverman")
-    h1 <- 1.84*stats::sd(X)/N^(1/5)
-    f0 <- sum(abs(X) <= h1) / (2*N*h1)
-    varm <- d$sigma2m[1]
-    varp <- d$sigma2p[1]
-
-    ## STEP 2: Estimate second derivatives m_{+}^(2) and m_{-}^(2)
-
-    ## Estimate third derivative using 3rd order polynomial: Equation (14)
-    m3 <- 6*stats::coef(stats::lm(I(c(d$Ym, d$Yp)) ~ I(X>=0) + X +
-                                      I(X^2) + I(X^3)))[5]
-
-    ## Left and right bandwidths, Equation (15) and page 956.
-    ## Optimal constant based on one-sided uniform Kernel, 7200^(1/7),
-    h2m <- 7200^(1/7) * (varm/(f0*m3^2))^(1/7) * Nm^(-1/7)
-    h2p <- 7200^(1/7) * (varp/(f0*m3^2))^(1/7) * Np^(-1/7)
-
-    ## estimate second derivatives by local quadratic
-    m2m <- 2*stats::coef(stats::lm(d$Ym ~ d$Xm + I(d$Xm^2),
-                                   subset=(d$Xm >= -h2m)))[3]
-    m2p <- 2*stats::coef(stats::lm(d$Yp ~ d$Xp + I(d$Xp^2),
-                                   subset=(d$Xp <= h2p)))[3]
-
-    ## STEP 3: Calculate regularization terms, Equation (16)
-    rm <- 2160*varm / (sum(d$Xm >= -h2m) * h2m^4)
-    rp <- 2160*varp / (sum(d$Xp <= h2p) * h2p^4)
-
-    if(verbose)
-        cat("\n h1: ", h1, "\n N_{-}, N_{+}: ", Nm, Np, "\n f(0): ", f0,
-            "\n sigma^2_{+}(0): ", sqrt(varp),
-            "^2\n sigma^2_{+}(0):", sqrt(varm), "^2",
-            "\n m3: ", m3, "\n h_{2, +}:", h2p, "h_{2, -}:", h2m,
-            "\n m^{(2)}_{+}: ", m2p, "m^{(2)}_{-}: ", m2m,
-            "\n r_{+}:", rp, "\n r_{-}:", rm, "\n\n")
-
-    ## Final bandwidth: Equation (17)
-    unname(const * ((varp+varm) / (f0*N * ((m2p-m2m)^2+rm+rp)))^(1/5))
 }

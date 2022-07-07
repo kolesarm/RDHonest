@@ -1,27 +1,3 @@
-## method assumes X is sorted
-## @param J number of nearest neighbors
-sigmaNN <- function(X, Y, J=3, weights=rep(1L, length(X))) {
-    n <- length(X)
-    sigma2 <- matrix(nrow=n, ncol=NCOL(Y)^2)
-
-    for (k in seq_along(X)) {
-        ## d is distance to Jth neighbor, exluding oneself
-        s <- max(k-J, 1):k
-        d <- sort(abs(c(X[s[-length(s)]], X[k:min(k+J, n)][-1])-X[k]))[J]
-        ind <- (abs(X-X[k])<=d)
-        ind[k] <- FALSE                 # exclude oneself
-        Jk <- sum(weights[ind])
-        sigma2[k, ] <- Jk/(Jk+weights[k])*
-            if (NCOL(Y)>1)
-                as.vector(outer(Y[k, ]-colSums(weights[ind]*Y[ind, ])/Jk,
-                                Y[k, ]-colSums(weights[ind]*Y[ind, ])/Jk))
-            else
-                (Y[k]-sum(weights[ind]*Y[ind])/Jk)^2
-    }
-    drop(sigma2)
-}
-
-
 ## Local polynomial regression at a point, normalized to 0
 ## Calculate estimate of a function at a point and its variance given a
 ## bandwidth using local polynomial regression of order \code{order}.
@@ -170,63 +146,6 @@ NPRreg.fit <- function(d, h, kern="triangular", order=1, se.method="nn",
     ret
 }
 
-## Compute preliminary estimate of variance: nn, EHW, Silverman
-##
-## Compute estimate of variance, which can then be used in optimal bandwidth
-## calculations. These estimates are unweighted.
-NPRPrelimVar.fit <- function(d, se.initial="EHW") {
-    ## Pilot bandwidth: either IK/ROT, or else Silverman for uniform kernel,
-    ## making sure this results in enough distinct values on either side of
-    ## threshold
-    if (se.initial == "EHW") {
-        drf <- d
-        ## Use reduced form for FRD
-        if (inherits(d, "FRDData")) {
-            drf$Yp <- drf$Yp[, 1]
-            drf$Ym <- drf$Ym[, 1]
-            class(drf) <- "RDData"
-        }
-        h1 <- if (inherits(d, "LPPData")) ROTBW.fit(drf) else IKBW.fit(drf)
-        if(is.nan(h1)) {
-            warning("Preliminary bandwidth is NaN, setting it to Inf")
-            h1 <- Inf
-        }
-        r1 <- NPRreg.fit(d, h1, se.method=se.initial)
-    } else if (se.initial == "Silverman") {
-        X <- if (inherits(d, "LPPData")) d$X else c(d$Xm, d$Xp)
-        Xmin <- if (inherits(d, "LPPData")) {
-                    sort(abs(unique(d$X)))[2]
-                } else  {
-                    max(sort(unique(d$Xp))[2], sort(abs(unique(d$Xm)))[2])
-                }
-        h1 <- max(1.84*stats::sd(X)/sum(length(X))^(1/5), Xmin)
-        r1 <- NPRreg.fit(d=d, h=h1, kern="uniform", order=0, se.method="EHW")
-        ## Variance adjustment for backward compatibility
-        if (inherits(d, "LPPData")) {
-            r1$sigma2 <- r1$sigma2*length(r1$sigma2) / (length(r1$sigma2)-1)
-        } else {
-            r1$sigma2p <- r1$sigma2p*length(r1$sigma2p) /
-                (length(r1$sigma2p)-1)
-            r1$sigma2m <- r1$sigma2m*length(r1$sigma2m) /
-                (length(r1$sigma2m)-1)
-        }
-    } else {
-        stop("Unknown method for estimating initial variance")
-    }
-
-    if (inherits(d, "LPPData")) {
-        d$sigma2 <- rep(mean(r1$sigma2), length(d$X))
-    } else if (inherits(d, "RDData")) {
-        d$sigma2p <- rep(mean(r1$sigma2p), length(d$Xp))
-        d$sigma2m <- rep(mean(r1$sigma2m), length(d$Xm))
-    } else {
-        d$sigma2m <- matrix(rep(colMeans(r1$sigma2m), each=length(d$Xm)),
-                                nrow=length(d$Xm))
-        d$sigma2p <- matrix(rep(colMeans(r1$sigma2p), each=length(d$Xp)),
-                            nrow=length(d$Xp))
-    }
-    d
-}
 
 ## Rule of thumb for choosing M
 ##

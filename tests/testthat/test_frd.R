@@ -5,10 +5,10 @@ test_that("Selected bw is infinite", {
                  cutoff=0)
 
     ## Expect using all data
-    r0 <- NPRHonest.fit(d, M=c(0, 0), kern="triangular",
-                        opt.criterion="OCI", T0=0)$coefficients
-    r1 <- NPRHonest.fit(d, M=c(0, 0), kern="uniform",
-                        opt.criterion="FLCI", T0=0)$coefficients
+    r0 <- NPRHonest.fit(d, M=c(0, 0), kern="triangular", opt.criterion="OCI",
+                        T0=0)$coefficients
+    r1 <- NPRHonest.fit(d, M=c(0, 0), kern="uniform", opt.criterion="FLCI",
+                        T0=0)$coefficients
     r2 <- NPRreg.fit(d, h=Inf, kern="uniform")
     expect_equal(c(r1$std.error, r1$estimate),
                  c(unname(r2$se["nn"]), r2$estimate))

@@ -14,7 +14,6 @@
 #' @template RDweights
 #' @template RDclass
 #' @template Kern
-#' @template RDseInitial
 #' @param T0 Initial estimate of the treatment effect for calculating the
 #'     optimal bandwidth. Only relevant for Fuzzy RD.
 #' @return Returns an object of class \code{"NPRResults"}. The function
@@ -71,7 +70,7 @@
 FRDHonest <- function(formula, data, subset, weights, cutoff=0, M,
                       kern="triangular", na.action, opt.criterion, h,
                       se.method="nn", alpha=0.05, beta=0.8, J=3, sclass="H",
-                      order=1, se.initial="EHW", T0=0) {
+                      order=1, T0=0) {
 
     ## construct model frame
     cl <- mf <- match.call(expand.dots = FALSE)
@@ -91,14 +90,12 @@ FRDHonest <- function(formula, data, subset, weights, cutoff=0, M,
         M <- NPR_MROT.fit(d)
 
     if (!missing(h)) {
-        ret <- NPRHonest.fit(d, M, kern, h, alpha=alpha,
-                            se.method=se.method, J=J, sclass=sclass,
-                            order=order, se.initial=se.initial, T0=T0)
+        ret <- NPRHonest.fit(d, M, kern, h, alpha=alpha, se.method=se.method,
+                             J=J, sclass=sclass, order=order, T0=T0)
     } else {
         ret <- NPRHonest.fit(d, M, kern, opt.criterion=opt.criterion,
                              alpha=alpha, beta=beta, se.method=se.method, J=J,
-                             sclass=sclass, order=order, se.initial=se.initial,
-                             T0=T0)
+                             sclass=sclass, order=order, T0=T0)
     }
 
     ret$call <- cl
