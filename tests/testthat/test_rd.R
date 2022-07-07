@@ -130,13 +130,18 @@ test_that("Honest inference in Lee and LM data",  {
              M=0.04, opt.criterion="OCI", se.method="supplied.var",
              se.initial="EHW", beta=0.8)
     expect_equal(r$coefficients$conf.low.onesided, 2.761343298)
-    r <- RDHonest(voteshare ~ margin, data=lee08, kern="optimal",
-                  M=0.04, opt.criterion="FLCI", se.method="supplied.var",
+    r <- RDHonest(voteshare ~ margin, data=lee08, kern="optimal", M=0.04,
+                  opt.criterion="FLCI", se.method="supplied.var",
                   se.initial="EHW")
     ro <- capture.output(print(r, digits=8))
     expect_equal(ro[9], paste0(" Sharp RD parameter 5.8864375  1.4472117",
                                "   0.80247208 (2.6646087, 9.1082664)"))
-
+    ## Try nn
+    r1 <- RDHonest(voteshare ~ margin, data=lee08, kern="optimal", M=0.04,
+                   opt.criterion="FLCI", se.method="nn")
+    expect_equal(as.numeric(r1$coefficients[2:6]),
+                 c(5.886437523, 1.196647571, 0.8024720847, 3.099785428,
+                   8.673089618))
     ## We no longer allow different bw below and above cutoff
     ## r <- RDHonest(voteshare ~ margin, data=lee08, kern="triangular",
     ##               M=0.04, opt.criterion="MSE", se.method="supplied.var",
@@ -254,9 +259,9 @@ test_that("Optimizing bw", {
 
 test_that("Adaptation bounds", {
     ## Replicate some analysis form ecta paper
-    d <- RDData(lee08, cutoff=0)
-    b1 <- RDTEfficiencyBound(d, 2*0.00002, opt.criterion="OCI", alpha=0.05,
-                             beta=0.8)
-    b2 <- RDTEfficiencyBound(d, 2*0.005, opt.criterion="FLCI", alpha=0.05)
+    r <- RDHonest(voteshare ~ margin, data=lee08, M=2*0.00002, h=2)
+    b1 <- RDTEfficiencyBound(r, opt.criterion="OCI", beta=0.8)
+    r <- RDHonest(voteshare ~ margin, data=lee08, M=2*0.005, h=3)
+    b2 <- RDTEfficiencyBound(r, 2*0.005, opt.criterion="FLCI")
     expect_equal(unname(c(b1, b2)), c(0.9956901, 0.95870418))
 })

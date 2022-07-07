@@ -95,9 +95,7 @@ RDHonest <- function(formula, data, subset, weights, cutoff=0, M,
         M <- NPR_MROT.fit(d)
 
     if (kern=="optimal") {
-        ret <- RDTOpt.fit(d, M, opt.criterion=opt.criterion, alpha=alpha,
-                          beta=beta, se.method=se.method, J=J,
-                          se.initial=se.initial)
+        ret <- RDTOpt.fit(d, M, opt.criterion, alpha, beta, se.method, J)
     } else if (!missing(h)) {
         ret <- NPRHonest.fit(d, M, kern, h, alpha=alpha, se.method=se.method,
                              J=J, sclass=sclass, order=order,
@@ -107,8 +105,10 @@ RDHonest <- function(formula, data, subset, weights, cutoff=0, M,
                              alpha=alpha, beta=beta, se.method=se.method, J=J,
                              sclass=sclass, order=order, se.initial=se.initial)
     }
-
+    ret$data <- d
     ret$call <- cl
+    ## NA action?
+
     ret
 }
 

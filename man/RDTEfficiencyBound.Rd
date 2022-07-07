@@ -4,49 +4,20 @@
 \alias{RDTEfficiencyBound}
 \title{Finite-sample efficiency bounds for minimax CIs}
 \usage{
-RDTEfficiencyBound(
-  d,
-  M,
-  opt.criterion = "FLCI",
-  alpha = 0.05,
-  beta = 0.5,
-  se.initial = "EHW"
-)
+RDTEfficiencyBound(object, opt.criterion = "FLCI", beta = 0.5)
 }
 \arguments{
-\item{d}{object of class \code{"RDData"}}
-
-\item{M}{Bound on second derivative of the conditional mean function.}
+\item{object}{What RDHonest returns. This has M and alpha}
 
 \item{opt.criterion}{\code{"FLCI"} for computing efficiency of two-sided CIs,
 and \code{"OCI"} for minimax one-sided CIs.}
 
-\item{alpha}{determines confidence level, \code{1-alpha} for
-constructing/optimizing confidence intervals.}
-
 \item{beta}{Determines quantile of excess length to optimize, if bandwidth
 optimizes given quantile of excess length of one-sided confidence
 intervals; otherwise ignored.}
-
-\item{se.initial}{Method for estimating initial variance for computing
-    optimal bandwidth. Except for \code{"nn"}, all methods assume
-    homoskedasticity on either side of cutoff (for RD), or for all data (for
-    inference at a point).
-
-\describe{
-
-\item{"EHW"}{Based on residuals from a local linear regression using a
-            triangular kernel, and a bandwidth given by a rule-of-thumb
-            bandwidth suggested by Fan and Gijbels (1996) (for inference at a
-            point), or Imbens and Kalyanaraman (2012, IK) bandwidth (for
-            fuzzy and sharp RD). For fuzzy RD, the IK bandwidth is based on
-            the reduced-form regression.}
-
-\item{"Silverman"}{Use residuals from local constant regression with uniform
-kernel and bandwidth selected using Silverman's rule of thumb, as in Equation
-(14) in Imbens and Kalyanaraman (2012)}
-
-}}
+}
+\value{
+Efficiency
 }
 \description{
 Compute efficiency of minimax one-sided CIs at constant functions, or

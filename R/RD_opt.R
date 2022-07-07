@@ -39,11 +39,9 @@ RDgbC <- function(d, b, C) {
     bp <- b-bm
     dp <- dstar(d$Xp, bp, C, d$sigma2p)
     dm <- dstar(d$Xm, bm, C, d$sigma2m)
-    cs <- c(bm, bp, dm, dp)
-    names(cs) <- c("b.minus", "b.plus", "d.minus", "d.plus")
 
     structure(list(m=function(x) SY(x, bm, dm, C)*(x<=0),
-                   p=function(x) SY(x, bp, dp, C)*(x>=0), c=cs),
+                   p=function(x) SY(x, bp, dp, C)*(x>=0)),
               class="RDLFFunction")
 }
 
@@ -66,12 +64,19 @@ RDLFFunction <- function(d, C, delta) {
 ## @param d Object of class \code{"RDData"}
 ## @param f Object of class \code{"RDLFFunction"}
 ## @template RDse
-RDTEstimator <- function(d, f, alpha=0.05, se.method="supplied.var", J=3) {
+RDTEstimator <- function(d, f, alpha, se.method, J) {
     den <- sum(f$p(d$Xp) / d$sigma2p) # denominator
+    ## By (S3) in supplement of 1511.06028v2, this = sum(f$m(d$Xm) / d$sigma2m)
 
     Wp <- f$p(d$Xp) / (d$sigma2p*den)
     Wm <- f$m(d$Xm) / (d$sigma2m*den)
 
+    q <- Q(d, f)
+    ## If not NN then it's suppled var
+    if (se.method=="nn") {
+        d$sigma2p <- sigmaNN(d$Xp, d$Yp, J=J)
+        d$sigma2m <- sigmaNN(d$Xm, d$Ym, J=J)
+    }
     ## Drop observations with zero weight
     d$Xp <- d$Xp[Wp!=0]
     d$Xm <- d$Xm[Wm!=0]
@@ -83,19 +88,9 @@ RDTEstimator <- function(d, f, alpha=0.05, se.method="supplied.var", J=3) {
     Wm <- Wm[Wm!=0]
     Lhat <- sum(Wp * d$Yp) - sum(Wm * d$Ym)
 
-    q <- Q(d, f)
     b <- f$m(0)+f$p(0)
 
-    ## standard deviation. TODO: only one
-    sd <- c(NA, NA, NA)
-    names(sd) <- c("supplied.var", "nn", "EHW")
-    sdL <- function(s2p, s2m) sqrt(sum(Wp^2 * s2p) + sum(Wm^2 * s2m))
-
-    if ("supplied.var" %in% se.method)
-        sd[1] <- sdL(d$sigma2p, d$sigma2m)
-    if ("nn" %in% se.method)
-        sd[2] <- sdL(sigmaNN(d$Xp, d$Yp, J=J), sigmaNN(d$Xm, d$Ym, J=J))
-    sd <- unname(sd[se.method])
+    sd <-  sqrt(sum(Wp^2 * d$sigma2p) + sum(Wm^2 * d$sigma2m))
     maxbias <- b - q/den                # b-q/den
     lower <- Lhat - maxbias - stats::qnorm(1-alpha)*sd
     upper <- Lhat + maxbias + stats::qnorm(1-alpha)*sd
@@ -114,16 +109,10 @@ RDTEstimator <- function(d, f, alpha=0.05, se.method="supplied.var", J=3) {
 }
 
 ## Optimal inference in RD under Taylor class
-##
-## Basic computing engine called by \code{\link{RDHonest}} to compute honest
-## confidence intervals for optimal estimators in RD under second-order Taylor
-## class.
-##
-RDTOpt.fit <- function(d, M, opt.criterion, alpha=0.05, beta=0.5,
-                       se.method="supplied.var", J=3, se.initial="IKEHW") {
+RDTOpt.fit <- function(d, M, opt.criterion, alpha, beta, se.method, J) {
     ## First check if sigma2 is supplied
     if (is.null(d$sigma2p) || is.null(d$sigma2m))
-        d <- NPRPrelimVar.fit(d, se.initial)
+        d <- NPRPrelimVar.fit(d, se.initial="EHW")
 
     C <-  M/2
     ## Find optimal delta, see Supplement to 1511.06028v2
@@ -148,7 +137,7 @@ RDTOpt.fit <- function(d, M, opt.criterion, alpha=0.05, beta=0.5,
             CVb(maxbias/hse, alpha) * hse # Half-length
         }
         ## eq is convex, start around MSE optimal b
-        bs <- RDTOpt.fit(d, M, "MSE", alpha, beta)$omega/2
+        bs <- RDTOpt.fit(d, M, "MSE", alpha, beta, se.method, J)$omega/2
         lff <- RDgbC(d, stats::optimize(eq, c(bs/2, 3*bs/2))$minimum, C)
     }
 
@@ -167,16 +156,13 @@ RDTOpt.fit <- function(d, M, opt.criterion, alpha=0.05, beta=0.5,
 #' efficiency of two-sided fixed-length CIs at constant functions under
 #' second-order Taylor smoothness class.
 #'
-#' @param d object of class \code{"RDData"}
+#' @param object What RDHonest returns. This has M and alpha
 #' @param opt.criterion \code{"FLCI"} for computing efficiency of two-sided CIs,
 #'     and \code{"OCI"} for minimax one-sided CIs.
 #' @param beta Determines quantile of excess length to optimize, if bandwidth
 #'     optimizes given quantile of excess length of one-sided confidence
 #'     intervals; otherwise ignored.
-#' @param alpha determines confidence level, \code{1-alpha} for
-#'     constructing/optimizing confidence intervals.
-#' @param M Bound on second derivative of the conditional mean function.
-#' @template RDseInitial
+#' @return Efficiency
 #' @references{
 #'
 #' \cite{Armstrong, Timothy B., and Michal Kolesár. 2018.
@@ -185,17 +171,18 @@ RDTOpt.fit <- function(d, M, opt.criterion, alpha=0.05, beta=0.5,
 #'
 #' }
 #' @export
-RDTEfficiencyBound <- function(d, M, opt.criterion="FLCI",
-                               alpha=0.05, beta=0.5, se.initial="EHW") {
-    C <- M/2
-    ## First check if sigma2 is supplied
-    if (is.null(d$sigma2p) || is.null(d$sigma2m))
-        d <- NPRPrelimVar.fit(d, se.initial)
+RDTEfficiencyBound <- function(object, opt.criterion="FLCI", beta=0.5) {
+    d <- object$data
+    alpha <- object$coefficients$alpha
+    C <- object$coefficients$M/2
+    d <- NPRPrelimVar.fit(d, se.initial="EHW")
 
     if (opt.criterion=="OCI") {
         delta <- stats::qnorm(1-alpha)+stats::qnorm(beta)
-        r1 <- RDTEstimator(d, RDLFFunction(d, C, delta))
-        r2 <- RDTEstimator(d, RDLFFunction(d, C, 2*delta))
+        r1 <- RDTEstimator(d, RDLFFunction(d, C, delta), alpha,
+                           se.method="supplied.var")
+        r2 <- RDTEstimator(d, RDLFFunction(d, C, 2*delta), alpha,
+                           se.method="supplied.var")
         return(r2$omega/(r1$delta*r1$coefficients$std.error+r1$omega))
     } else {
         ## From proof of Pratt result, it follows that the expected length is
@@ -210,8 +197,8 @@ RDTEfficiencyBound <- function(d, M, opt.criterion="FLCI",
         ## integrand equals 1-alpha at zero, need upper cutoff
         upper <- 10
         while(integrand(upper)>1e-10) upper <- 2*upper
-        den <- RDTOpt.fit(d, 2*C, opt.criterion="FLCI",
-                          alpha=alpha)$coefficients
+        den <- RDTOpt.fit(d, 2*C, opt.criterion="FLCI", alpha, beta,
+                          se.method="supplied.var")$coefficients
         den <- (den$conf.high-den$conf.low)/2
         return(stats::integrate(integrand, 1e-6, upper)$value / den)
     }

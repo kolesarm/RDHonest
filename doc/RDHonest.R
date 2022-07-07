@@ -62,10 +62,10 @@ RDHonest(voteshare ~ margin, data=lee08, kern="uniform", sclass="H",
 
 ## -----------------------------------------------------------------------------
 r1 <- RDHonest(voteshare ~ margin, data=lee08, kern="optimal", M=0.1,
-           opt.criterion="FLCI", se.initial="Silverman",
+           opt.criterion="FLCI",
            se.method="nn")$coefficients
 r2 <- RDHonest(voteshare ~ margin, data=lee08, kern="triangular", M=0.1,
-           opt.criterion="FLCI", se.initial="Silverman", se.method="nn",
+           opt.criterion="FLCI", se.method="nn",
            sclass="T")$coefficients
 r1$conf.high-r1$conf.low
 r2$conf.high-r2$conf.low

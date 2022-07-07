@@ -94,7 +94,8 @@ NPRHonest.fit <- function(d, M, kern="triangular", h, opt.criterion, alpha=0.05,
         eff.obs=r1$eff.obs, # TODO
         cv=NA,
         alpha=alpha,
-        method=if (sclass=="H") "Holder" else "Taylor"
+        method=if (sclass=="H") "Holder" else "Taylor",
+        M=M
     )
 
     structure(list(coefficients=coef,
@@ -119,7 +120,8 @@ NPROptBW.fit <- function(d, M, kern="triangular", opt.criterion, alpha=0.05,
                            sclass=sclass, order=order, T0=T0,
                            T0bias=TRUE)$coefficients
         if (opt.criterion=="OCI") {
-            2*r$maximum.bias+r$std.error*(stats::qnorm(1-alpha)+stats::qnorm(beta))
+            2*r$maximum.bias+
+                r$std.error*(stats::qnorm(1-alpha)+stats::qnorm(beta))
         } else if (opt.criterion=="MSE") {
             r$maximum.bias^2+r$std.error^2
         } else if (opt.criterion=="FLCI") {
