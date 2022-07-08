@@ -29,27 +29,35 @@ sigmaNN <- function(X, Y, J=3, weights=rep(1L, length(X))) {
 ## Compute estimate of variance, which can then be used in optimal bandwidth
 ## calculations. These estimates are unweighted.
 NPRPrelimVar.fit <- function(d, se.initial="EHW") {
-    ## Pilot bandwidth: either IK/ROT, or else Silverman for uniform kernel,
-    ## making sure this results in enough distinct values on either side of
-    ## threshold
+    ## Pilot bandwidth: either IK/ROT, or else Silverman (for actually computing
+    ## IK) for uniform kernel making sure this results in enough distinct values
+    ## on either side of threshold so we don't have perfect fit
+
+    if (inherits(d, "LPPData")) {
+        hmin <- max(sort(unique(abs(d$X)))[2], sort(abs(d$X))[4])
+    } else {
+        hmin <- max(sort(unique(d$Xp))[2], sort(abs(unique(d$Xm)))[2],
+                    sort(d$Xp)[4], sort(abs(d$Xm))[4])
+    }
+
+    ## Use reduced form for FRD
+    drf <- d
+    if (inherits(d, "FRDData")) {
+        drf$Yp <- drf$Yp[, 1]
+        drf$Ym <- drf$Ym[, 1]
+        class(drf) <- "RDData"
+    }
+
     if (se.initial == "EHW") {
-        drf <- d
-        ## Use reduced form for FRD
-        if (inherits(d, "FRDData")) {
-            drf$Yp <- drf$Yp[, 1]
-            drf$Ym <- drf$Ym[, 1]
-            class(drf) <- "RDData"
-        }
         h1 <- if (inherits(d, "LPPData")) ROTBW.fit(drf) else IKBW.fit(drf)
         if(is.nan(h1)) {
             warning("Preliminary bandwidth is NaN, setting it to Inf")
             h1 <- Inf
         }
-        r1 <- NPRreg.fit(d, h1, se.method=se.initial)
-    } else if (!inherits(d, "LPPData")) { # Silverman only for RD/IK
+        r1 <- NPRreg.fit(d, max(h1, hmin), se.method="EHW")
+    } else if (inherits(d, "RDData")) { # Silverman only for RD/IK
         X <- c(d$Xm, d$Xp)
-        Xmin <- max(sort(unique(d$Xp))[2], sort(abs(unique(d$Xm)))[2])
-        h1 <- max(1.84*stats::sd(X)/sum(length(X))^(1/5), Xmin)
+        h1 <- max(1.84*stats::sd(X)/sum(length(X))^(1/5), hmin)
         r1 <- NPRreg.fit(d, h1, "uniform", order=0, se.method="EHW")
         ## Variance adjustment for backward compatibility
         r1$sigma2p <- r1$sigma2p*length(r1$sigma2p) / (length(r1$sigma2p)-1)

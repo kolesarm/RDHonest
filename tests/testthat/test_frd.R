@@ -99,5 +99,5 @@ test_that("FRD interface", {
     p4 <- RDHonest(log(cn)~retired | elig_year, data=rcp1, cutoff=0, M=M,
                     kern="triangular", opt.criterion="OCI",
                     T0=p1$coefficients$estimate)
-    expect_identical(r4$h, p4$coefficients$bandwidth)
+    expect_identical(r4, p4$coefficients$bandwidth)
 })

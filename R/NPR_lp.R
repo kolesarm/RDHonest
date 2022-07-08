@@ -12,7 +12,7 @@ NPRHonest.fit <- function(d, M, kern="triangular", h, opt.criterion, alpha=0.05,
                           beta=0.8, se.method="nn", J=3, sclass="H", T0=0,
                           T0bias=FALSE) {
     if (missing(h))
-        h <- NPROptBW.fit(d, M, kern, opt.criterion, alpha, beta, sclass, T0)$h
+        h <- NPROptBW.fit(d, M, kern, opt.criterion, alpha, beta, sclass, T0)
 
     ## Suppress warnings about too few observations
     r1 <- NPRreg.fit(d, h, kern, order=1, se.method, TRUE, J)
@@ -96,8 +96,6 @@ NPRHonest.fit <- function(d, M, kern="triangular", h, opt.criterion, alpha=0.05,
 
 
 ## Optimal bandwidth selection in nonparametric regression
-##
-## Basic computing engine to compute the optimal bandwidth
 NPROptBW.fit <- function(d, M, kern="triangular", opt.criterion, alpha=0.05,
                          beta=0.8, sclass="H", T0=0) {
 
@@ -108,8 +106,7 @@ NPROptBW.fit <- function(d, M, kern="triangular", opt.criterion, alpha=0.05,
     ## Objective function for optimizing bandwidth
     obj <- function(h) {
         r <- NPRHonest.fit(d, M, kern, h, alpha=alpha, se.method="supplied.var",
-                           sclass=sclass, T0=T0,
-                           T0bias=TRUE)$coefficients
+                           sclass=sclass, T0=T0, T0bias=TRUE)$coefficients
         switch(opt.criterion,
                OCI=2*r$maximum.bias+
                    r$std.error*(stats::qnorm(1-alpha)+stats::qnorm(beta)),
@@ -136,7 +133,7 @@ NPROptBW.fit <- function(d, M, kern="triangular", opt.criterion, alpha=0.05,
                                  tol=.Machine$double.eps^0.75)$minimum)
     }
 
-    list(h=h, sigma2p=d$sigma2p, sigma2m=d$sigma2m, sigma2=d$sigma2)
+    h
 }
 
 

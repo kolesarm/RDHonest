@@ -80,15 +80,6 @@ NPRreg.fit <- function(d, h, kern="triangular", order=1, se.method="nn",
         if(!is.null(d$sigma2p)) d$sigma2p <- as.matrix(d$sigma2p)
         if(!is.null(d$sigma2m)) d$sigma2m <- as.matrix(d$sigma2m)
     }
-    nob <- max(length(d$X), min(length(d$Xp), length(d$Xm)))
-    uob <- max(length(unique(d$X)),
-               min(length(unique(d$Xp)), length(unique(d$Xm))))
-
-    if (no.warning==FALSE && (nob <= 3*order || uob <= order))
-        warning("Too few observations to compute estimates.\nOnly ",
-                nob, " units with positive weights and ",
-                uob, " unique values for ",
-                "independent variable with positive weights")
 
     if (inherits(d, "LPPData")) {
         r <- LPReg(d$X, d$Y[W>0], h, kern, order, se.method, d$sigma2[W>0],

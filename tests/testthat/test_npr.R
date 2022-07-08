@@ -83,9 +83,4 @@ test_that("Test NPRreg", {
     ## diagnostics = TRUE)$coefficients[2, 1:2]
     expect_equal(c(r2$estimate, unname(r2$se["EHW"])),
                  c(-0.14157767, 0.02562096))
-
-
-    ## bw too narrow
-    expect_warning(NPRreg.fit(d, 2, "uniform", order=2))
-    expect_warning(NPRreg.fit(RDData(lee08, cutoff=0), 0.1, order=2))
 })

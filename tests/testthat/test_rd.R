@@ -182,7 +182,7 @@ test_that("Honest inference in Lee and LM data",  {
                        opt.criterion = "MSE", sclass = "T")
     expect_equal(unname(r1$bandwidth), 12.85186708)
     expect_equal(unname(r2$conf.low.onesided), 6.056860266)
-    expect_equal(unname(r3$h), 5.086645484)
+    expect_equal(unname(r3), 5.086645484)
 
     ## Missing values
     expect_error(RDHonest(mortHS ~ povrate60, data=headst, kern="uniform", h=12,
