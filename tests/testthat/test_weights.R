@@ -51,10 +51,11 @@ test_that("Test weighting using cghs", {
     expect_equal(c(s2$estimate, s2$maximum.bias),
                  c(s1$estimate, s1$maximum.bias))
     ## LPP Honest
-    t1 <- LPPHonest(log(earnings)~yearat14, point=1947, h=5,
-                    data=cghs[cghs$yearat14>=1947, ], M=1)$coefficients
-    t2 <- LPPHonest(y~x, point=1947, h=5, data=dd[dd$x>=1947, ], M=1,
-                    weights=weights)$coefficients
+    t1 <- RDHonest(log(earnings)~yearat14, cutoff=1947, h=5,
+                   data=cghs[cghs$yearat14>=1947, ], M=1,
+                   point.inference=TRUE)$coefficients
+    t2 <- RDHonest(y~x, cutoff=1947, h=5, data=dd[dd$x>=1947, ], M=1,
+                   weights=weights, point.inference=TRUE)$coefficients
     expect_equal(c(t2$estimate, t2$maximum.bias),
                  c(t1$estimate, t1$maximum.bias))
 })

@@ -1,11 +1,11 @@
 #' Honest inference in RD
 #'
-#' Calculate estimators and bias-aware one- and two-sided CIs for the sharp or
-#' fuzzy RD parameter.
+#' Calculate estimators and bias-aware CIs for the sharp or fuzzy RD parameter,
+#' or for value of the conditional mean at a point.
 #'
 #' The bandwidth is calculated to be optimal for a given performance criterion,
 #' as specified by \code{opt.criterion}. Alternatively, for local polynomial
-#' estimators, the bandwidth can be specified by \code{h}. If
+#' estimators, the bandwidth can be specified by \code{h}. For
 #' \code{kern="optimal"}, calculate optimal estimators under second-order Taylor
 #' smoothness class (sharp RD only).
 #'
@@ -16,6 +16,8 @@
 #' @template RDclass
 #' @template RDweights
 #' @template Kern
+#' @param point.inference Do inference at a point determined by \code{cutoff}
+#'     instead of RD.
 #' @param T0 Initial estimate of the treatment effect for calculating the
 #'     optimal bandwidth. Only relevant for Fuzzy RD.
 #' @return Returns an object of class \code{"NPRResults"}. The function
@@ -79,11 +81,13 @@
 #' RDHonest(voteshare ~ margin, data = lee08, kern = "uniform", M = 0.1, h = 10)
 #' RDHonest(cn~retired | elig_year, data=rcp, cutoff=0, M=c(4, 0.4),
 #'           kern="triangular", opt.criterion="MSE", T0=0, h=20)
+#' RDHonest(voteshare ~ margin, data = lee08, subset = margin>0,
+#'           kern = "uniform", M = 0.1, h = 10, point.inference=TRUE)
 #' @export
 RDHonest <- function(formula, data, subset, weights, cutoff=0, M,
                      kern="triangular", na.action, opt.criterion="MSE", h,
                      se.method="nn", alpha=0.05, beta=0.8, J=3, sclass="H",
-                     T0=0) {
+                     T0=0, point.inference=FALSE) {
 
     ## construct model frame
     cl <- mf <- match.call(expand.dots = FALSE)
@@ -98,10 +102,18 @@ RDHonest <- function(formula, data, subset, weights, cutoff=0, M,
     mf[[1L]] <- quote(stats::model.frame)
     mf <- eval(mf, parent.frame())
     mf$weights  <- mf$"(weights)"
-    d <- if (length(formula)[2]==2) FRDData(mf, cutoff) else RDData(mf, cutoff)
+    d <- if (point.inference) {
+             LPPData(mf, cutoff)
+         } else if (length(formula)[2]==2) {
+             FRDData(mf, cutoff)
+         } else {
+             RDData(mf, cutoff)
+         }
 
-    if (missing(M))
+    if (missing(M)) {
         M <- NPR_MROT.fit(d)
+        message("Using ROT for smoothness constant, setting to ", M)
+    }
     if (kern=="optimal") {
         ret <- RDTOpt.fit(d, M, opt.criterion, alpha, beta, se.method, J)
     } else if (!missing(h)) {
@@ -113,66 +125,6 @@ RDHonest <- function(formula, data, subset, weights, cutoff=0, M,
                              sclass=sclass, T0=T0)
     }
     ret$data <- d
-    ret$call <- cl
-    ret$na.action <- attr(mf, "na.action")
-
-    ret
-}
-
-#' Honest inference at a point
-#'
-#' Calculate estimators and one- and two-sided honest CIs for value of
-#' conditional mean at a point based on a local polynomial estimator under
-#' second-order Taylor or Hölder smoothness class.
-#'
-#' The bandwidth is calculated to be optimal for a given performance criterion,
-#' as specified by \code{opt.criterion}. Alternatively, the bandwidth can be
-#' specified by \code{h}.
-#'
-#' @template LPPFormula
-#' @template RDse
-#' @template RDoptBW
-#' @template RDBW
-#' @template RDclass
-#' @template Kern
-#' @return Returns an object of class \code{"NPResults"}.
-#' @references{
-#'
-#' \cite{Armstrong, Timothy B., and Michal Kolesár. 2020.
-#' "Simple and Honest Confidence Intervals in Nonparametric Regression."
-#' Quantitative Economics 11 (1): 1–39.}
-#'
-#' }
-#' @examples
-#' LPPHonest(voteshare ~ margin, data = lee08, subset = margin>0,
-#'           kern = "uniform", M = 0.1, h = 10)
-#' @export
-LPPHonest <- function(formula, data, subset, weights, point=0, M,
-                      kern="triangular", na.action, opt.criterion, h,
-                      se.method="nn", alpha=0.05, beta=0.8, J=3, sclass="H") {
-
-    ## construct model frame
-    cl <- mf <- match.call(expand.dots = FALSE)
-    m <- match(c("formula", "data", "subset", "weights", "na.action"),
-               names(mf), 0L)
-    mf <- mf[c(1L, m)]
-    mf[[1L]] <- quote(stats::model.frame)
-
-    mf <- eval(mf, parent.frame())
-    mf$weights  <- mf$"(weights)"
-    d <- LPPData(mf, point)
-    if (missing(M))
-        M <- NPR_MROT.fit(d)
-
-    if (!missing(h)) {
-        ret <- NPRHonest.fit(d, M, kern, h, alpha=alpha,
-                             se.method=se.method, J=J, sclass=sclass)
-    } else {
-        ret <- NPRHonest.fit(d, M, kern, opt.criterion=opt.criterion,
-                             alpha=alpha, beta=beta, se.method=se.method, J=J,
-                             sclass=sclass)
-    }
-
     ret$call <- cl
     ret$na.action <- attr(mf, "na.action")
 

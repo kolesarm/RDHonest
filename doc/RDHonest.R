@@ -126,8 +126,7 @@ RDHonest(log(cn) ~ retired | elig_year, data=rcp, kern="triangular",
 ## -----------------------------------------------------------------------------
 ## Transform data, specify we're interested in inference at x0=20,
 ## and drop observations below cutoff
-leep <- lee08[lee08$margin>0, ]
-## Data-driven choice of M
-LPPHonest(voteshare ~ margin, data=leep, point=20, kern="uniform",
-          opt.criterion="MSE", sclass="H")
+RDHonest(voteshare ~ margin, data=lee08, subset=margin>0,
+         cutoff=20, kern="uniform",
+         opt.criterion="MSE", sclass="H", point.inference=TRUE)
 

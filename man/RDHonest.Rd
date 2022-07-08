@@ -20,7 +20,8 @@ RDHonest(
   beta = 0.8,
   J = 3,
   sclass = "H",
-  T0 = 0
+  T0 = 0,
+  point.inference = FALSE
 )
 }
 \arguments{
@@ -39,7 +40,9 @@ in the fitting process.}
 \item{weights}{Optional vector of weights to weight the observations
 (useful for aggregated data). Disregarded if optimal kernel is used.}
 
-\item{cutoff}{specifies the RD cutoff in the running variable.}
+\item{cutoff}{specifies the RD cutoff in the running variable. For inference
+at a point, specified the point \eqn{x_0} at which to calculate the
+conditional mean.}
 
 \item{M}{Bound on second derivative of the conditional mean function.}
 
@@ -106,6 +109,9 @@ intervals; otherwise ignored.}
 
 \item{T0}{Initial estimate of the treatment effect for calculating the
 optimal bandwidth. Only relevant for Fuzzy RD.}
+
+\item{point.inference}{Do inference at a point determined by \code{cutoff}
+instead of RD.}
 }
 \value{
 Returns an object of class \code{"NPRResults"}. The function
@@ -147,13 +153,13 @@ Returns an object of class \code{"NPRResults"}. The function
 }
 }
 \description{
-Calculate estimators and bias-aware one- and two-sided CIs for the sharp or
-fuzzy RD parameter.
+Calculate estimators and bias-aware CIs for the sharp or fuzzy RD parameter,
+or for value of the conditional mean at a point.
 }
 \details{
 The bandwidth is calculated to be optimal for a given performance criterion,
 as specified by \code{opt.criterion}. Alternatively, for local polynomial
-estimators, the bandwidth can be specified by \code{h}. If
+estimators, the bandwidth can be specified by \code{h}. For
 \code{kern="optimal"}, calculate optimal estimators under second-order Taylor
 smoothness class (sharp RD only).
 }
@@ -169,6 +175,8 @@ that is first in \code{data} and then in the environment of \code{formula}.
 RDHonest(voteshare ~ margin, data = lee08, kern = "uniform", M = 0.1, h = 10)
 RDHonest(cn~retired | elig_year, data=rcp, cutoff=0, M=c(4, 0.4),
           kern="triangular", opt.criterion="MSE", T0=0, h=20)
+RDHonest(voteshare ~ margin, data = lee08, subset = margin>0,
+          kern = "uniform", M = 0.1, h = 10, point.inference=TRUE)
 }
 \references{
 {

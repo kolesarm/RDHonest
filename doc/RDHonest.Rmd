@@ -520,17 +520,16 @@ parameter space under which this method yields honest inference.
 
 # Inference at a point
 
-The package also contains function `LPPHonest` for inference at
+The package can also perform inference at
 a point, and optimal bandwidth selection for inference at a point. Suppose, for example, one
 was interested in the vote share for candidates with margin of victory equal to
 20 points:
 ```{r}
 ## Transform data, specify we're interested in inference at x0=20,
 ## and drop observations below cutoff
-leep <- lee08[lee08$margin>0, ]
-## Data-driven choice of M
-LPPHonest(voteshare ~ margin, data=leep, point=20, kern="uniform",
-          opt.criterion="MSE", sclass="H")
+RDHonest(voteshare ~ margin, data=lee08, subset=margin>0,
+         cutoff=20, kern="uniform",
+         opt.criterion="MSE", sclass="H", point.inference=TRUE)
 ```
 
 

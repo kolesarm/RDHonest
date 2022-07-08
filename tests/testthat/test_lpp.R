@@ -13,7 +13,8 @@ test_that("Inference at point agrees with RD", {
     expect_equal(pp$maximum.bias+mm$maximum.bias, rde$maximum.bias)
     expect_equal(mm$eff.obs+pp$eff.obs, rde$eff.obs)
 
-    p2 <- LPPHonest(voteshare~margin, data=lee08, subset=margin>=0, h=5, M=2)
+    p2 <- RDHonest(voteshare~margin, data=lee08, subset=margin>=0, h=5, M=2,
+                   point.inference=TRUE)
     ## 1:9 since something weird happens on codecov.io if lintr is included
     expect_equal(capture.output(print(p0))[1:7],
                  capture.output(print(p2))[6:12])
@@ -28,15 +29,15 @@ test_that("Inference at point agrees with RD", {
 })
 
 test_that("MROT matches paper", {
-    ## HS Mortality
-    lumi <- headst[!is.na(headst$mortHS), c("mortHS", "povrate60")]
-    mort <- RDData(lumi, cutoff=0)
-    Mh <- NPR_MROT.fit(mort)
-    dp <- LPPData(lumi[lumi$povrate>=0, ], point=0)
-    dm <- LPPData(lumi[lumi$povrate<0, ], point=0)
-
+    Mh <- RDHonest(mortHS~povrate60, data=headst, cutoff=0, h=0)$coefficients$M
     expect_equal(Mh, 0.29939992)
-    expect_equal(Mh, max(NPR_MROT.fit(dp), NPR_MROT.fit(dm)))
+
+    Mp <- RDHonest(mortHS~povrate60, data=headst, subset=(povrate60>=0),
+                   cutoff=0, h=0, point.inference=TRUE)
+    Mm <- RDHonest(mortHS~povrate60, data=headst, subset=(povrate60<0),
+                   h=0, point.inference=TRUE)
+    expect_equal(Mp$coefficients$M, Mh)
+    expect_lt(Mm$coefficients$M, Mh)
 })
 
 test_that("ROT bandwidth check", {
@@ -66,23 +67,22 @@ test_that("ROT bandwidth check", {
 })
 
 test_that("Optimal bandwidth calculations", {
+    rr <- RDHonest(voteshare ~ margin, data=lee08, subset=(margin>0),
+                   kern="uniform", opt.criterion="FLCI", point.inference=TRUE)
+    expect_equal(rr$coefficients$conf.high.onesided,
+                 55.24963853)
     dp <- LPPData(lee08[lee08$margin>0, ], point=0)
-    Mh <- NPR_MROT.fit(dp)
-    r1 <- LPPHonest(voteshare~margin, data=lee08, subset=margin>0, point=0,
-                    M=2*Mh, opt.criterion="MSE")
+    Mh <- rr$coefficients$M
+    r1 <- RDHonest(voteshare~margin, data=lee08, subset=margin>0, M=2*Mh,
+                   opt.criterion="MSE", point.inference=TRUE)
     r <- capture.output(print(r1, digits=4))
     expect_equal(r[11], "Bandwidth: 13.41")
     r2 <- NPROptBW.fit(dp, M=2*Mh, opt.criterion="MSE")$h
     expect_identical(r2,  r1$coefficients$bandwidth)
     expect_lt(abs(r2- 13.4109133), 1e-6)
-    rr <- NPRHonest.fit(dp, M=Mh, kern="uniform", opt.criterion="FLCI")
-    expect_equal(rr$coefficients$conf.high.onesided,
-                 55.24963853)
 
     ## Make sure we're getting positive worst-case bias
-    leep <- lee08[lee08$margin>0, ]
-    M <- NPR_MROT.fit(LPPData(leep, point = 20))
-    r <- LPPHonest(voteshare ~ margin, data=leep, point=20, kern="uniform", M=M,
-                   opt.criterion="MSE", sclass="H")
+    r <- RDHonest(voteshare ~ margin, data=lee08, subset=(margin>0), cutoff=20,
+                  kern="uniform", opt.criterion="MSE", point.inference=TRUE)
     expect_equal(r$coefficients$maximum.bias, 0.2482525)
 })
