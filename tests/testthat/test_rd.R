@@ -183,6 +183,14 @@ test_that("Honest inference in Lee and LM data",  {
     expect_equal(unname(r1$bandwidth), 12.85186708)
     expect_equal(unname(r2$conf.low.onesided), 6.056860266)
     expect_equal(unname(r3$h), 5.086645484)
+
+    ## Missing values
+    expect_error(RDHonest(mortHS ~ povrate60, data=headst, kern="uniform", h=12,
+                          na.action="na.fail"))
+    r1 <- RDHonest(mortHS ~ povrate60, data=headst, kern="uniform",
+                   na.action="na.omit")
+    r1 <- capture.output(print(r1))
+    expect_equal(r1[13], "24 observations with missing values dropped")
 })
 
 test_that("BME CIs match paper", {

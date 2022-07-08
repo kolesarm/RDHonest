@@ -14,4 +14,5 @@
 #' @param cutoff specifies the RD cutoff in the running variable.
 #' @param na.action function which indicates what should happen when the data
 #'     contain \code{NA}s. The default is set by the \code{na.action} setting of
-#'     \code{options} (usually \code{na.omit}).
+#'     \code{options} (usually \code{na.omit}). Another possible value is
+#'     \code{na.fail}

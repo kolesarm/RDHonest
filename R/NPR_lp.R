@@ -170,6 +170,8 @@ print.RDResults <- function(x, digits = getOption("digits"), ...) {
     cat("\nBandwidth: ", format(y$bandwidth, digits=digits), sep="")
     cat("\nNumber of effective observations:",
         format(y$eff.obs, digits=digits), "\n")
+    if (inherits(x$na.action, "omit"))
+        cat(length(x$na.action), "observations with missing values dropped\n")
 
     invisible(x)
 }

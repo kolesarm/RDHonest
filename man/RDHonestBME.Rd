@@ -33,7 +33,8 @@ in the fitting process.}
 
 \item{na.action}{function which indicates what should happen when the data
 contain \code{NA}s. The default is set by the \code{na.action} setting of
-\code{options} (usually \code{na.omit}).}
+\code{options} (usually \code{na.omit}). Another possible value is
+\code{na.fail}}
 
 \item{h}{bandwidth, a scalar parameter.}
 

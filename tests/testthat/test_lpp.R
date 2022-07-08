@@ -24,6 +24,7 @@ test_that("Inference at point agrees with RD", {
     expect_equal(r$maximum.bias,
                  rm$maximum.bias+rp$maximum.bias)
     expect_equal(sqrt(rp$std.error^2+rm$std.error^2), r$std.error)
+    ## Silverman variance should approximately match
 })
 
 test_that("MROT matches paper", {
@@ -41,23 +42,19 @@ test_that("MROT matches paper", {
 test_that("ROT bandwidth check", {
     ## Interior
     d <- LPPData(lee08, point=0)
-    b1 <- ROTBW.fit(d, kern="uniform", order=1)
-    b2 <- ROTBW.fit(d, kern="uniform", order=1, boundary=FALSE)
-    expect_equal(b1, b2)
-    expect_equal(ROTBW.fit(d, kern="triangular", order=1),
-                 ROTBW.fit(d, kern=function(u) pmax(1-abs(u), 0), order=1))
+    b1 <- ROTBW.fit(d, kern="uniform")
+    expect_equal(ROTBW.fit(d, kern="triangular"),
+                 ROTBW.fit(d, kern=function(u) pmax(1-abs(u), 0)))
 
     ## f0 using Silverman:
     f0 <- 0.0089934638
     C <- 9/8                            # nu0/(4*mu_2^2)
     ll <- lm(d$Y~d$X+I(d$X^2)+I(d$X^3)+I(d$X^4))
     h <- (C*sigma(ll)^2/(length(d$X)*f0*ll$coefficients[3]^2))^(1/5)
-    expect_equal(b2, unname(h))
+    expect_equal(b1, unname(h))
 
     dp <- LPPData(lee08[lee08$margin>0, ], point=0)
-    bp1 <- ROTBW.fit(dp, kern="uniform", order=1)
-    bp2 <- ROTBW.fit(dp, kern="uniform", order=1, boundary=TRUE)
-    expect_equal(bp1, bp2)
+    bp1 <- ROTBW.fit(dp, kern="uniform")
 
     ## f0 using Silverman:
     f0 <- 0.0079735105

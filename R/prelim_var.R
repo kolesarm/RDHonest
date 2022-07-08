@@ -46,24 +46,14 @@ NPRPrelimVar.fit <- function(d, se.initial="EHW") {
             h1 <- Inf
         }
         r1 <- NPRreg.fit(d, h1, se.method=se.initial)
-    } else { # Silverman
-        X <- if (inherits(d, "LPPData")) d$X else c(d$Xm, d$Xp)
-        Xmin <- if (inherits(d, "LPPData")) {
-                    sort(abs(unique(d$X)))[2]
-                } else  {
-                    max(sort(unique(d$Xp))[2], sort(abs(unique(d$Xm)))[2])
-                }
+    } else if (!inherits(d, "LPPData")) { # Silverman only for RD/IK
+        X <- c(d$Xm, d$Xp)
+        Xmin <- max(sort(unique(d$Xp))[2], sort(abs(unique(d$Xm)))[2])
         h1 <- max(1.84*stats::sd(X)/sum(length(X))^(1/5), Xmin)
         r1 <- NPRreg.fit(d=d, h=h1, kern="uniform", order=0, se.method="EHW")
         ## Variance adjustment for backward compatibility
-        if (inherits(d, "LPPData")) {
-            r1$sigma2 <- r1$sigma2*length(r1$sigma2) / (length(r1$sigma2)-1)
-        } else {
-            r1$sigma2p <- r1$sigma2p*length(r1$sigma2p) /
-                (length(r1$sigma2p)-1)
-            r1$sigma2m <- r1$sigma2m*length(r1$sigma2m) /
-                (length(r1$sigma2m)-1)
-        }
+        r1$sigma2p <- r1$sigma2p*length(r1$sigma2p) / (length(r1$sigma2p)-1)
+        r1$sigma2m <- r1$sigma2m*length(r1$sigma2m) / (length(r1$sigma2m)-1)
     }
 
     if (inherits(d, "LPPData")) {
@@ -86,15 +76,9 @@ NPRPrelimVar.fit <- function(d, se.initial="EHW") {
 ##
 ## Calculate bandwidth for inference at a point with local linear regression
 ## using method in Fan and Gijbels (1996, Chapter 4.2).
-ROTBW.fit <- function(d, kern="triangular", order=1, boundary=NULL) {
-    CheckClass(d, "LPPData")
+ROTBW.fit <- function(d, kern="triangular") {
     X <- d$X
-
-    if(is.null(boundary))
-        boundary <- if ((min(X)>=0) || (max(X)<=0)) TRUE else FALSE
-    if((boundary==TRUE) && (order %% 2 ==0))
-        warning("ROT method for computing bandwidth requires either\n",
-                "order to be odd or else a boundary point")
+    boundary <- if ((min(X)>=0) || (max(X)<=0)) TRUE else FALSE
     N <- length(d$X)
 
     ## STEP 0: Estimate f_X(0) using Silverman
@@ -105,6 +89,7 @@ ROTBW.fit <- function(d, kern="triangular", order=1, boundary=NULL) {
 
     ## STEP 1: Estimate (p+1)th derivative and sigma^2 using global polynomial
     ## regression
+    order <- 1
     r1 <- stats::lm(d$Y ~ 0 + outer(X, 0:(order+3), "^"))
     deriv <- unname(r1$coefficients[order+2])
     sigma2 <- stats::sigma(r1)^2
@@ -133,9 +118,7 @@ ROTBW.fit <- function(d, kern="triangular", order=1, boundary=NULL) {
 ## Imbens and Kalyanaraman bandwidth. Only used by NPRPrelimVar.fit
 ##
 ##  Reproduce bandwidth from Section 6.2 in Imbens and Kalyanaraman (2012)
-IKBW.fit <- function(d, kern="triangular", order=1, verbose=FALSE) {
-    if (order!=1)
-        stop("Only works for local linear regression.")
+IKBW.fit <- function(d, kern="triangular", verbose=FALSE) {
     CheckClass(d, "RDData")
 
     X <- c(d$Xm, d$Xp)
