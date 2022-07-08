@@ -50,7 +50,7 @@ NPRPrelimVar.fit <- function(d, se.initial="EHW") {
         X <- c(d$Xm, d$Xp)
         Xmin <- max(sort(unique(d$Xp))[2], sort(abs(unique(d$Xm)))[2])
         h1 <- max(1.84*stats::sd(X)/sum(length(X))^(1/5), Xmin)
-        r1 <- NPRreg.fit(d=d, h=h1, kern="uniform", order=0, se.method="EHW")
+        r1 <- NPRreg.fit(d, h1, "uniform", order=0, se.method="EHW")
         ## Variance adjustment for backward compatibility
         r1$sigma2p <- r1$sigma2p*length(r1$sigma2p) / (length(r1$sigma2p)-1)
         r1$sigma2m <- r1$sigma2m*length(r1$sigma2m) / (length(r1$sigma2m)-1)
@@ -168,11 +168,10 @@ IKBW.fit <- function(d, kern="triangular", verbose=FALSE) {
 
     if(verbose)
         cat("\n h1: ", h1, "\n N_{-}, N_{+}: ", Nm, Np, "\n f(0): ", f0,
-            "\n sigma^2_{+}(0): ", sqrt(varp),
-            "^2\n sigma^2_{+}(0):", sqrt(varm), "^2",
-            "\n m3: ", m3, "\n h_{2, +}:", h2p, "h_{2, -}:", h2m,
-            "\n m^{(2)}_{+}: ", m2p, "m^{(2)}_{-}: ", m2m,
-            "\n r_{+}:", rp, "\n r_{-}:", rm, "\n\n")
+            "\n sigma^2_{+}(0): ", sqrt(varp), "^2\n sigma^2_{+}(0):",
+            sqrt(varm), "^2", "\n m3: ", m3, "\n h_{2, +}:", h2p, "h_{2, -}:",
+            h2m, "\n m^{(2)}_{+}: ", m2p, "m^{(2)}_{-}: ", m2m, "\n r_{+}:", rp,
+            "\n r_{-}:", rm, "\n\n")
 
     ## Final bandwidth: Equation (17)
     unname(const * ((varp+varm) / (f0*N * ((m2p-m2m)^2+rm+rp)))^(1/5))

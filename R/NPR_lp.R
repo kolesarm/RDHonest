@@ -9,11 +9,10 @@
 ##     \code{\link{RDHonest}}, \code{\link{LPPHonest}}, and
 ##     \code{\link{FRDHonest}}.
 NPRHonest.fit <- function(d, M, kern="triangular", h, opt.criterion, alpha=0.05,
-                          beta=0.8, se.method="nn", J=3, sclass="H",
-                          T0=0, T0bias=FALSE) {
+                          beta=0.8, se.method="nn", J=3, sclass="H", T0=0,
+                          T0bias=FALSE) {
     if (missing(h))
         h <- NPROptBW.fit(d, M, kern, opt.criterion, alpha, beta, sclass, T0)$h
-
 
     ## Suppress warnings about too few observations
     r1 <- NPRreg.fit(d, h, kern, order=1, se.method, TRUE, J)
@@ -111,38 +110,29 @@ NPROptBW.fit <- function(d, M, kern="triangular", opt.criterion, alpha=0.05,
         r <- NPRHonest.fit(d, M, kern, h, alpha=alpha, se.method="supplied.var",
                            sclass=sclass, T0=T0,
                            T0bias=TRUE)$coefficients
-        if (opt.criterion=="OCI") {
-            2*r$maximum.bias+
-                r$std.error*(stats::qnorm(1-alpha)+stats::qnorm(beta))
-        } else if (opt.criterion=="MSE") {
-            r$maximum.bias^2+r$std.error^2
-        } else if (opt.criterion=="FLCI") {
-            r$conf.high-r$conf.low
-        } else {
-            stop(sprintf("optimality criterion %s not yet implemented",
-                         opt.criterion))
-        }
+        switch(opt.criterion,
+               OCI=2*r$maximum.bias+
+                   r$std.error*(stats::qnorm(1-alpha)+stats::qnorm(beta)),
+               MSE=r$maximum.bias^2+r$std.error^2,
+               FLCI=r$conf.high-r$conf.low)
     }
 
     if (inherits(d, "LPPData")) {
         hmin <- sort(unique(abs(d$X)))[2]
-        hmax <- max(abs(d$X))
+        X <- d$X
     } else {
         hmin <- max(unique(d$Xp)[2], sort(unique(abs(d$Xm)))[2])
-        hmax <- max(abs(c(d$Xp, d$Xm)))
+        X <- c(d$Xp, d$Xm)
     }
+
     ## Optimize piecewise constant function using modification of golden
     ## search. In fact, the criterion may not be unimodal, so proceed with
     ## caution. (For triangular kernel, it appears unimodal)
     if (kern=="uniform") {
-        supp <- if (inherits(d, "LPPData")) {
-                    sort(unique(abs(d$X)))
-                } else {
-                    sort(unique(c(d$Xp, abs(d$Xm))))
-                }
+        supp <- sort(unique(abs(X)))
         h <- gss(obj, supp[supp>=hmin])
     } else {
-        h <- abs(stats::optimize(obj, interval=c(hmin, hmax),
+        h <- abs(stats::optimize(obj, interval=c(hmin, max(abs(X))),
                                  tol=.Machine$double.eps^0.75)$minimum)
     }
 

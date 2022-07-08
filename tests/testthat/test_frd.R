@@ -9,7 +9,7 @@ test_that("Selected bw is infinite", {
                         T0=0)$coefficients
     r1 <- NPRHonest.fit(d, M=c(0, 0), kern="uniform", opt.criterion="FLCI",
                         T0=0)$coefficients
-    r2 <- NPRreg.fit(d, h=Inf, kern="uniform")
+    r2 <- NPRreg.fit(d, Inf, "uniform")
     expect_equal(c(r1$std.error, r1$estimate),
                  c(unname(r2$se["nn"]), r2$estimate))
     expect_identical(r1$maximum.bias, 0)
@@ -20,7 +20,7 @@ test_that("Selected bw is infinite", {
     d <- RDData(lee08, cutoff=0)
     r1 <- NPRHonest.fit(d, M=0, kern="uniform",
                         opt.criterion="MSE")$coefficients
-    r2 <- NPRreg.fit(d, h=Inf, kern="uniform")
+    r2 <- NPRreg.fit(d, Inf, "uniform")
     expect_equal(c(r1$std.error, r1$estimate),
                  c(unname(r2$se["nn"]), r2$estimate))
     expect_identical(r1$maximum.bias, 0)

@@ -16,8 +16,8 @@ test_that("Test weighting using cghs", {
     d1 <- RDData(dd, cutoff=1947)
     d2 <- RDData(data.frame(y=log(cghs$earnings), x=cghs$yearat14), cutoff=1947)
     ## Initial estimates
-    r2 <- NPRreg.fit(d2, h=5, kern="triangular")
-    r1 <- NPRreg.fit(d1, h=5, kern="triangular")
+    r2 <- NPRreg.fit(d2, 5, "triangular")
+    r1 <- NPRreg.fit(d1, 5, "triangular")
 
     ## Checks weights match
     wp1 <- vapply(unique(d1$Xp), function(j) sum(r1$wp[d1$Xp==j]), numeric(1))

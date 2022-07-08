@@ -35,16 +35,16 @@ test_that("Test NPRreg", {
     t2 <- data.frame()
     bws <- c(9, 18, 36)
     for (bw in bws) {
-        rf <- NPRreg.fit(mort, h=bw, kern="uniform",
-                         order=1, se.method=c("EHW", "nn"), J=3)
+        rf <- NPRreg.fit(mort, bw, "uniform", order=1, se.method=c("EHW", "nn"),
+                         J=3)
         se <- unname(rf$se[c("EHW", "nn")])
         t1 <- rbind(t1, data.frame(bw=bw, estimate=rf$estimate,
                                    EHW=se[1], nn=se[2]))
 
-        rm <- NPRreg.fit(mortm, h=bw, kern="uniform",
-                         order=1, se.method=c("EHW", "nn"), J=3)
-        rp <- NPRreg.fit(mortp, h=bw, kern="uniform",
-                         order=1, se.method=c("EHW", "nn"), J=3)
+        rm <- NPRreg.fit(mortm, bw, "uniform", order=1,
+                         se.method=c("EHW", "nn"), J=3)
+        rp <- NPRreg.fit(mortp, bw, "uniform", order=1,
+                         se.method=c("EHW", "nn"), J=3)
         se <- unname(sqrt(rm$se[c("EHW", "nn")]^2 + rp$se[c("EHW", "nn")]^2))
         t2 <- rbind(t2, data.frame(bw=bw, estimate=rp$estimate-rm$estimate,
                                    EHW=se[1], nn=se[2]))
@@ -59,13 +59,13 @@ test_that("Test NPRreg", {
     df <- RDData(cbind(rcp[, c(3, 2)]), cutoff=0)
     dr <- RDData(cbind(logcn=log(rcp[, 6]), rcp[, 2, drop=FALSE]), cutoff=0)
     d <- FRDData(cbind(logcn=log(rcp[, 6]), rcp[, c(3, 2)]), cutoff=0)
-    rf <- NPRreg.fit(df, h=10, kern="uniform", order=1, se.method="EHW")
-    rr <- NPRreg.fit(dr, h=10, kern="uniform", order=1, se.method="EHW")
+    rf <- NPRreg.fit(df, 10, "uniform", order=1, se.method="EHW")
+    rr <- NPRreg.fit(dr, 10, "uniform", order=1, se.method="EHW")
     expect_equal(unname(c(rf$estimate, round(rf$se["EHW"], 4))),
                  c(0.43148435, 0.0181))
     expect_equal(unname(c(rr$estimate, round(rr$se["EHW"], 4))),
                  c(-0.0355060, 0.0211))
-    r1 <- NPRreg.fit(d, h=10, kern="uniform", order=1, se.method="EHW")
+    r1 <- NPRreg.fit(d, 10, "uniform", order=1, se.method="EHW")
     expect_equal(c(r1$estimate, unname(r1$se["EHW"])),
                  c(-0.08228802, 0.0483039))
     ## Numbers from
@@ -76,7 +76,7 @@ test_that("Test NPRreg", {
     ## summary(r4, vcov = sandwich::sandwich,
     ##         diagnostics=TRUE)$coefficients[2, 1:2]
     expect_lt(abs(r1$estimate- rr$estimate/rf$estimate), 1e-10)
-    r2 <- NPRreg.fit(d, h=5, kern=function(x) abs(x)<=1, order=0,
+    r2 <- NPRreg.fit(d, 5, function(x) abs(x)<=1, order=0,
                      se.method="EHW")
     ## r3 <- AER::ivreg(logcn~retired | Z, subset=(abs(elig_year)<=5), data=dt)
     ## summary(r3, vcov = sandwich::sandwich,
@@ -86,6 +86,6 @@ test_that("Test NPRreg", {
 
 
     ## bw too narrow
-    expect_warning(NPRreg.fit(d, h=2, kern="uniform", order=2))
-    expect_warning(NPRreg.fit(RDData(lee08, cutoff=0), h=0.1, order=2))
+    expect_warning(NPRreg.fit(d, 2, "uniform", order=2))
+    expect_warning(NPRreg.fit(RDData(lee08, cutoff=0), 0.1, order=2))
 })

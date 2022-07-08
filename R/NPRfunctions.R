@@ -62,45 +62,19 @@ LPReg <- function(X, Y, h, K, order=1, se.method=NULL, sigma2, J=3,
 ## Calculate fuzzy or sharp RD estimate, or estimate of a conditional mean at a
 ## point (depending on the class of \code{d}), and its variance using local
 ## polynomial regression of order \code{order}.
-##
-## @param d object of class \code{"LPPData"}, \code{"RDData"}, or
-##     \code{"FRDData"}
-## @template RDBW
-## @template Kern
-## @template RDse
 ## @param no.warning Don't warn about too few observations
-## @return list with elements:
-##
-## \describe{
-##     \item{estimate}{point estimate}
-##     \item{se}{Named vector of standard error estimates, as specified
-##               by \code{se.method}.}
-##     \item{w}{Implicit weight function used}
-##
-##     \item{sigma2}{Estimate of \eqn{\sigma^2(X)}{sigma^2(X)} for values of
-##             \eqn{X} receiving positive kernel weight. By default, estimates
-##             are based on squared regression residuals, as used in
-##             \code{"EHW"}. If \code{se.method="nn"} is specified, estimates
-##             are based on that method, with \code{"nn"} method used if both
-##             are specified.}
-##
-##      \item{eff.obs}{Number of effective observations}
-##
-## }
 NPRreg.fit <- function(d, h, kern="triangular", order=1, se.method="nn",
                        no.warning=FALSE, J=3) {
-
-    K <- kern
     if (!is.function(kern))
-        K <- EqKern(kern, boundary=FALSE, order=0)
+        kern <- EqKern(kern, boundary=FALSE, order=0)
 
     if (inherits(d, "LPPData")) {
         ## Keep only positive kernel weights
-        W <- if (h<=0) 0*d$X else K(d$X/h) # kernel weights
+        W <- if (h<=0) 0*d$X else kern(d$X/h) # kernel weights
         d$X <- d$X[W>0]
     } else {
-        Wm <- if (h<=0) 0*d$Xm else K(d$Xm/h)
-        Wp <- if (h<=0) 0*d$Xp else K(d$Xp/h)
+        Wm <- if (h<=0) 0*d$Xm else kern(d$Xm/h)
+        Wp <- if (h<=0) 0*d$Xp else kern(d$Xp/h)
         d$Xp <- d$Xp[Wp>0]
         d$Xm <- d$Xm[Wm>0]
         if(!is.null(d$sigma2p)) d$sigma2p <- as.matrix(d$sigma2p)
@@ -117,16 +91,16 @@ NPRreg.fit <- function(d, h, kern="triangular", order=1, se.method="nn",
                 "independent variable with positive weights")
 
     if (inherits(d, "LPPData")) {
-        r <- LPReg(d$X, d$Y[W>0], h, K, order, se.method, d$sigma2[W>0],
+        r <- LPReg(d$X, d$Y[W>0], h, kern, order, se.method, d$sigma2[W>0],
                    J, weights=d$w[W>0])
         ## Estimation weights
         W[W>0] <- r$w
         return(list(estimate=r$theta, se=sqrt(r$var), w=W,
                     sigma2=r$sigma2, eff.obs=r$eff.obs))
     }
-    rm <- LPReg(d$Xm, as.matrix(d$Ym)[Wm>0, ], h, K, order, se.method,
+    rm <- LPReg(d$Xm, as.matrix(d$Ym)[Wm>0, ], h, kern, order, se.method,
                 d$sigma2m[Wm>0, ], J, weights=d$wm[Wm>0])
-    rp <- LPReg(d$Xp, as.matrix(d$Yp)[Wp>0, ], h, K, order, se.method,
+    rp <- LPReg(d$Xp, as.matrix(d$Yp)[Wp>0, ], h, kern, order, se.method,
                 d$sigma2p[Wp>0, ], J, weights=d$wp[Wp>0])
     Wm[Wm>0] <- rm$w
     Wp[Wp>0] <- rp$w
