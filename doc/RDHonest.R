@@ -99,9 +99,9 @@ for (j in unique(d$cell)){
 
 ## -----------------------------------------------------------------------------
 RDHonest(log(earnings)~yearat14, cutoff=1947, h=5, data=cghs, M=0.1,
-         se.method=c("EHW", "nn"))
+         se.method="nn")
 RDHonest(y~x, cutoff=1947, weights=weights, h=5, data=dd, M=0.1,
-         se.method=c("EHW", "nn"))
+         se.method="nn")
 
 ## -----------------------------------------------------------------------------
 ## Assumes first column in the data frame corresponds to outcome,

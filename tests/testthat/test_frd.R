@@ -11,7 +11,7 @@ test_that("Selected bw is infinite", {
                         T0=0)$coefficients
     r2 <- NPRreg.fit(d, Inf, "uniform")
     expect_equal(c(r1$std.error, r1$estimate),
-                 c(unname(r2$se["nn"]), r2$estimate))
+                 c(r2$se, r2$estimate))
     expect_identical(r1$maximum.bias, 0)
     ## For triangular kernel, maximum bw is given by end of support, so we
     ## expect to find minimum at boundary
@@ -22,7 +22,7 @@ test_that("Selected bw is infinite", {
                         opt.criterion="MSE")$coefficients
     r2 <- NPRreg.fit(d, Inf, "uniform")
     expect_equal(c(r1$std.error, r1$estimate),
-                 c(unname(r2$se["nn"]), r2$estimate))
+                 c(r2$se, r2$estimate))
     expect_identical(r1$maximum.bias, 0)
 })
 

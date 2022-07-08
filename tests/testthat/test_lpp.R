@@ -44,8 +44,6 @@ test_that("ROT bandwidth check", {
     ## Interior
     d <- LPPData(lee08, point=0)
     b1 <- ROTBW.fit(d, kern="uniform")
-    expect_equal(ROTBW.fit(d, kern="triangular"),
-                 ROTBW.fit(d, kern=function(u) pmax(1-abs(u), 0)))
 
     ## f0 using Silverman:
     f0 <- 0.0089934638

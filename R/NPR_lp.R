@@ -16,6 +16,7 @@ NPRHonest.fit <- function(d, M, kern="triangular", h, opt.criterion, alpha=0.05,
 
     ## Suppress warnings about too few observations
     r1 <- NPRreg.fit(d, h, kern, order=1, se.method, TRUE, J)
+
     if (inherits(d, "LPPData")) {
         w <- r1$w
         wt <- w[w!=0]
@@ -38,7 +39,7 @@ NPRHonest.fit <- function(d, M, kern="triangular", h, opt.criterion, alpha=0.05,
         bias <- sd <- upper <- hl <- sqrt(.Machine$double.xmax/10)
         lower <- -upper
     } else {
-        sd <- r1$se[se.method]
+        sd <- r1$se
         if (T0bias==TRUE && inherits(d, "FRDData")) {
             ## rescale bias and sd to make it free of r1$fs, use T0
             sd <- sd*abs(r1$fs)

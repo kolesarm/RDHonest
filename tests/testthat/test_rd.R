@@ -42,7 +42,6 @@ test_that("IK bandwidth calculations", {
     options(digits=dig)
 
     expect_equal(IKBW.fit(d), 29.3872649956)
-    expect_equal(IKBW.fit(d, kern=function(u) pmax(1-abs(u), 0)), 29.3872649956)
 
     r <- NPRreg.fit(d, IKBW.fit(d, kern="uniform"), "uniform")
     expect_equal(r$estimate, 8.0770003749)
@@ -189,7 +188,7 @@ test_that("Honest inference in Lee and LM data",  {
                           na.action="na.fail"))
     r1 <- RDHonest(mortHS ~ povrate60, data=headst, kern="uniform",
                    na.action="na.omit")
-    r1 <- capture.output(print(r1))
+    r1 <- capture.output(print(r1, digits=6))
     expect_equal(r1[13], "24 observations with missing values dropped")
 })
 

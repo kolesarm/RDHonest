@@ -16,17 +16,12 @@ LPReg <- function(X, Y, h, K, order=1, se.method=NULL, sigma2, J=3,
     W <- K(X/h)*weights
     Gamma <- crossprod(R, W*R)
 
-    ## if (sum(W>0) <= order | h==0 |
-    ##     class(try(solve(Gamma), silent=TRUE)) != "matrix")
     if (sum(W>0) <= order || h==0 ||
         inherits(try(solve(Gamma), silent=TRUE), "try-error"))
         return(list(theta=0, sigma2=NA, var=NA, w=0, eff.obs=0))
 
     ## weights if we think of the estimator as linear estimator
-    ## w <- function(x) solve(Gamma, t(outer(x, 0:order, "^")*K(x/h)))[1, ]
-    ## No longer works for weighted data
-    w <- (W*R %*% solve(Gamma))[, 1]
-
+    wgt <- (W*R %*% solve(Gamma))[, 1]
     beta <- solve(Gamma, crossprod(R, W*Y))
 
     ## Squared residuals, allowing for multivariate Y
@@ -37,23 +32,20 @@ LPReg <- function(X, Y, h, K, order=1, se.method=NULL, sigma2, J=3,
     hsigma2 <- sig(Y - R %*% beta)
 
     ## Robust variance-based formulae
-    v <- matrix(nrow=NCOL(hsigma2), ncol=3)
-    colnames(v) <- c("supplied.var", "nn", "EHW")
     EHW <- function(sigma2) {
         if (NCOL(sigma2)==1)
-            sum(w^2 * sigma2)
+            sum(wgt^2 * sigma2)
         else
-            colSums(w^2 * sigma2)
+            colSums(wgt^2 * sigma2)
     }
-    if("EHW" %in% se.method) v[, 3] <- EHW(hsigma2)
-    if("supplied.var" %in% se.method) v[, 1] <- EHW(sigma2)
-    if("nn" %in% se.method) {
-        hsigma2 <- sigmaNN(X, Y, J=J, weights)
-        v[, 2] <- EHW(hsigma2)
-    }
+    v <- switch(se.method,
+                EHW=EHW(hsigma2),
+                supplied.var=EHW(sigma2),
+                nn=EHW(sigmaNN(X, Y, J=J, weights)))
 
-    list(theta=beta[1, ], sigma2=hsigma2, var=drop(v),
-         w=w, eff.obs=1/sum(w^2))
+    ## eff.obs=1/sum(w^2) TODO
+
+    list(theta=beta[1, ], sigma2=hsigma2, var=v, w=wgt, eff.obs=NA)
 }
 
 
@@ -97,6 +89,7 @@ NPRreg.fit <- function(d, h, kern="triangular", order=1, se.method="nn",
     Wp[Wp>0] <- rp$w
     ret <- list(estimate=NULL, se=NULL, wm=Wm, wp=Wp, sigma2m=rm$sigma2,
                 sigma2p=rp$sigma2, eff.obs=rm$eff.obs+rp$eff.obs)
+
     if (inherits(d, "RDData")) {
         ret$estimate <- rp$theta-rm$theta
         ret$se <- sqrt(rm$var+rp$var)

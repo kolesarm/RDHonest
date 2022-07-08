@@ -36,7 +36,7 @@ NPRPrelimVar.fit <- function(d, se.initial="EHW") {
     if (inherits(d, "LPPData")) {
         hmin <- max(sort(unique(abs(d$X)))[2], sort(abs(d$X))[4])
     } else {
-        hmin <- max(sort(unique(d$Xp))[2], sort(abs(unique(d$Xm)))[2],
+        hmin <- max(sort(unique(d$Xp))[3], sort(abs(unique(d$Xm)))[3],
                     sort(d$Xp)[4], sort(abs(d$Xm))[4])
     }
 
@@ -103,17 +103,11 @@ ROTBW.fit <- function(d, kern="triangular") {
     sigma2 <- stats::sigma(r1)^2
 
     ## STEP 2: Kernel constants
-    if (is.function(kern)) {
-        ke <- EqKern(kern, boundary=boundary, order=order)
-        nu0 <- KernMoment(ke, moment=0, boundary=boundary, "raw2")
-        mup <- KernMoment(ke, moment=order+1, boundary=boundary, "raw")
-    } else {
-        s <- RDHonest::kernC[RDHonest::kernC$kernel==kern &
-                             RDHonest::kernC$order==order &
-                             RDHonest::kernC$boundary==boundary, ]
-        nu0 <- s$nu0
-        mup <- s[[paste0("mu", order+1)]]
-    }
+    s <- RDHonest::kernC[RDHonest::kernC$kernel==kern &
+                         RDHonest::kernC$order==order &
+                         RDHonest::kernC$boundary==boundary, ]
+    nu0 <- s$nu0
+    mup <- s[[paste0("mu", order+1)]]
 
     ## STEP 3: Plug in
     B <- deriv * mup
@@ -127,22 +121,14 @@ ROTBW.fit <- function(d, kern="triangular") {
 ##
 ##  Reproduce bandwidth from Section 6.2 in Imbens and Kalyanaraman (2012)
 IKBW.fit <- function(d, kern="triangular", verbose=FALSE) {
-    CheckClass(d, "RDData")
-
     X <- c(d$Xm, d$Xp)
     Nm <- length(d$Xm)
     Np <- length(d$Xp)
     N <- Nm+Np
 
     ## STEP 0: Kernel constant
-    if (is.character(kern)) {
-        s <- RDHonest::kernC[with(RDHonest::kernC,
-                        order==1 & boundary==TRUE & kernel==kern, ), ]
-    } else if (is.function(kern)) {
-        ke <- EqKern(kern, boundary=TRUE, order=1)
-        s <- list(mu2=KernMoment(ke, moment=2, boundary=TRUE, "raw"),
-                  nu0=KernMoment(ke, moment=0, boundary=TRUE, "raw2"))
-    }
+    s <- RDHonest::kernC[with(RDHonest::kernC,
+                              order==1 & boundary==TRUE & kernel==kern, ), ]
     const <- (s$nu0/s$mu2^2)^(1/5)
 
     ## STEP 1: Estimate f(0), sigma^2_(0) and sigma^2_+(0), using Silverman
