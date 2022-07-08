@@ -9,15 +9,14 @@
 ##     \code{\link{RDHonest}}, \code{\link{LPPHonest}}, and
 ##     \code{\link{FRDHonest}}.
 NPRHonest.fit <- function(d, M, kern="triangular", h, opt.criterion, alpha=0.05,
-                          beta=0.8, se.method="nn", J=3, sclass="H", order=1,
+                          beta=0.8, se.method="nn", J=3, sclass="H",
                           T0=0, T0bias=FALSE) {
     if (missing(h))
-        h <- NPROptBW.fit(d, M, kern, opt.criterion, alpha, beta, sclass, order,
-                          T0)$h
+        h <- NPROptBW.fit(d, M, kern, opt.criterion, alpha, beta, sclass, T0)$h
 
 
     ## Suppress warnings about too few observations
-    r1 <- NPRreg.fit(d, h, kern, order, se.method, TRUE, J)
+    r1 <- NPRreg.fit(d, h, kern, order=1, se.method, TRUE, J)
     if (inherits(d, "LPPData")) {
         w <- r1$w
         wt <- w[w!=0]
@@ -49,15 +48,13 @@ NPRHonest.fit <- function(d, M, kern="triangular", h, opt.criterion, alpha=0.05,
             M <- unname(M[1]+M[2]*abs(r1$estimate)) / abs(r1$fs)
         }
 
-        if(order==0) {
-            bias <- Inf
-        } else if (sclass=="T")  {
+        if (sclass=="T")  {
             bias <- M/2 * (sum(abs(wt*xx^2)))
-        } else if (sclass=="H" && order==1 && bd) {
+        } else if (sclass=="H" && bd) {
             ## At boundary we know form of least favorable function
             bias <- -M/2 * (sum(wt*xx^2))
         } else {
-            ## Else need to find numerically
+            ## Else need to find numerically (same formula if order=2)
             w2p <- function(s) abs(sum((wt*(xx-s))[xx>=s]))
             w2m <- function(s) abs(sum((wt*(s-xx))[xx<=s]))
             bp <- stats::integrate(function(s) vapply(s, w2p, numeric(1)), 0,
@@ -103,7 +100,7 @@ NPRHonest.fit <- function(d, M, kern="triangular", h, opt.criterion, alpha=0.05,
 ##
 ## Basic computing engine to compute the optimal bandwidth
 NPROptBW.fit <- function(d, M, kern="triangular", opt.criterion, alpha=0.05,
-                         beta=0.8, sclass="H", order=1, T0=0) {
+                         beta=0.8, sclass="H", T0=0) {
 
     ## First check if sigma2 is supplied
     if (is.null(d$sigma2) && (is.null(d$sigma2p) || is.null(d$sigma2m)))
@@ -112,7 +109,7 @@ NPROptBW.fit <- function(d, M, kern="triangular", opt.criterion, alpha=0.05,
     ## Objective function for optimizing bandwidth
     obj <- function(h) {
         r <- NPRHonest.fit(d, M, kern, h, alpha=alpha, se.method="supplied.var",
-                           sclass=sclass, order=order, T0=T0,
+                           sclass=sclass, T0=T0,
                            T0bias=TRUE)$coefficients
         if (opt.criterion=="OCI") {
             2*r$maximum.bias+
@@ -128,10 +125,10 @@ NPROptBW.fit <- function(d, M, kern="triangular", opt.criterion, alpha=0.05,
     }
 
     if (inherits(d, "LPPData")) {
-        hmin <- sort(unique(abs(d$X)))[order+1]
+        hmin <- sort(unique(abs(d$X)))[2]
         hmax <- max(abs(d$X))
     } else {
-        hmin <- max(unique(d$Xp)[order+1], sort(unique(abs(d$Xm)))[order+1])
+        hmin <- max(unique(d$Xp)[2], sort(unique(abs(d$Xm)))[2])
         hmax <- max(abs(c(d$Xp, d$Xm)))
     }
     ## Optimize piecewise constant function using modification of golden

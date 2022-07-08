@@ -17,16 +17,10 @@ test_that("Inference at point agrees with RD", {
     ## 1:9 since something weird happens on codecov.io if lintr is included
     expect_equal(capture.output(print(p0))[1:7],
                  capture.output(print(p2))[6:12])
-    ## Local constant yields infinite bias
-    expect_equal(NPRHonest.fit(d, h=5, M=2,
-                               order=0)$coefficients$maximum.bias, Inf)
-    expect_equal(NPRHonest.fit(dp, h=10, M=0.1,
-                               order=0)$coefficients$maximum.bias, Inf)
 
-    ## Compare RDHonest and LPPHonest when order=2
-    r <- NPRHonest.fit(d, h=7, M=2, order=2)$coefficients
-    rm <- NPRHonest.fit(dp, h=7, M=2, order=2)$coefficients
-    rp <- NPRHonest.fit(dm, h=7, M=2, order=2)$coefficients
+    r <- NPRHonest.fit(d, h=7, M=2)$coefficients
+    rm <- NPRHonest.fit(dp, h=7, M=2)$coefficients
+    rp <- NPRHonest.fit(dm, h=7, M=2)$coefficients
     expect_equal(r$maximum.bias,
                  rm$maximum.bias+rp$maximum.bias)
     expect_equal(sqrt(rp$std.error^2+rm$std.error^2), r$std.error)

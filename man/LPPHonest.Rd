@@ -19,8 +19,7 @@ LPPHonest(
   alpha = 0.05,
   beta = 0.8,
   J = 3,
-  sclass = "H",
-  order = 1
+  sclass = "H"
 )
 }
 \arguments{
@@ -103,8 +102,6 @@ intervals; otherwise ignored.}
 
 \item{sclass}{Smoothness class, either \code{"T"} for Taylor or
 \code{"H"} for Hölder class.}
-
-\item{order}{Order of local regression 1 for linear, 2 for quadratic.}
 }
 \value{
 Returns an object of class \code{"NPResults"}. The function

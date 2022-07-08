@@ -232,14 +232,9 @@ test_that("Optimizing bw", {
     r <- RDHonest(y~x, data=d, cutoff=0, M=40, kern="uniform",
                   opt.criterion="FLCI")
     expect_equal(r$coefficients$bandwidth, 1/2)
-
-    r <- RDHonest(y~x, data=d, cutoff=0, M=60, kern="uniform",
-                  opt.criterion="FLCI", order=2)
-    expect_equal(r$coefficients$bandwidth, 3/4)
-
-    r <- RDHonest(y~x, data=d, cutoff=0, M=0.4, kern="uniform",
-                  opt.criterion="FLCI", order=2)
-    expect_equal(r$coefficients$bandwidth, 1)
+    r <- RDHonest(y~x, data=d, cutoff=0, M=2, kern="uniform",
+                  opt.criterion="FLCI")
+    expect_equal(r$coefficients$bandwidth, 0.8)
 
     xprobs <- c(rep(.5/4, 4), rep(.5/4, 4))
     xsupp <- sort(c(-(1:4)/4, (1:4)/4))

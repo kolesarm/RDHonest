@@ -83,7 +83,7 @@
 RDHonest <- function(formula, data, subset, weights, cutoff=0, M,
                      kern="triangular", na.action, opt.criterion="MSE", h,
                      se.method="nn", alpha=0.05, beta=0.8, J=3, sclass="H",
-                     order=1, T0=0) {
+                     T0=0) {
 
     ## construct model frame
     cl <- mf <- match.call(expand.dots = FALSE)
@@ -110,11 +110,11 @@ RDHonest <- function(formula, data, subset, weights, cutoff=0, M,
         ret <- RDTOpt.fit(d, M, opt.criterion, alpha, beta, se.method, J)
     } else if (!missing(h)) {
         ret <- NPRHonest.fit(d, M, kern, h, alpha=alpha, se.method=se.method,
-                             J=J, sclass=sclass, order=order, T0=T0)
+                             J=J, sclass=sclass, T0=T0)
     } else {
         ret <- NPRHonest.fit(d, M, kern, opt.criterion=opt.criterion,
                              alpha=alpha, beta=beta, se.method=se.method, J=J,
-                             sclass=sclass, order=order, T0=T0)
+                             sclass=sclass, T0=T0)
     }
     ret$data <- d
     ret$call <- cl

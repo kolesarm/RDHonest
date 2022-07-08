@@ -65,8 +65,7 @@
 #' @export
 LPPHonest <- function(formula, data, subset, weights, point=0, M,
                       kern="triangular", na.action, opt.criterion, h,
-                      se.method="nn", alpha=0.05, beta=0.8, J=3, sclass="H",
-                      order=1) {
+                      se.method="nn", alpha=0.05, beta=0.8, J=3, sclass="H") {
 
     ## construct model frame
     cl <- mf <- match.call(expand.dots = FALSE)
@@ -83,12 +82,11 @@ LPPHonest <- function(formula, data, subset, weights, point=0, M,
 
     if (!missing(h)) {
         ret <- NPRHonest.fit(d, M, kern, h, alpha=alpha,
-                             se.method=se.method, J=J, sclass=sclass,
-                             order=order)
+                             se.method=se.method, J=J, sclass=sclass)
     } else {
         ret <- NPRHonest.fit(d, M, kern, opt.criterion=opt.criterion,
                              alpha=alpha, beta=beta, se.method=se.method, J=J,
-                             sclass=sclass, order=order)
+                             sclass=sclass)
     }
 
     ret$call <- cl

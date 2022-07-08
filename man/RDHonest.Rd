@@ -20,7 +20,6 @@ RDHonest(
   beta = 0.8,
   J = 3,
   sclass = "H",
-  order = 1,
   T0 = 0
 )
 }
@@ -103,8 +102,6 @@ intervals; otherwise ignored.}
 
 \item{sclass}{Smoothness class, either \code{"T"} for Taylor or
 \code{"H"} for Hölder class.}
-
-\item{order}{Order of local regression 1 for linear, 2 for quadratic.}
 
 \item{T0}{Initial estimate of the treatment effect for calculating the
 optimal bandwidth. Only relevant for Fuzzy RD.}
