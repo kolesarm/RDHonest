@@ -174,7 +174,7 @@ that is first in \code{data} and then in the environment of \code{formula}.
 # Lee dataset
 RDHonest(voteshare ~ margin, data = lee08, kern = "uniform", M = 0.1, h = 10)
 RDHonest(cn~retired | elig_year, data=rcp, cutoff=0, M=c(4, 0.4),
-          kern="triangular", opt.criterion="MSE", T0=0, h=20)
+          kern="triangular", opt.criterion="MSE", T0=0, h=3)
 RDHonest(voteshare ~ margin, data = lee08, subset = margin>0,
           kern = "uniform", M = 0.1, h = 10, point.inference=TRUE)
 }

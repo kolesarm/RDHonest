@@ -1,10 +1,10 @@
 ## Formula for local polynomial regression
 RDlpformula <- function(order) {
     f1 <- if (order>0) {
-              f1 <- vapply(seq_len(order),
+              f <- vapply(seq_len(order),
                            function(p) paste0("I(x^", p, ")"),
                            character(1))
-              paste0("(", paste(f1, collapse="+"), ") * I(x>=0)")
+              paste0("(", paste(f, collapse="+"), ") * I(x>=0)")
           } else  {
               paste0("I(x>=0)")
           }
@@ -112,21 +112,14 @@ RDHonestBME <- function(formula, data, subset, cutoff=0, na.action,
 
     l <- which.min(CI.l)
     u <- which.max(CI.u)
-    coef <- data.frame(
-        term="Sharp RD parameter",
-        estimate=unname(m1$coefficients[order +2]),
-        std.error=sqrt(vdt["e2", "e2"]),
-        maximum.bias=max(abs(c(dev[u], dev[l]))),
-        conf.low=CI.l[l],
-        conf.high=CI.u[u],
-        conf.low.onesided=min(OCI.l),
-        conf.high.onesided=max(OCI.u),
-        bandwidth=h,
-        eff.obs=length(x),
-        cv=NA,
-        alpha=alpha,
-        method="BME"
-    )
+    coef <- data.frame(term="Sharp RD parameter",
+                       estimate=unname(m1$coefficients[order +2]),
+                       std.error=sqrt(vdt["e2", "e2"]),
+                       maximum.bias=max(abs(c(dev[u], dev[l]))),
+                       conf.low=CI.l[l], conf.high=CI.u[u],
+                       conf.low.onesided=min(OCI.l),
+                       conf.high.onesided=max(OCI.u), bandwidth=h,
+                       eff.obs=length(x), cv=NA, alpha=alpha, method="BME")
     ret <- list(coefficients=coef, call=cl, na.action=attr(mf, "na.action"))
     class(ret) <- "RDResults"
 

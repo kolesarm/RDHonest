@@ -29,7 +29,8 @@ LPReg <- function(X, Y, h, K, order=1, se.method=NULL, sigma2, J=3,
         r[, rep(seq_len(ncol(r)), each=ncol(r))] *
         r[, rep(seq_len(ncol(r)), ncol(r))]
     }
-    hsigma2 <- sig(Y - R %*% beta)
+    hsigma2 <-
+        if(se.method=="nn") sigmaNN(X, Y, J, weights) else sig(Y - R %*% beta)
 
     ## Robust variance-based formulae
     EHW <- function(sigma2) {
@@ -38,13 +39,9 @@ LPReg <- function(X, Y, h, K, order=1, se.method=NULL, sigma2, J=3,
         else
             colSums(wgt^2 * sigma2)
     }
-    v <- switch(se.method,
-                EHW=EHW(hsigma2),
-                supplied.var=EHW(sigma2),
-                nn=EHW(sigmaNN(X, Y, J=J, weights)))
+    v <- if(se.method=="supplied.var") EHW(sigma2) else EHW(hsigma2)
 
     ## eff.obs=1/sum(w^2) TODO
-
     list(theta=beta[1, ], sigma2=hsigma2, var=v, w=wgt, eff.obs=NA)
 }
 
@@ -54,9 +51,7 @@ LPReg <- function(X, Y, h, K, order=1, se.method=NULL, sigma2, J=3,
 ## Calculate fuzzy or sharp RD estimate, or estimate of a conditional mean at a
 ## point (depending on the class of \code{d}), and its variance using local
 ## polynomial regression of order \code{order}.
-## @param no.warning Don't warn about too few observations
-NPRreg.fit <- function(d, h, kern="triangular", order=1, se.method="nn",
-                       no.warning=FALSE, J=3) {
+NPRreg.fit <- function(d, h, kern="triangular", order=1, se.method="nn", J=3) {
     if (!is.function(kern))
         kern <- EqKern(kern, boundary=FALSE, order=0)
 
@@ -64,23 +59,21 @@ NPRreg.fit <- function(d, h, kern="triangular", order=1, se.method="nn",
         ## Keep only positive kernel weights
         W <- if (h<=0) 0*d$X else kern(d$X/h) # kernel weights
         d$X <- d$X[W>0]
-    } else {
-        Wm <- if (h<=0) 0*d$Xm else kern(d$Xm/h)
-        Wp <- if (h<=0) 0*d$Xp else kern(d$Xp/h)
-        d$Xp <- d$Xp[Wp>0]
-        d$Xm <- d$Xm[Wm>0]
-        if(!is.null(d$sigma2p)) d$sigma2p <- as.matrix(d$sigma2p)
-        if(!is.null(d$sigma2m)) d$sigma2m <- as.matrix(d$sigma2m)
-    }
-
-    if (inherits(d, "LPPData")) {
         r <- LPReg(d$X, d$Y[W>0], h, kern, order, se.method, d$sigma2[W>0],
                    J, weights=d$w[W>0])
         ## Estimation weights
         W[W>0] <- r$w
-        return(list(estimate=r$theta, se=sqrt(r$var), w=W,
-                    sigma2=r$sigma2, eff.obs=r$eff.obs))
+        return(list(estimate=r$theta, se=sqrt(r$var), w=W, sigma2=r$sigma2,
+                    eff.obs=r$eff.obs))
     }
+
+    Wm <- if (h<=0) 0*d$Xm else kern(d$Xm/h)
+    Wp <- if (h<=0) 0*d$Xp else kern(d$Xp/h)
+    d$Xp <- d$Xp[Wp>0]
+    d$Xm <- d$Xm[Wm>0]
+    if(!is.null(d$sigma2p)) d$sigma2p <- as.matrix(d$sigma2p)
+    if(!is.null(d$sigma2m)) d$sigma2m <- as.matrix(d$sigma2m)
+
     rm <- LPReg(d$Xm, as.matrix(d$Ym)[Wm>0, ], h, kern, order, se.method,
                 d$sigma2m[Wm>0, ], J, weights=d$wm[Wm>0])
     rp <- LPReg(d$Xp, as.matrix(d$Yp)[Wp>0, ], h, kern, order, se.method,
@@ -96,10 +89,8 @@ NPRreg.fit <- function(d, h, kern="triangular", order=1, se.method="nn",
     } else if (inherits(d, "FRDData")) {
         ret$fs <- rp$theta[2]-rm$theta[2]
         ret$estimate <- (rp$theta[1]-rm$theta[1]) / ret$fs
-        ret$se <- sqrt(drop(t(rp$var+rm$var) %*%
-                            c(1, -ret$estimate, -ret$estimate, ret$estimate^2)
-                            ) / ret$fs^2)
-
+        ret$se <- sqrt(sum(c(1, -ret$estimate, -ret$estimate, ret$estimate^2) *
+                           (rp$var+rm$var)) / ret$fs^2)
     }
     ret
 }

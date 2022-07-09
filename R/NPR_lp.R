@@ -13,23 +13,18 @@ NPRHonest.fit <- function(d, M, kern="triangular", h, opt.criterion, alpha=0.05,
                           T0bias=FALSE) {
     if (missing(h))
         h <- NPROptBW.fit(d, M, kern, opt.criterion, alpha, beta, sclass, T0)
-
-    ## Suppress warnings about too few observations
-    r1 <- NPRreg.fit(d, h, kern, order=1, se.method, TRUE, J)
+    r1 <- NPRreg.fit(d, h, kern, order=1, se.method, J)
 
     if (inherits(d, "LPPData")) {
-        w <- r1$w
-        wt <- w[w!=0]
-        xx <- d$X[w!=0]
+        wt <- r1$w[r1$w!=0]
+        xx <- d$X[r1$w!=0]
         nobs <- length(wt)
         ## Are we at a boundary?
         bd <- length(unique(d$X>=0))==1
     } else {
-        wp <- r1$wp
-        wm <- r1$wm
-        wt <- c(wm[wm!=0], wp[wp!=0])
-        xx <-  c(d$Xm[wm!=0], d$Xp[wp!=0])
-        nobs <- min(sum(wp!=0), sum(wm!=0))
+        wt <- c(r1$wm[r1$wm!=0], r1$wp[r1$wp!=0])
+        xx <-  c(d$Xm[r1$wm!=0], d$Xp[r1$wp!=0])
+        nobs <- min(sum(r1$wm!=0), sum(r1$wp!=0))
         bd <- TRUE
     }
 
@@ -67,32 +62,19 @@ NPRHonest.fit <- function(d, M, kern="triangular", h, opt.criterion, alpha=0.05,
         upper <- r1$estimate + bias + stats::qnorm(1-alpha)*sd
         hl <- CVb(bias/sd, alpha)*sd
     }
-    term <- if(inherits(d, "LPPData")) {
-                "Value of conditional mean"
-            } else if (inherits(d, "RDData")) {
-                "Sharp RD Parameter"
-            } else {
-                "Fuzzy RD Parameter"
-            }
-    coef <- data.frame(
-        term=term,
-        estimate=r1$estimate,
-        std.error=sd,
-        maximum.bias=bias,
-        conf.low=r1$estimate-hl,
-        conf.high=r1$estimate+hl,
-        conf.low.onesided=lower,
-        conf.high.onesided=upper,
-        bandwidth=h,
-        eff.obs=r1$eff.obs, # TODO
-        cv=NA,
-        alpha=alpha,
-        method=if (sclass=="H") "Holder" else "Taylor",
-        M=M
-    )
+    term <- switch(class(d), "LPPData"="Value of conditional mean",
+                   "RDData"="Sharp RD Parameter",
+                   "FRDData"="Fuzzy RD Parameter")
 
-    structure(list(coefficients=coef,
-                   fs=r1$fs), class="RDResults")
+    coef <- data.frame(term=term, estimate=r1$estimate, std.error=sd,
+                       maximum.bias=bias, conf.low=r1$estimate-hl,
+                       conf.high=r1$estimate+hl, conf.low.onesided=lower,
+                       conf.high.onesided=upper, bandwidth=h,
+                       eff.obs=r1$eff.obs, # TODO
+                       cv=NA, alpha=alpha,
+                       method=if (sclass=="H") "Holder" else "Taylor", M=M)
+
+    structure(list(coefficients=coef, fs=r1$fs), class="RDResults")
 }
 
 

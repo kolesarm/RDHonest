@@ -40,9 +40,8 @@ RDgbC <- function(d, b, C) {
     dp <- dstar(d$Xp, bp, C, d$sigma2p)
     dm <- dstar(d$Xm, bm, C, d$sigma2m)
 
-    structure(list(m=function(x) SY(x, bm, dm, C)*(x<=0),
-                   p=function(x) SY(x, bp, dp, C)*(x>=0)),
-              class="RDLFFunction")
+    list(m=function(x) SY(x, bm, dm, C)*(x<=0),
+         p=function(x) SY(x, bp, dp, C)*(x>=0))
 }
 
 
@@ -52,7 +51,6 @@ RDgbC <- function(d, b, C) {
 ## parameter \eqn{C}.
 ## @param delta \eqn{\delta}
 ## @inheritParams RDgbC
-## @return Object of class \code{"RDLFFunction"}
 RDLFFunction <- function(d, C, delta) {
     RDgbC(d, FindZero(function(b) 4*Q(d, RDgbC(d, b, C)) - delta^2,
                       negative=FALSE), C)
@@ -62,7 +60,7 @@ RDLFFunction <- function(d, C, delta) {
 ## around it
 ## \eqn{hat{L}_{delta, C}}
 ## @param d Object of class \code{"RDData"}
-## @param f Object of class \code{"RDLFFunction"}
+## @param f RDLFFunction
 ## @template RDse
 RDTEstimator <- function(d, f, alpha, se.method, J) {
     den <- sum(f$p(d$Xp) / d$sigma2p) # denominator

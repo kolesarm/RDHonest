@@ -1,6 +1,6 @@
 ## Get rid of AsIs class attribute for making sort work
 unAsIs <- function(X) {
-    if("AsIs" %in% class(X)) {
+    if(inherits(X, "AsIs")) {
         class(X) <- class(X)[-match("AsIs", class(X))]
     }
     X

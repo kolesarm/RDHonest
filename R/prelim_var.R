@@ -127,8 +127,9 @@ IKBW.fit <- function(d, kern="triangular", verbose=FALSE) {
     N <- Nm+Np
 
     ## STEP 0: Kernel constant
-    s <- RDHonest::kernC[with(RDHonest::kernC,
-                              order==1 & boundary==TRUE & kernel==kern, ), ]
+    s <- RDHonest::kernC[RDHonest::kernC$order==1 &
+                         RDHonest::kernC$boundary==TRUE &
+                         RDHonest::kernC$kernel==kern, ]
     const <- (s$nu0/s$mu2^2)^(1/5)
 
     ## STEP 1: Estimate f(0), sigma^2_(0) and sigma^2_+(0), using Silverman
