@@ -7,29 +7,33 @@
 RDTEfficiencyBound(object, opt.criterion = "FLCI", beta = 0.5)
 }
 \arguments{
-\item{object}{What RDHonest returns. This has M and alpha}
+\item{object}{An object of class \code{"RDResults"}, typically a result of a
+call to \code{\link{RDHonest}}.}
 
-\item{opt.criterion}{\code{"FLCI"} for computing efficiency of two-sided CIs,
-and \code{"OCI"} for minimax one-sided CIs.}
+\item{opt.criterion}{Either \code{"FLCI"} for computing efficiency of
+two-sided CIs, or else \code{"OCI"} for minimax one-sided CIs.}
 
-\item{beta}{Determines quantile of excess length to optimize, if bandwidth
-optimizes given quantile of excess length of one-sided confidence
-intervals; otherwise ignored.}
+\item{beta}{Determines quantile of excess length for evaluating minimax
+efficiency of one-sided CIs. Ignored if \code{opt.criterion=="FLCI"}.}
 }
 \value{
-Efficiency
+Efficiency bound, a numeric vector of length one.
 }
 \description{
 Compute efficiency of minimax one-sided CIs at constant functions, or
 efficiency of two-sided fixed-length CIs at constant functions under
 second-order Taylor smoothness class.
 }
+\examples{
+r <- RDHonest(voteshare ~ margin, data=lee08, M=0.1, h=2)
+RDTEfficiencyBound(r, opt.criterion="FLCI")
+}
 \references{
 {
 
-\cite{Armstrong, Timothy B., and Michal Kolesár. 2018.
-"Optimal Inference in a Class of Regression Models." Econometrica 86 (2):
-655–83.}
+\cite{Timothy B. Armstrong and Michal Kolesár. Optimal inference in a class
+of regression models. Econometrica, 86(2):655–683, March 2018.
+\doi{10.3982/ECTA14434}}
 
 }
 }

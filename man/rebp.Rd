@@ -21,8 +21,8 @@ Rafael Lalive's website,
 rebp
 }
 \description{
-Subset of Lalive data for individuals in the regions affected by the REBP
-program
+Subset of Lalive (2008) data for individuals in the regions affected by the
+REBP program
 }
 \references{
 {

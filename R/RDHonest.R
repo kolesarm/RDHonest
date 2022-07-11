@@ -10,8 +10,29 @@
 #' smoothness class (sharp RD only).
 #'
 #' @template RDFormula
-#' @template RDse
-#' @template Kern
+#' @param cutoff specifies the RD cutoff in the running variable. For inference
+#'     at a point, specified the point \eqn{x_0} at which to calculate the
+#'     conditional mean.
+#' @param kern specifies kernel function used in the local regression. It can
+#'     either be a string equal to \code{"triangular"} (\eqn{k(u)=(1-|u|)_{+}}),
+#'     \code{"epanechnikov"} (\eqn{k(u)=(3/4)(1-u^2)_{+}}), or \code{"uniform"}
+#'     (\eqn{k(u)= (|u|<1)/2}), or else a kernel function.
+#' @param se.method Vector with methods for estimating standard error of
+#' estimate. If \code{NULL}, standard errors are not computed. The elements of
+#' the vector can consist of the following methods:
+#'
+#' \describe{
+#'     \item{"nn"}{Nearest neighbor method}
+#'
+#'     \item{"EHW"}{Eicker-Huber-White, with residuals from local regression
+#'     (local polynomial estimators only).}
+#'
+#'    \item{"supplied.var"}{Use conditional variance supplied by \code{sigma2} or
+#'         \code{d} instead of computing residuals}
+#'
+#' }
+#' @param J Number of nearest neighbors, if "nn" is specified in
+#'     \code{se.method}.
 #' @param opt.criterion Optimality criterion that bandwidth is designed to
 #'     optimize. The options are:
 #'

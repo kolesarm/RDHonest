@@ -9,6 +9,7 @@ plot_RDscatter(
   data,
   subset,
   cutoff = 0,
+  na.action,
   avg = 10,
   xlab = NULL,
   ylab = NULL,
@@ -18,7 +19,7 @@ plot_RDscatter(
 }
 \arguments{
 \item{formula}{object of class \code{"formula"} (or one that can be coerced
-to that  class) of the form \code{y ~ x}}
+to that class) of the form \code{outcome ~ running_variable}}
 
 \item{data}{optional data frame, list or environment (or object coercible by
 \code{as.data.frame} to a data frame) containing the outcome and running
@@ -26,9 +27,15 @@ variables in the model. If not found in \code{data}, the variables are
 taken from \code{environment(formula)}, typically the environment from
 which the function is called.}
 
-\item{subset}{optional vector specifying a subset of observations to be used}
+\item{subset}{optional vector specifying a subset of observations to be used
+in the fitting process.}
 
 \item{cutoff}{specifies the RD cutoff in the running variable.}
+
+\item{na.action}{function which indicates what should happen when the data
+contain \code{NA}s. The default is set by the \code{na.action} setting of
+\code{options} (usually \code{na.omit}). Another possible value is
+\code{na.fail}}
 
 \item{avg}{Number of observations to average over. If set to \code{Inf}, then
 take averages for each possible value of the running variable (convenient
@@ -43,13 +50,20 @@ number of observations that the point averages over (useful when
 \code{avg=Inf}). Otherwise the size of points is constant.}
 }
 \value{
-A \code{"ggplot"} object.
+An object of class \code{"ggplot"}, a scatterplot the raw
+    observatiosn.
 }
 \description{
 Scatterplot of raw observations in which each point corresponds to an binned
 average.
 }
+\section{Note}{
+
+\code{subset} is evaluated in the same way as variables in \code{formula},
+that is first in \code{data} and then in the environment of \code{formula}.
+}
+
 \examples{
-plot_RDscatter(I(log(earnings))~yearat14, data=cghs, cutoff=1947,
+plot_RDscatter(log(earnings)~yearat14, data=cghs, cutoff=1947,
                avg=Inf, propdotsize=TRUE)
 }

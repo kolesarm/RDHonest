@@ -21,6 +21,7 @@ RDlpformula <- function(order) {
 #' at the cutoff than elsewhere in the estimation window.
 #'
 #' @template RDFormula
+#' @param cutoff specifies the RD cutoff in the running variable.
 #' @param h bandwidth, a scalar parameter.
 #' @param alpha determines confidence level, \eqn{1-\alpha}{1-alpha}
 #' @param order Order of local regression \code{1} for linear, \code{2} for
@@ -31,12 +32,27 @@ RDlpformula <- function(order) {
 #'     to \code{0}. Local linear regression (\code{order = 1}) is equivalent to
 #'     \code{regformula = "y~x*I(x>0)"}. Inference is done on the
 #'     \code{order+2}th element of the design matrix
-#' @return An \code{"RDRresults"} object. TODO
+#' @return An object of class \code{"RDResults"}. This is a list with at least
+#'     the following elements:
+#'
+#'    \describe{
+#'
+#'    \item{\code{"coefficients"}}{Data frame containing estimation results,
+#'    including point estimate, one- and two-sided confidence intervals, a bound
+#'    on worst-case bias, bandwidth used, and the number of effective
+#'    observations.}
+#'
+#'    \item{\code{"call"}}{The matched call.}
+#'
+#'    \item{\code{"na.action"}}{(If relevant) information on the special
+#'    handling of \code{NA}s.}
+#'
+#' }
 #' @examples
-#' RDHonestBME(log(cghs$earnings)~yearat14, data=cghs, h=3,
+#' RDHonestBME(log(earnings)~yearat14, data=cghs, h=3,
 #'             order=1, cutoff=1947)
 #' ## Equivalent to
-#' RDHonestBME(log(cghs$earnings)~yearat14, data=cghs, h=3,
+#' RDHonestBME(log(earnings)~yearat14, data=cghs, h=3,
 #'             cutoff=1947, order=1, regformula="y~x*I(x>=0)")
 #' @references{
 #'

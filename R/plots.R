@@ -3,15 +3,8 @@
 #' Scatterplot of raw observations in which each point corresponds to an binned
 #' average.
 #'
-#' @param formula object of class \code{"formula"} (or one that can be coerced
-#'     to that  class) of the form \code{y ~ x}
-#' @param data optional data frame, list or environment (or object coercible by
-#'     \code{as.data.frame} to a data frame) containing the outcome and running
-#'     variables in the model. If not found in \code{data}, the variables are
-#'     taken from \code{environment(formula)}, typically the environment from
-#'     which the function is called.
-#' @param subset optional vector specifying a subset of observations to be used
 #' @param cutoff specifies the RD cutoff in the running variable.
+#' @template RDFormula
 #' @param avg Number of observations to average over. If set to \code{Inf}, then
 #'     take averages for each possible value of the running variable (convenient
 #'     when the running variable is discrete).
@@ -20,12 +13,13 @@
 #' @param propdotsize If \code{TRUE}, then size of points is proportional to
 #'     number of observations that the point averages over (useful when
 #'     \code{avg=Inf}). Otherwise the size of points is constant.
-#' @return A \code{"ggplot"} object.
+#' @return An object of class \code{"ggplot"}, a scatterplot the raw
+#'     observations.
 #' @examples
-#' plot_RDscatter(I(log(earnings))~yearat14, data=cghs, cutoff=1947,
+#' plot_RDscatter(log(earnings)~yearat14, data=cghs, cutoff=1947,
 #'                avg=Inf, propdotsize=TRUE)
 #' @export
-plot_RDscatter <- function(formula, data, subset, cutoff=0, avg=10,
+plot_RDscatter <- function(formula, data, subset, cutoff=0, na.action, avg=10,
                            xlab=NULL, ylab=NULL, vert=TRUE, propdotsize=FALSE) {
     if (!requireNamespace("ggplot2", quietly = TRUE))
         stop("This function requires the ggplot2 package to be installed",

@@ -61,7 +61,6 @@ RDLFFunction <- function(d, C, delta) {
 ## \eqn{hat{L}_{delta, C}}
 ## @param d Object of class \code{"RDData"}
 ## @param f RDLFFunction
-## @template RDse
 RDTEstimator <- function(d, f, alpha, se.method, J) {
     den <- sum(f$p(d$Xp) / d$sigma2p) # denominator
     ## By (S3) in supplement of 1511.06028v2, this = sum(f$m(d$Xm) / d$sigma2m)
@@ -154,20 +153,23 @@ RDTOpt.fit <- function(d, M, opt.criterion, alpha, beta, se.method, J) {
 #' efficiency of two-sided fixed-length CIs at constant functions under
 #' second-order Taylor smoothness class.
 #'
-#' @param object What RDHonest returns. This has M and alpha
-#' @param opt.criterion \code{"FLCI"} for computing efficiency of two-sided CIs,
-#'     and \code{"OCI"} for minimax one-sided CIs.
-#' @param beta Determines quantile of excess length to optimize, if bandwidth
-#'     optimizes given quantile of excess length of one-sided confidence
-#'     intervals; otherwise ignored.
-#' @return Efficiency
+#' @param object An object of class \code{"RDResults"}, typically a result of a
+#'     call to \code{\link{RDHonest}}.
+#' @param opt.criterion Either \code{"FLCI"} for computing efficiency of
+#'     two-sided CIs, or else \code{"OCI"} for minimax one-sided CIs.
+#' @param beta Determines quantile of excess length for evaluating minimax
+#'     efficiency of one-sided CIs. Ignored if \code{opt.criterion=="FLCI"}.
+#' @return Efficiency bound, a numeric vector of length one.
 #' @references{
 #'
-#' \cite{Armstrong, Timothy B., and Michal Kolesár. 2018.
-#' "Optimal Inference in a Class of Regression Models." Econometrica 86 (2):
-#' 655–83.}
+#' \cite{Timothy B. Armstrong and Michal Kolesár. Optimal inference in a class
+#' of regression models. Econometrica, 86(2):655–683, March 2018.
+#' \doi{10.3982/ECTA14434}}
 #'
 #' }
+#' @examples
+#' r <- RDHonest(voteshare ~ margin, data=lee08, M=0.1, h=2)
+#' RDTEfficiencyBound(r, opt.criterion="FLCI")
 #' @export
 RDTEfficiencyBound <- function(object, opt.criterion="FLCI", beta=0.5) {
     d <- object$data

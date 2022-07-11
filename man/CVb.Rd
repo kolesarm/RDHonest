@@ -25,7 +25,7 @@ distributed with variance equal to \eqn{1} and maximum bias at most \eqn{B}.
 \examples{
 ## 90\% critical value:
 CVb(B = 1, alpha = 0.1)
-## Usue 95\% critical value
+## Usual 95\% critical value
 CVb(0)
 ## Returns vector with 3 critical values
 CVb(B = c(0, 0.5, 1), alpha = 0.05)

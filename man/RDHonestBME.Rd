@@ -29,9 +29,7 @@ which the function is called.}
 \item{subset}{optional vector specifying a subset of observations to be used
 in the fitting process.}
 
-\item{cutoff}{specifies the RD cutoff in the running variable. For inference
-at a point, specified the point \eqn{x_0} at which to calculate the
-conditional mean.}
+\item{cutoff}{specifies the RD cutoff in the running variable.}
 
 \item{na.action}{function which indicates what should happen when the data
 contain \code{NA}s. The default is set by the \code{na.action} setting of
@@ -53,7 +51,22 @@ to \code{0}. Local linear regression (\code{order = 1}) is equivalent to
 \code{order+2}th element of the design matrix}
 }
 \value{
-An \code{"RDRresults"} object. TODO
+An object of class \code{"RDResults"}. This is a list with at least
+    the following elements:
+
+   \describe{
+
+   \item{\code{"coefficients"}}{Data frame containing estimation results,
+   including point estimate, one- and two-sided confidence intervals, a bound
+   on worst-case bias, bandwidth used, and the number of effective
+   observations.}
+
+   \item{\code{"call"}}{The matched call.}
+
+   \item{\code{"na.action"}}{(If relevant) information on the special
+   handling of \code{NA}s.}
+
+}
 }
 \description{
 Computes honest CIs for local polynomial regression with uniform kernel under
@@ -69,10 +82,10 @@ that is first in \code{data} and then in the environment of \code{formula}.
 }
 
 \examples{
-RDHonestBME(log(cghs$earnings)~yearat14, data=cghs, h=3,
+RDHonestBME(log(earnings)~yearat14, data=cghs, h=3,
             order=1, cutoff=1947)
 ## Equivalent to
-RDHonestBME(log(cghs$earnings)~yearat14, data=cghs, h=3,
+RDHonestBME(log(earnings)~yearat14, data=cghs, h=3,
             cutoff=1947, order=1, regformula="y~x*I(x>=0)")
 }
 \references{

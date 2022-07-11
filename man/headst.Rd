@@ -33,10 +33,10 @@ Douglas Miller's former website,
 headst
 }
 \description{
-Subset of Ludwig-Miller data. Counties with missing poverty rate, or with
-both outcomes missing (\code{hs} and \code{mortality}) were removed. In the
-original dataset, Yellowstone County, MT (\code{oldcode = 27056}) was entered
-twice, here the duplicate is removed. Yellowstone National Park, MT
+Subset of Ludwig-Miller (2007) data. Counties with missing poverty rate, or
+with both outcomes missing (\code{hs} and \code{mortality}) were removed. In
+the original dataset, Yellowstone County, MT (\code{oldcode = 27056}) was
+entered twice, here the duplicate is removed. Yellowstone National Park, MT
 (\code{oldcode = 27057}) is also removed due to it being an outlier for both
 outcomes. Counties with \code{oldcode} equal to (3014, 32032, 47010, 47040,
 47074, 47074, 47078, 47079, 47096) matched more than one FIPS entry, so the
