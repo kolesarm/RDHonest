@@ -2,29 +2,30 @@
 % Please edit documentation in R/Cbound.R
 \name{RDSmoothnessBound}
 \alias{RDSmoothnessBound}
-\title{Lower bound on smoothness constant M in RD designs}
+\title{Lower bound on smoothness constant M in sharp RD designs}
 \usage{
 RDSmoothnessBound(
-  d,
+  object,
   s,
-  separate = TRUE,
+  separate = FALSE,
   multiple = TRUE,
   alpha = 0.05,
-  sclass = "T"
+  sclass = "H"
 )
 }
 \arguments{
-\item{d}{object of class \code{"RDData"}}
+\item{object}{An object of class \code{"RDResults"}, typically a result of a
+call to \code{\link{RDHonest}}.}
 
 \item{s}{Number of support points that curvature estimates should average
-over}
+over.}
 
 \item{separate}{If \code{TRUE}, report estimates separately for data above
-and below cutoff. If \code{FALSE}, report pooled estimates}
+and below cutoff. If \code{FALSE}, report pooled estimates.}
 
 \item{multiple}{If \code{TRUE}, use multiple curvature estimates. If
-\code{FALSE}, use a single estimate using only observations closest to
-the cutoff.}
+\code{FALSE}, only use a single curvature estimate using observations
+closest to the cutoff.}
 
 \item{alpha}{determines confidence level \code{1-alpha}.}
 
@@ -32,30 +33,35 @@ the cutoff.}
 for Hölder class.}
 }
 \value{
-Returns a list with the following elements
+Returns a data frame wit the following columns:
 
 \describe{
-\item{\code{mu+,mu-}}{Lower bound of CI for observations above and below
-      cutoff}
+\item{\code{estimate}}{Point estimate for lower bounds for M. }
 
-\item{\code{Z+,Z-}}{Point estimate used for lower bound}
+\item{\code{conf.low}}{Lower endpoint for a one-sided confidence interval
+                       for M}
 
-\item{\code{sd+,sd-}}{Standard deviations of point estimates}
 }
+
+The data frame has a single row if \code{separate==FALSE}; otherwise it has
+two rows, correspondoing to smoothness bound estimates and confidence
+intervals below and above the cutoff, respectively.
 }
 \description{
-Estimate a lower bound on smoothness constant M and provide a lower
-confidence interval.
+Estimate a lower bound on the smoothness constant M and provide a lower
+confidence interval for it, using method described in supplement to
+Kolesár and Rothe (2018).
+}
+\examples{
+r <- RDHonest(log(earnings)~yearat14, data=cghs, cutoff=1947, M=0.04, h=2)
+RDSmoothnessBound(r, s=2)
 }
 \references{
 {
 
-\cite{Armstrong, Timothy B., and Michal Kolesár. 2018.
-"Optimal Inference in a Class of Regression Models." Econometrica 86 (2):
-655–83.}
+\cite{Michal Kolesár and Christoph Rothe. Inference in regression
+discontinuity designs with a discrete running variable. American Economic
+Review, 108(8):2277—-2304, August 2018. \doi{10.1257/aer.20160945}}
 
-\cite{Kolesár, Michal, and Christoph Rothe. 2018. "Inference in Regression
-Discontinuity Designs with a Discrete Running Variable." American Economic
-Review 108 (8): 2277–2304.}
 }
 }

@@ -1,46 +1,49 @@
-#' Lower bound on smoothness constant M in RD designs
+#' Lower bound on smoothness constant M in sharp RD designs
 #'
-#' Estimate a lower bound on smoothness constant M and provide a lower
-#' confidence interval.
+#' Estimate a lower bound on the smoothness constant M and provide a lower
+#' confidence interval for it, using method described in supplement to
+#' Kolesár and Rothe (2018).
 #'
-#' @param d object of class \code{"RDData"}
+#' @param object An object of class \code{"RDResults"}, typically a result of a
+#'     call to \code{\link{RDHonest}}.
 #' @param s Number of support points that curvature estimates should average
-#'     over
+#'     over.
 #' @param sclass Smoothness class, either \code{"T"} for Taylor or \code{"H"}
 #'     for Hölder class.
 #' @param alpha determines confidence level \code{1-alpha}.
 #' @param separate If \code{TRUE}, report estimates separately for data above
-#'     and below cutoff. If \code{FALSE}, report pooled estimates
+#'     and below cutoff. If \code{FALSE}, report pooled estimates.
 #' @param multiple If \code{TRUE}, use multiple curvature estimates. If
-#'     \code{FALSE}, use a single estimate using only observations closest to
-#'     the cutoff.
-#' @return Returns a list with the following elements
+#'     \code{FALSE}, only use a single curvature estimate using observations
+#'     closest to the cutoff.
+#' @return Returns a data frame wit the following columns:
 #'
 #' \describe{
 
-#' \item{\code{mu+,mu-}}{Lower bound of CI for observations above and below
-#'       cutoff}
+#' \item{\code{estimate}}{Point estimate for lower bounds for M. }
 #'
-#' \item{\code{Z+,Z-}}{Point estimate used for lower bound}
+#' \item{\code{conf.low}}{Lower endpoint for a one-sided confidence interval
+#'                        for M}
 #'
-#' \item{\code{sd+,sd-}}{Standard deviations of point estimates}
 #' }
+#'
+#' The data frame has a single row if \code{separate==FALSE}; otherwise it has
+#' two rows, correspondoing to smoothness bound estimates and confidence
+#' intervals below and above the cutoff, respectively.
 #' @references{
 #'
-#' \cite{Armstrong, Timothy B., and Michal Kolesár. 2018.
-#' "Optimal Inference in a Class of Regression Models." Econometrica 86 (2):
-#' 655–83.}
+#' \cite{Michal Kolesár and Christoph Rothe. Inference in regression
+#' discontinuity designs with a discrete running variable. American Economic
+#' Review, 108(8):2277—-2304, August 2018. \doi{10.1257/aer.20160945}}
 #'
-#' \cite{Kolesár, Michal, and Christoph Rothe. 2018. "Inference in Regression
-#' Discontinuity Designs with a Discrete Running Variable." American Economic
-#' Review 108 (8): 2277–2304.}
 #' }
+#' @examples
+#' r <- RDHonest(log(earnings)~yearat14, data=cghs, cutoff=1947, M=0.04, h=2)
+#' RDSmoothnessBound(r, s=2)
 #' @export
-RDSmoothnessBound <- function(d, s, separate=TRUE, multiple=TRUE, alpha=0.05,
-                              sclass="T") {
-    ## First estimate variance
-    if (is.null(d$sigma2p) || is.null(d$sigma2m))
-        d <- NPRPrelimVar.fit(d, se.initial="nn")
+RDSmoothnessBound <- function(object, s, separate=FALSE, multiple=TRUE,
+                              alpha=0.05, sclass="H") {
+    d <- NPRPrelimVar.fit(object$data, se.initial="nn")
 
     ## Curvature estimate based on jth set of three points closest to zero
     Dk <- function(Y, X, xu, s2, j) {
@@ -54,7 +57,9 @@ RDSmoothnessBound <- function(d, s, separate=TRUE, multiple=TRUE, alpha=0.05,
                } else {
                    (1-lam)*mean(X[I3]^2) + lam*mean(X[I1]^2) - mean(X[I2]^2)
                }
+        ## Delta is lower bound on M by lemma S2 in Kolesar and Rothe
         Del <- 2*(lam*mean(Y[I1])+(1-lam)*mean(Y[I3])-mean(Y[I2])) / den
+        ## Variance of Delta
         VD <- 4*(lam^2*mean(s2[I1])/sum(I1) +
                  (1-lam)^2*mean(s2[I3])/sum(I3) + mean(s2[I2])/sum(I2)) / den^2
         c(Del, sqrt(VD), mean(Y[I1]), mean(Y[I2]), mean(Y[I3]), range(X[I1]),
@@ -67,11 +72,12 @@ RDSmoothnessBound <- function(d, s, separate=TRUE, multiple=TRUE, alpha=0.05,
     Dpj <- function(j) Dk(d$Yp, d$Xp, xp, d$sigma2p, j)
     Dmj <- function(j) Dk(d$Ym, abs(d$Xm), xm, d$sigma2m, j)
 
-    if (multiple==TRUE) {
+    if (multiple) {
         ## Positive Deltas
         Sp <- floor(length(xp)/(3*s))
         Sm <- floor(length(xm)/(3*s))
-        if (min(Sp, Sm) ==0) stop("Value of s is too big")
+        if (min(Sp, Sm) == 0)
+            stop("Value of s is too big")
     } else {
         Sp <- Sm <- 1
     }
@@ -81,71 +87,43 @@ RDSmoothnessBound <- function(d, s, separate=TRUE, multiple=TRUE, alpha=0.05,
     ## Critical value
     cv <- function(M, Z, sd, alpha) {
         if (ncol(Z)==1) {
-            return(CVb(M/sd, alpha=alpha))
+            CVb(M/sd, alpha=alpha)
         } else {
             S <- Z+M*outer(rep(1, nrow(Z)), 1/sd)
             maxS <- abs(S[cbind(seq_len(nrow(Z)), max.col(S))])
-            return(unname(stats::quantile(maxS, 1-alpha)))
+            unname(stats::quantile(maxS, 1-alpha))
         }
     }
 
     hatM <- function(D) {
-        ts <- abs(D[1, ]/D[2, ])
+        ts <- abs(D[1, ]/D[2, ]) # sup_t statistic
         maxt <- D[, which.max(ts)]
         set.seed(42)
         Z <- matrix(stats::rnorm(10000*ncol(D)), ncol=ncol(D))
-
-        if (max(ts) < cv(0, Z, D[2, ], 1/2)) {
-            hatM <- lower <- 0
-        } else {
+        ## median unbiased point estimate and lower CI
+        hatM <- lower <- 0
+        if (max(ts) > cv(0, Z, D[2, ], 1/2)) {
             hatM <- FindZero(function(m) max(ts)-cv(m, Z, D[2, ], 1/2),
                              negative=FALSE)
-            if (max(ts) < cv(0, Z, D[2, ], alpha)) {
-                lower <- 0
-            } else {
-                lower <- FindZero(function(m) max(ts)-cv(m, Z, D[2, ], alpha),
-                                  negative=FALSE)
-            }
         }
-        list(hatM=hatM, lower=lower, Delta=maxt[1], sdDelta=maxt[2],
+        if (max(ts) >= cv(0, Z, D[2, ], alpha)) {
+            lower <- FindZero(function(m) max(ts)-cv(m, Z, D[2, ], alpha),
+                              negative=FALSE)
+        }
+        list(estimate=hatM, conf.low=lower,
+             diagnostics=c(Delta=maxt[1], sdDelta=maxt[2],
              y1=maxt[3], y2=maxt[4], y3=maxt[5],
-             I1=maxt[6:7], I2=maxt[8:9], I3=maxt[10:11])
+             I1=maxt[6:7], I2=maxt[8:9], I3=maxt[10:11]))
     }
 
-    if (separate==TRUE) {
+    if (separate) {
         po <- hatM(Dp)
         ne <- hatM(Dm)
+        ret <- data.frame(rbind("Below cutoff"=unlist(ne[1:2]),
+                                "Above cutoff"=unlist(po[1:2])))
     } else {
-        po <- ne <- hatM(cbind(Dm, Dp))
+        ret <- data.frame((hatM(cbind(Dm, Dp))[1:2]))
+        rownames(ret) <- c("Pooled")
     }
-
-    ret <- list(po=po, ne=ne)
-    class(ret) <- "RDSmoothnessBound"
     ret
-}
-
-#' @export
-print.RDSmoothnessBound <- function(x, digits = getOption("digits"), ...) {
-    fmt <- function(x) format(x, digits=digits, width=digits+1)
-
-    pr <- function(r) {
-        cat("Estimate: ", fmt(r$hatM), ", Lower CI: [", fmt(r$lower),
-            ", Inf)\n", sep="")
-        cat("\nDelta: ", fmt(r$Delta), ", sd=", fmt(r$sdDelta), sep="")
-        cat("\nE_n[f(x_1)]: ", fmt(r$y1), ", I1=[", fmt(r$I1[1]), ", ",
-            fmt(r$I1[2]), "]\n", "E_n[f(x_2)]: ", fmt(r$y2), ", I2=[",
-            fmt(r$I2[1]), ", ", fmt(r$I2[2]), "]\n", "E_n[f(x_3)]: ", fmt(r$y3),
-            ", I3=[", fmt(r$I3[1]), ", ", fmt(r$I3[2]), "]\n", sep="")
-    }
-    if (x$po$hatM==x$ne$hatM) {
-        cat("\nSmoothness bound estimate:\n")
-        pr(x$po)
-    } else {
-        cat("\nSmoothness bound estimate using observations above cutoff:\n")
-        pr(x$po)
-        cat("\nSmoothness bound estimate using observations below cutoff:\n")
-        pr(x$ne)
-    }
-
-    invisible(x)
 }

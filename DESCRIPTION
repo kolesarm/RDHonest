@@ -13,9 +13,8 @@ Authors@R:
              email = "timothy.armstrong@usc.edu"))
 Description: Honest and nearly-optimal confidence intervals in fuzzy and sharp
     regression discontinuity designs and for inference at a point based on local
-    polynomial regression.
-Depends:
-    R (>= 3.3.0)
+    linear regression.
+Depends: R (>= 4.1.0)
 License: GPL-3
 Encoding: UTF-8
 LazyData: true

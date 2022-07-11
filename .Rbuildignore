@@ -1,10 +1,12 @@
 ^Meta$
 ^doc$
-^man-roxygen/*$
-.gitignore
-^data-raw/*$
-readme.md
-notes.org
 .lintr
+^README\.md$
+.gitignore
+^man-roxygen/*$
+^data-raw/*$
+notes.org
 ^codecov\.yml$
+^cran-comments\.md$
+^CRAN-RELEASE$
 ^\.github$

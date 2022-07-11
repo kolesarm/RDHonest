@@ -9,7 +9,6 @@
 ## @param order Order of local regression 1 for linear, 2 for quadratic, etc.
 ## @param sigma2 Optionally, supply estimates of \eqn{\sigma^{2}_{i}} (for
 ##     \code{"supplied.var"} \code{se.method})
-## @template RDse
 LPReg <- function(X, Y, h, K, order=1, se.method=NULL, sigma2, J=3,
                   weights=rep(1L, length(X))) {
     R <- outer(X, 0:order, "^")
