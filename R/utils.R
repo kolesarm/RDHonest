@@ -174,14 +174,6 @@ FindZero <- function(f, ival=1.1, negative=TRUE) {
 }
 
 
-
-## check class of object
-CheckClass <- function(x, class) {
-    if(!inherits(x, class))
-        stop(paste0("Object ", deparse(substitute(x)), " needs to be class ",
-                    class, "!"))
-}
-
 ## Modified golden section for unimodal piecewise constant function
 gss <- function(f, xs) {
     gr <- (sqrt(5) + 1) / 2

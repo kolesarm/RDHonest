@@ -27,54 +27,48 @@ NPRHonest.fit <- function(d, M, kern="triangular", h, opt.criterion, alpha=0.05,
         nobs <- min(sum(r1$wm!=0), sum(r1$wp!=0))
         bd <- TRUE
     }
-
-    ## If bandwidths too small
-    if (nobs==0) {
-        ## big bias / sd
-        bias <- sd <- upper <- hl <- sqrt(.Machine$double.xmax/10)
-        lower <- -upper
-    } else {
-        sd <- r1$se
-        if (T0bias==TRUE && inherits(d, "FRDData")) {
-            ## rescale bias and sd to make it free of r1$fs, use T0
-            sd <- sd*abs(r1$fs)
-            M <- unname((M[1]+M[2]*abs(T0)))
-        } else if (T0bias==FALSE && inherits(d, "FRDData")) {
-            M <- unname(M[1]+M[2]*abs(r1$estimate)) / abs(r1$fs)
-        }
-
-        if (sclass=="T")  {
-            bias <- M/2 * (sum(abs(wt*xx^2)))
-        } else if (sclass=="H" && bd) {
-            ## At boundary we know form of least favorable function
-            bias <- -M/2 * (sum(wt*xx^2))
-        } else {
-            ## Else need to find numerically (same formula if order=2)
-            w2p <- function(s) abs(sum((wt*(xx-s))[xx>=s]))
-            w2m <- function(s) abs(sum((wt*(s-xx))[xx<=s]))
-            bp <- stats::integrate(function(s) vapply(s, w2p, numeric(1)), 0,
-                                   h)$value
-            bm <- stats::integrate(function(s) vapply(s, w2m, numeric(1)), -h,
-                                   0)$value
-            bias <- M*(bp+bm)
-        }
-        lower <- r1$estimate - bias - stats::qnorm(1-alpha)*sd
-        upper <- r1$estimate + bias + stats::qnorm(1-alpha)*sd
-        hl <- CVb(bias/sd, alpha)*sd
+    if (T0bias && inherits(d, "FRDData")) {
+        ## multiply bias and sd by r1$fs to make if free of first stage
+        r1$se <- r1$se*abs(r1$fs)
+        M <- unname(c((M[1]+M[2]*abs(T0)), M))
+    } else if (!T0bias && inherits(d, "FRDData")) {
+        M <- unname(c((M[1]+M[2]*abs(r1$estimate)) / abs(r1$fs), M))
     }
-    term <- switch(class(d), "LPPData"="Value of conditional mean",
-                   "RDData"="Sharp RD Parameter",
-                   "FRDData"="Fuzzy RD Parameter")
 
-    coef <- data.frame(term=term, estimate=r1$estimate, std.error=sd,
-                       maximum.bias=bias, conf.low=r1$estimate-hl,
-                       conf.high=r1$estimate+hl, conf.low.onesided=lower,
+    ## Determine bias
+    if (nobs==0) {
+        ## If bandwidths too small, big bias / sd
+        bias <- r1$se <- sqrt(.Machine$double.xmax/10)
+    } else if (sclass=="T")  {
+        bias <- M[1]/2 * (sum(abs(wt*xx^2)))
+    } else if (sclass=="H" && bd) {
+        ## At boundary we know form of least favorable function
+        bias <- -M[1]/2 * (sum(wt*xx^2))
+    } else {
+        ## Else need to find numerically (same formula if order=2)
+        w2p <- function(s) abs(sum((wt*(xx-s))[xx>=s]))
+        w2m <- function(s) abs(sum((wt*(s-xx))[xx<=s]))
+        bp <- stats::integrate(function(s) vapply(s, w2p, numeric(1)), 0, h)
+        bm <- stats::integrate(function(s) vapply(s, w2m, numeric(1)), -h, 0)
+        bias <- M[1]*(bp$value+bm$value)
+    }
+    lower <- r1$estimate - bias - stats::qnorm(1-alpha)*r1$se
+    upper <- r1$estimate + bias + stats::qnorm(1-alpha)*r1$se
+    cv <- CVb(bias/r1$se, alpha)
+
+    term <- switch(class(d), LPPData="Value of conditional mean",
+                   RDData="Sharp RD Parameter", "Fuzzy RD Parameter")
+    method <- switch(sclass, H="Holder", "Tayor")
+    if (!inherits(d, "FRDData")) M[2:3] <- c(NA, NA)
+    coef <- data.frame(term=term, estimate=r1$estimate, std.error=r1$se,
+                       maximum.bias=bias, conf.low=r1$estimate-cv*r1$se,
+                       conf.high=r1$estimate+cv*r1$se, conf.low.onesided=lower,
                        conf.high.onesided=upper, bandwidth=h,
                        eff.obs=r1$eff.obs, # TODO
-                       cv=NA, alpha=alpha,
-                       method=if (sclass=="H") "Holder" else "Taylor", M=M)
+                       cv=cv, alpha=alpha, method=method, M=M[1], M.rf=M[2],
+                       M.fs=M[3], first.stage=r1$fs)
 
-    structure(list(coefficients=coef, fs=r1$fs), class="RDResults")
+    structure(list(coefficients=coef), class="RDResults")
 }
 
 
@@ -137,9 +131,23 @@ print.RDResults <- function(x, digits = getOption("digits"), ...) {
     print.data.frame(y[, c(nm, "Confidence Interval"), ],
                      digits=digits, row.names=FALSE)
     cat("\nOnesided CIs: ", y$OCI)
-    cat("\nBandwidth: ", format(y$bandwidth, digits=digits), sep="")
-    cat("\nNumber of effective observations:",
-        format(y$eff.obs, digits=digits), "\n")
+    if(!is.null(y$bandwidth))
+        cat("\nBandwidth: ", fmt(y$bandwidth), sep="")
+    else
+        cat("\nSmoothing parameters below and above cutoff: ",
+            fmt(y$bandwidth.m), ", ",
+            fmt(y$bandwidth.m), sep="")
+
+    cat("\nNumber of effective observations:", fmt(y$eff.obs))
+    if(!is.null(y$first.stage) && !is.na(y$first.stage))
+        cat("\nFirst stage estimate:", fmt(y$first.stage),
+            "\nFirst stage smoothness parameter:", fmt(y$M.fs),
+            "\nReduced form smoothness parameter:", fmt(y$M.rf),
+            "\n")
+    else
+        cat("\nSmoothness parameter:", fmt(y$M),
+            "\n")
+
     if (inherits(x$na.action, "omit"))
         cat(length(x$na.action), "observations with missing values dropped\n")
 

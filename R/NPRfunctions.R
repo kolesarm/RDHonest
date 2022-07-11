@@ -64,7 +64,7 @@ NPRreg.fit <- function(d, h, kern="triangular", order=1, se.method="nn", J=3) {
         ## Estimation weights
         W[W>0] <- r$w
         return(list(estimate=r$theta, se=sqrt(r$var), w=W, sigma2=r$sigma2,
-                    eff.obs=r$eff.obs))
+                    eff.obs=r$eff.obs, fs=NA))
     }
 
     Wm <- if (h<=0) 0*d$Xm else kern(d$Xm/h)
@@ -80,13 +80,11 @@ NPRreg.fit <- function(d, h, kern="triangular", order=1, se.method="nn", J=3) {
                 d$sigma2p[Wp>0, ], J, weights=d$wp[Wp>0])
     Wm[Wm>0] <- rm$w
     Wp[Wp>0] <- rp$w
-    ret <- list(estimate=NULL, se=NULL, wm=Wm, wp=Wp, sigma2m=rm$sigma2,
-                sigma2p=rp$sigma2, eff.obs=rm$eff.obs+rp$eff.obs)
+    ret <- list(estimate=rp$theta[1]-rm$theta[1], se=sqrt(rm$var[1]+rp$var[1]),
+                wm=Wm, wp=Wp, sigma2m=rm$sigma2, sigma2p=rp$sigma2,
+                eff.obs=rm$eff.obs+rp$eff.obs, fs=NA)
 
-    if (inherits(d, "RDData")) {
-        ret$estimate <- rp$theta-rm$theta
-        ret$se <- sqrt(rm$var+rp$var)
-    } else if (inherits(d, "FRDData")) {
+    if (inherits(d, "FRDData")) {
         ret$fs <- rp$theta[2]-rm$theta[2]
         ret$estimate <- (rp$theta[1]-rm$theta[1]) / ret$fs
         ret$se <- sqrt(sum(c(1, -ret$estimate, -ret$estimate, ret$estimate^2) *

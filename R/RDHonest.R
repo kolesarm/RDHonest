@@ -112,8 +112,7 @@ RDHonest <- function(formula, data, subset, weights, cutoff=0, M,
 
     if (missing(M)) {
         M <- NPR_MROT.fit(d)
-        message("Using ROT for smoothness constant, setting M=",
-                signif(M, digits = 3))
+        message("Using ROT for smoothness constant")
     }
     if (kern=="optimal") {
         ret <- RDTOpt.fit(d, M, opt.criterion, alpha, beta, se.method, J)

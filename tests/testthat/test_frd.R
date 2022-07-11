@@ -59,12 +59,12 @@ test_that("FRD with almost perfect first stage", {
     M <- NPR_MROT.fit(d)
     r0 <- NPRHonest.fit(d, M, kern="triangular", opt.criterion="MSE")
     r1 <- NPRHonest.fit(d, M, kern="triangular", opt.criterion="MSE",
-                        T0=r0$coefficients$estimate)
+                        T0=r0$coefficients$estimate)$coefficients
     r2 <- NPRHonest.fit(RDData(lee08, cutoff=0), unname(M[1]),
                         kern="triangular", opt.criterion="MSE")$coefficients
-    expect_lt(abs(r1$coefficients$estimate*r1$fs-r2$estimate), 1e-2)
-    expect_lt(abs(r1$coefficients$bandwidth-r2$bandwidth), 0.1)
-    expect_lt(abs(r0$coefficients$conf.low-r1$coefficients$conf.low), 0.01)
+    expect_lt(abs(r1$estimate*r1$first.stage-r2$estimate), 1e-2)
+    expect_lt(abs(r1$bandwidth-r2$bandwidth), 0.1)
+    expect_lt(abs(r0$coefficients$conf.low-r1$conf.low), 0.01)
 })
 
 test_that("FRD interface", {
@@ -86,6 +86,8 @@ test_that("FRD interface", {
     ## codecov.io check
     expect_equal(capture.output(print(r2))[1:7],
                  capture.output(print(p2))[7:13])
+    expect_equal(capture.output(print(p2, digits=4))[14],
+                 "First stage estimate: 0.3418 ")
 
     r3 <- NPRHonest.fit(d, M, kern="triangular", h=7,
                         T0=r1$coefficients$estimate)

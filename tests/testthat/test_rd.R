@@ -80,6 +80,7 @@ test_that("Honest inference in Lee and LM data",  {
     expect_equal(r1o[8], m1)
     expect_equal(r1o[10], "Onesided CIs:  (-Inf, 4.684), (-7.081, Inf)")
     expect_equal(r2o[10], "Onesided CIs:  (-Inf, 4.742), (-7.138, Inf)")
+    expect_equal(r1o[14], "24 observations with missing values dropped")
 
     d <- RDData(headst[!is.na(headst$mortHS), c("mortHS", "povrate60")],
                 cutoff=0)
@@ -189,7 +190,14 @@ test_that("Honest inference in Lee and LM data",  {
     r1 <- RDHonest(mortHS ~ povrate60, data=headst, kern="uniform",
                    na.action="na.omit")
     r1 <- capture.output(print(r1, digits=6))
-    expect_equal(r1[13], "24 observations with missing values dropped")
+    expect_equal(r1[c(11, 14)],
+                 c("Bandwidth: 3.98048",
+                   "24 observations with missing values dropped"))
+    r2 <- RDHonest(mortHS ~ povrate60, data=headst, kern="epanechnikov",
+                   point.inference=TRUE, cutoff=4)
+    expect_equal(capture.output(print(r2, digits=6))[c(11, 14)],
+                 c("Bandwidth: 9.42625",
+                   "24 observations with missing values dropped"))
 })
 
 test_that("BME CIs match paper", {
@@ -262,3 +270,9 @@ test_that("Adaptation bounds", {
     b2 <- RDTEfficiencyBound(r, 2*0.005, opt.criterion="FLCI")
     expect_equal(unname(c(b1, b2)), c(0.9956901, 0.95870418))
 })
+
+
+## rf <- RDHonest(log(cn)~retired | elig_year, data=rcp, cutoff=0)
+## rs <- RDHonest(log(cn)~elig_year, data=rcp, cutoff=0)
+## ro <- RDHonest(log(cn)~elig_year, data=rcp, cutoff=0, kern="optimal")
+## rp <- RDHonest(log(cn)~elig_year, data=rcp, cutoff=1, point.inference=TRUE)
