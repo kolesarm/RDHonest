@@ -44,7 +44,7 @@ Returns a data frame wit the following columns:
 }
 
 The data frame has a single row if \code{separate==FALSE}; otherwise it has
-two rows, correspondoing to smoothness bound estimates and confidence
+two rows, corresponding to smoothness bound estimates and confidence
 intervals below and above the cutoff, respectively.
 }
 \description{

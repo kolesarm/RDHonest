@@ -3,7 +3,7 @@
 #' Scatterplot of raw observations in which each point corresponds to an binned
 #' average.
 #'
-#' @param cutoff specifies the RD cutoff in the running variable.
+#' @param cutoff specifies the RD cutoff for the running variable.
 #' @template RDFormula
 #' @param avg Number of observations to average over. If set to \code{Inf}, then
 #'     take averages for each possible value of the running variable (convenient
@@ -13,7 +13,7 @@
 #' @param propdotsize If \code{TRUE}, then size of points is proportional to
 #'     number of observations that the point averages over (useful when
 #'     \code{avg=Inf}). Otherwise the size of points is constant.
-#' @return An object of class \code{"ggplot"}, a scatterplot the raw
+#' @return An object of class \code{"ggplot"}, a scatterplot the binned raw
 #'     observations.
 #' @examples
 #' plot_RDscatter(log(earnings)~yearat14, data=cghs, cutoff=1947,
@@ -22,8 +22,7 @@
 plot_RDscatter <- function(formula, data, subset, cutoff=0, na.action, avg=10,
                            xlab=NULL, ylab=NULL, vert=TRUE, propdotsize=FALSE) {
     if (!requireNamespace("ggplot2", quietly = TRUE))
-        stop("This function requires the ggplot2 package to be installed",
-             call. = FALSE)
+        stop("This function requires the ggplot2 package", call. = FALSE)
     ## construct model frame
     mf <- match.call(expand.dots = FALSE)
     m <- match(c("formula", "data", "subset"),

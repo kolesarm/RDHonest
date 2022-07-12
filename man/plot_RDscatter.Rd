@@ -30,7 +30,7 @@ which the function is called.}
 \item{subset}{optional vector specifying a subset of observations to be used
 in the fitting process.}
 
-\item{cutoff}{specifies the RD cutoff in the running variable.}
+\item{cutoff}{specifies the RD cutoff for the running variable.}
 
 \item{na.action}{function which indicates what should happen when the data
 contain \code{NA}s. The default is set by the \code{na.action} setting of
@@ -50,8 +50,8 @@ number of observations that the point averages over (useful when
 \code{avg=Inf}). Otherwise the size of points is constant.}
 }
 \value{
-An object of class \code{"ggplot"}, a scatterplot the raw
-    observatiosn.
+An object of class \code{"ggplot"}, a scatterplot the binned raw
+    observations.
 }
 \description{
 Scatterplot of raw observations in which each point corresponds to an binned

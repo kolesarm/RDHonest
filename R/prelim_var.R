@@ -55,14 +55,17 @@ NPRPrelimVar.fit <- function(d, se.initial="EHW") {
             h1 <- Inf
         }
         r1 <- NPRreg.fit(d, max(h1, hmin), se.method="EHW")
-    } else if (inherits(d, "RDData")) { # Silverman only for RD/IK
+    } else if (inherits(d, "RDData") & se.initial == "Silverman") { # Silverman only for RD/IK
         X <- c(d$Xm, d$Xp)
         h1 <- max(1.84*stats::sd(X)/sum(length(X))^(1/5), hmin)
         r1 <- NPRreg.fit(d, h1, "uniform", order=0, se.method="EHW")
         ## Variance adjustment for backward compatibility
         r1$sigma2p <- r1$sigma2p*length(r1$sigma2p) / (length(r1$sigma2p)-1)
         r1$sigma2m <- r1$sigma2m*length(r1$sigma2m) / (length(r1$sigma2m)-1)
+    } else {
+        stop("This method for preliminary variance estimation not supported")
     }
+
 
     if (inherits(d, "LPPData")) {
         d$sigma2 <- rep(mean(r1$sigma2), length(d$X))

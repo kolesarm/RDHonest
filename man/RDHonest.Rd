@@ -41,7 +41,7 @@ in the fitting process.}
 (useful for aggregated data). Disregarded if optimal kernel is used.}
 
 \item{cutoff}{specifies the RD cutoff in the running variable. For inference
-at a point, specified the point \eqn{x_0} at which to calculate the
+at a point, specifies the point \eqn{x_0} at which to calculate the
 conditional mean.}
 
 \item{M}{Bound on second derivative of the conditional mean function.}
@@ -49,7 +49,9 @@ conditional mean.}
 \item{kern}{specifies kernel function used in the local regression. It can
 either be a string equal to \code{"triangular"} (\eqn{k(u)=(1-|u|)_{+}}),
 \code{"epanechnikov"} (\eqn{k(u)=(3/4)(1-u^2)_{+}}), or \code{"uniform"}
-(\eqn{k(u)= (|u|<1)/2}), or else a kernel function.}
+(\eqn{k(u)= (|u|<1)/2}), or else a kernel function. If equal to
+\code{"optimal"}, use the finite-sample optimal linear estimator under
+Taylor smoothness class, instead of a local linear estimator.}
 
 \item{na.action}{function which indicates what should happen when the data
 contain \code{NA}s. The default is set by the \code{na.action} setting of
@@ -80,8 +82,8 @@ contain \code{NA}s. The default is set by the \code{na.action} setting of
 computed according to criterion given by \code{opt.criterion}.}
 
 \item{se.method}{Vector with methods for estimating standard error of
-estimate. If \code{NULL}, standard errors are not computed. The elements of
-the vector can consist of the following methods:
+    estimate. If \code{NULL}, standard errors are not computed. The elements
+    of the vector can consist of the following methods:
 
 \describe{
     \item{"nn"}{Nearest neighbor method}
@@ -89,8 +91,8 @@ the vector can consist of the following methods:
     \item{"EHW"}{Eicker-Huber-White, with residuals from local regression
     (local polynomial estimators only).}
 
-   \item{"supplied.var"}{Use conditional variance supplied by \code{sigma2} or
-        \code{d} instead of computing residuals}
+   \item{"supplied.var"}{Use conditional variance supplied by \code{sigma2}
+        or \code{d} instead of computing residuals}
 
 }}
 
@@ -181,20 +183,21 @@ RDHonest(voteshare ~ margin, data = lee08, subset = margin>0,
 \references{
 {
 
-\cite{Armstrong, Timothy B., and Michal Kolesár. 2018.
-"Optimal Inference in a Class of Regression Models." Econometrica 86 (2):
-655–83.}
+\cite{Timothy B. Armstrong and Michal Kolesár. Optimal inference in a class
+of regression models. Econometrica, 86(2):655–683, March 2018.
+\doi{10.3982/ECTA14434}}
 
-\cite{Armstrong, Timothy B., and Michal Kolesár. 2020.
-"Simple and Honest Confidence Intervals in Nonparametric Regression."
-Quantitative Economics 11 (1): 1–39.}
+\cite{Timothy B. Armstrong and Michal Kolesár. Simple and honest confidence
+intervals in nonparametric regression. Quantitative Economics, 11(1):1–39,
+January 2020. \doi{10.3982/QE1199}}
 
-\cite{Imbens, Guido, and Kalyanaraman, Karthik,
-"Optimal bandwidth choice for the regression discontinuity estimator." The
-Review of Economic Studies 79 (3): 933-959.}
+\cite{Guido W. Imbens and Karthik Kalyanaraman. Optimal bandwidth choice for
+the regression discontinuity estimator. The Review of Economic Studies,
+79(3):933–959, July 2012. \doi{10.1093/restud/rdr043}}
 
-\cite{Kolesár, Michal, and Christoph Rothe. 2018. "Inference in Regression
-Discontinuity Designs with a Discrete Running Variable." American Economic
-Review 108 (8): 2277–2304.}
+\cite{Michal Kolesár and Christoph Rothe. Inference in regression
+discontinuity designs with a discrete running variable. American Economic
+Review, 108(8):2277—-2304, August 2018. \doi{10.1257/aer.20160945}}
+
 }
 }

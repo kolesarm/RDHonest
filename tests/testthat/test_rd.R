@@ -173,7 +173,7 @@ test_that("Honest inference in Lee and LM data",  {
     ## expect_equal(r3$h, 5.0590753991)
 
     ## Decrease M, these results are not true minima...
-    d <- NPRPrelimVar.fit(RDData(lee08, cutoff=0), se.initial="Silveman")
+    d <- NPRPrelimVar.fit(RDData(lee08, cutoff=0), se.initial="Silverman")
     r1 <- NPRHonest.fit(d, M=0.01, kern="uniform", opt.criterion="MSE",
                         beta=0.8, sclass="T")$coefficients
     r2 <- NPRHonest.fit(d, M=0.01, kern="uniform", opt.criterion="MSE",

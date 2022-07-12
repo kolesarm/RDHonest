@@ -28,7 +28,7 @@
 #' }
 #'
 #' The data frame has a single row if \code{separate==FALSE}; otherwise it has
-#' two rows, correspondoing to smoothness bound estimates and confidence
+#' two rows, corresponding to smoothness bound estimates and confidence
 #' intervals below and above the cutoff, respectively.
 #' @references{
 #'
@@ -43,7 +43,7 @@
 #' @export
 RDSmoothnessBound <- function(object, s, separate=FALSE, multiple=TRUE,
                               alpha=0.05, sclass="H") {
-    d <- NPRPrelimVar.fit(object$data, se.initial="nn")
+    d <- NPRPrelimVar.fit(object$data, se.initial="EHW")
 
     ## Curvature estimate based on jth set of three points closest to zero
     Dk <- function(Y, X, xu, s2, j) {
@@ -72,13 +72,12 @@ RDSmoothnessBound <- function(object, s, separate=FALSE, multiple=TRUE,
     Dpj <- function(j) Dk(d$Yp, d$Xp, xp, d$sigma2p, j)
     Dmj <- function(j) Dk(d$Ym, abs(d$Xm), xm, d$sigma2m, j)
 
-    if (multiple) {
-        ## Positive Deltas
-        Sp <- floor(length(xp)/(3*s))
-        Sm <- floor(length(xm)/(3*s))
-        if (min(Sp, Sm) == 0)
-            stop("Value of s is too big")
-    } else {
+    Sp <- floor(length(xp)/(3*s))
+    Sm <- floor(length(xm)/(3*s))
+    if (min(Sp, Sm) == 0)
+        stop("Value of s is too big")
+
+    if (!multiple) {
         Sp <- Sm <- 1
     }
     Dp <- vapply(seq_len(Sp), Dpj, numeric(11))
