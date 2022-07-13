@@ -532,5 +532,13 @@ RDHonest(voteshare ~ margin, data=lee08, subset=margin>0,
          opt.criterion="MSE", sclass="H", point.inference=TRUE)
 ```
 
+# Lindeberg weights
+
+In fuzzy RD, by Theorem B.2 in the appendix to @ArKo16honest, the estimator is asymptotically equivalent to
+\begin{equation*}
+\sum_i w_i (Y_i-D_i\beta)/fs,
+\end{equation*}
+so the Lineberg weights are the same as in the sharp case.
+
 
 # References

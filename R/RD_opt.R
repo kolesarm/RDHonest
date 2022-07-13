@@ -101,7 +101,7 @@ RDTEstimator <- function(d, f, alpha, se.method, J) {
                        conf.high.onesided=upper, eff.obs=NA, #TODO
                        cv=CVb(maxbias/sd, alpha), alpha=alpha, method="Taylor")
 
-    structure(list(coefficients=coef, delta=sqrt(4*q), omega=2*b),
+    structure(list(coefficients=coef, data=d, delta=sqrt(4*q), omega=2*b),
               class="RDResults")
 }
 

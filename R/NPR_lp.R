@@ -16,12 +16,15 @@ NPRHonest.fit <- function(d, M, kern="triangular", h, opt.criterion, alpha=0.05,
     r1 <- NPRreg.fit(d, h, kern, order=1, se.method, J)
 
     if (inherits(d, "LPPData")) {
+        d$lind_w <- r1$w
         wt <- r1$w[r1$w!=0]
         xx <- d$X[r1$w!=0]
         nobs <- length(wt)
         ## Are we at a boundary?
         bd <- length(unique(d$X>=0))==1
     } else {
+        d$lind_wp <- r1$wp
+        d$lind_wm <- r1$wm
         wt <- c(r1$wm[r1$wm!=0], r1$wp[r1$wp!=0])
         xx <-  c(d$Xm[r1$wm!=0], d$Xp[r1$wp!=0])
         nobs <- min(sum(r1$wm!=0), sum(r1$wp!=0))
@@ -68,7 +71,7 @@ NPRHonest.fit <- function(d, M, kern="triangular", h, opt.criterion, alpha=0.05,
                        cv=cv, alpha=alpha, method=method, M=M[1], M.rf=M[2],
                        M.fs=M[3], first.stage=r1$fs)
 
-    structure(list(coefficients=coef), class="RDResults")
+    structure(list(coefficients=coef, data=d), class="RDResults")
 }
 
 

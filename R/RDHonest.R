@@ -163,7 +163,7 @@ RDHonest <- function(formula, data, subset, weights, cutoff=0, M,
 
     if (missing(M)) {
         M <- NPR_MROT.fit(d)
-        message("Using ROT for smoothness constant")
+        message("Using Armstong Kolesar (2020) ROT for smoothness constant M")
     }
     if (kern=="optimal") {
         ret <- RDTOpt.fit(d, M, opt.criterion, alpha, beta, se.method, J)
@@ -175,7 +175,6 @@ RDHonest <- function(formula, data, subset, weights, cutoff=0, M,
                              alpha=alpha, beta=beta, se.method=se.method, J=J,
                              sclass=sclass, T0=T0)
     }
-    ret$data <- d
     ret$call <- cl
     ret$na.action <- attr(mf, "na.action")
 
