@@ -34,8 +34,7 @@ kernC
 }
 \description{
 First four moments of uniform, triangular, and Epanechnikov equivalent
-kernels. Up to numerical integration precision, these moments are matched by
-\code{KernMoment()}. See vignette \code{lpkernels}
+kernels.
 }
 \references{
 {

@@ -2,8 +2,6 @@
 
 S3method(print,RDResults)
 export(CVb)
-export(EqKern)
-export(KernMoment)
 export(RDHonest)
 export(RDHonestBME)
 export(RDSmoothnessBound)

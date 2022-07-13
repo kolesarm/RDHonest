@@ -128,8 +128,7 @@
 #' Constants for common kernels.
 #'
 #' First four moments of uniform, triangular, and Epanechnikov equivalent
-#' kernels. Up to numerical integration precision, these moments are matched by
-#' \code{KernMoment()}. See vignette \code{lpkernels}
+#' kernels.
 #'
 #' @format A data frame with 18 rows and 19 variables:
 #' \describe{

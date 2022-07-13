@@ -55,7 +55,8 @@ NPRPrelimVar.fit <- function(d, se.initial="EHW") {
             h1 <- Inf
         }
         r1 <- NPRreg.fit(d, max(h1, hmin), se.method="EHW")
-    } else if (inherits(d, "RDData") & se.initial == "Silverman") { # Silverman only for RD/IK
+    } else if (inherits(d, "RDData") && se.initial == "Silverman") {
+        ## Silverman only for RD/IK
         X <- c(d$Xm, d$Xp)
         h1 <- max(1.84*stats::sd(X)/sum(length(X))^(1/5), hmin)
         r1 <- NPRreg.fit(d, h1, "uniform", order=0, se.method="EHW")

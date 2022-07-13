@@ -1,18 +1,17 @@
-#' Equivalent kernel for local linear regression.
-#'
-#' Calculates equivalent kernel for local polynomial regression.
-#' @param kernel Kernel type. Can be a function supported on \eqn{[0, 1]}
-#'     (boundary kernel) or \eqn{[-1, 1]} (interior kernel), or else one of
-#'     \code{"triangular"} (\eqn{k(u)=(1-|u|)_{+}}), \code{"epanechnikov"}
-#'     (\eqn{k(u)=(3/4)(1-u^2)_{+}}), or \code{"uniform"} (\eqn{k(u)=
-#'     (|u|<1)/2}).
-#' @param boundary Logical scalar, specifying whether we are at a boundary.
-#' @param order Order of local polynomial: \code{0} means local constant,
-#'     \code{1} local linear, \code{2} local quadratic etc.
-#' @return Equivalent kernel function.
-#' @examples
-#' EqKern(kernel = "uniform", order = 2)
-#' @export
+## Equivalent kernel for local linear regression.
+##
+## Calculates equivalent kernel for local polynomial regression.
+## @param kernel Kernel type. Can be a function supported on \eqn{[0, 1]}
+##     (boundary kernel) or \eqn{[-1, 1]} (interior kernel), or else one of
+##     \code{"triangular"} (\eqn{k(u)=(1-|u|)_{+}}), \code{"epanechnikov"}
+##     (\eqn{k(u)=(3/4)(1-u^2)_{+}}), or \code{"uniform"} (\eqn{k(u)=
+##     (|u|<1)/2}).
+## @param boundary Logical scalar, specifying whether we are at a boundary.
+## @param order Order of local polynomial: \code{0} means local constant,
+##     \code{1} local linear, \code{2} local quadratic etc.
+## @return Equivalent kernel function.
+## @examples
+## EqKern(kernel = "uniform", order = 2)
 EqKern <- function(kernel = "uniform", boundary = TRUE, order = 0) {
     ## support
     su <- function(u) (u <= 1) * (u >= -1 + boundary)
@@ -50,23 +49,22 @@ EqKern <- function(kernel = "uniform", boundary = TRUE, order = 0) {
     }
 }
 
-#' Moments of a kernel.
-#'
-#' Computes moments of a kernel over \eqn{X=[0, 1]} (boundary case), or
-#' \eqn{X=[-1, 1]} (interior case),
-#'
-#' @param K kernel function.
-#' @param moment order \eqn{j} of moment to compute.
-#' @param type Type of moment. "raw" computes \eqn{\int_X u^j k(u)}{integral_X
-#'     u^j k(x)}, "absolute" computes \eqn{\int_X |u^j k(u)|}{integral_X |u^j|
-#'     k(u)}, and "raw2" computes \eqn{\int_X u^j k(u)^2}{integral_X u^j
-#'     k(u)^2}.
-#' @inheritParams EqKern
-#' @return A scalar numeric value of the moment.
-#' @examples
-#' KernMoment(function(u) abs(u) < 1, moment = 3, boundary = FALSE)
-#' KernMoment(EqKern(kernel = "triangular", order = 2), moment = 3)
-#' @export
+## Moments of a kernel.
+##
+## Computes moments of a kernel over \eqn{X=[0, 1]} (boundary case), or
+## \eqn{X=[-1, 1]} (interior case),
+##
+## @param K kernel function.
+## @param moment order \eqn{j} of moment to compute.
+## @param type Type of moment. "raw" computes \eqn{\int_X u^j k(u)}{integral_X
+##     u^j k(x)}, "absolute" computes \eqn{\int_X |u^j k(u)|}{integral_X |u^j|
+##     k(u)}, and "raw2" computes \eqn{\int_X u^j k(u)^2}{integral_X u^j
+##     k(u)^2}.
+## @inheritParams EqKern
+## @return A scalar numeric value of the moment.
+## @examples
+## KernMoment(function(u) abs(u) < 1, moment = 3, boundary = FALSE)
+## KernMoment(EqKern(kernel = "triangular", order = 2), moment = 3)
 KernMoment <- function(K, moment = 0, boundary = TRUE, type = "raw") {
     fkt <- switch(type,
                   raw=function(u) u^moment*K(u),

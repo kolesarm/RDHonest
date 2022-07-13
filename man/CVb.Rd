@@ -19,7 +19,7 @@ Vector of critical values, one for each value of maximum bias
 \description{
 Computes the critical value \eqn{cv_{1-\alpha}(B)}{cv_{1-alpha}(B)} such that
 the confidence interval \eqn{X\pm cv_{1-\alpha}(B)}{X +/- cv_{1-alpha}(B)}
-has coverage \eqn{1-\alpha}{1-alpha}, where \eqn{X} is normally
+has coverage \eqn{1-\alpha}{1-alpha}, where the estimator \eqn{X} is normally
 distributed with variance equal to \eqn{1} and maximum bias at most \eqn{B}.
 }
 \examples{
