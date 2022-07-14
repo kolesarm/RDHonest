@@ -11,4 +11,3 @@ KernMoment(function(u) 4-6*u, moment = 1, boundary = TRUE, type = "raw")
 KernMoment(function(u) 4-6*u, moment = 1, boundary = TRUE, type = "raw2")
 ## pi_1, should be 16/27
 KernMoment(function(u) 4-6*u, moment = 1, boundary = TRUE, type = "absolute")
-

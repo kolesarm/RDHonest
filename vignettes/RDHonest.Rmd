@@ -538,7 +538,7 @@ In fuzzy RD, by Theorem B.2 in the appendix to @ArKo16honest, the estimator is a
 \begin{equation*}
 \sum_i w_i (Y_i-D_i\beta)/fs,
 \end{equation*}
-so the Lineberg weights are the same as in the sharp case.
+so the Lindeberg weights are the same as in the sharp case.
 
 
 # References

@@ -14,17 +14,21 @@ test_that("Test weighting using cghs", {
     }
 
     d1 <- NPRData(dd, cutoff=1947, "SRD")
-    d2 <- NPRData(data.frame(y=log(cghs$earnings), x=cghs$yearat14), cutoff=1947,
-                  "SRD")
+    d2 <- NPRData(data.frame(y=log(cghs$earnings), x=cghs$yearat14),
+                  cutoff= 1947, "SRD")
     ## Initial estimates
     r2 <- NPRreg.fit(d2, 5, "triangular")
     r1 <- NPRreg.fit(d1, 5, "triangular")
 
     ## Checks weights match
-    wp1 <- vapply(unique(d1$X[d1$p]), function(j) sum(r1$w[d1$X==j]), numeric(1))
-    wp2 <- vapply(unique(d2$X[d2$p]), function(j) sum(r2$w[d2$X==j]), numeric(1))
-    wm1 <- vapply(unique(d1$X[d1$m]), function(j) sum(r1$w[d1$X==j]), numeric(1))
-    wm2 <- vapply(unique(d2$X[d2$m]), function(j) sum(r2$w[d2$X==j]), numeric(1))
+    wp1 <- vapply(unique(d1$X[d1$p]), function(j) sum(r1$w[d1$X==j]),
+                  numeric(1))
+    wp2 <- vapply(unique(d2$X[d2$p]), function(j) sum(r2$w[d2$X==j]),
+                  numeric(1))
+    wm1 <- vapply(unique(d1$X[d1$m]), function(j) sum(r1$w[d1$X==j]),
+                  numeric(1))
+    wm2 <- vapply(unique(d2$X[d2$m]), function(j) sum(r2$w[d2$X==j]),
+                  numeric(1))
     expect_equal(wm1, wm2)
     expect_equal(wp1, wp2)
     ## Variance by hand

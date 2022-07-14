@@ -5,9 +5,7 @@
 ## \eqn{\omega^{-1}(2b)^2/4=sum_{i} g(x_i)^2/sigma^2(x_i)},
 ## @param d Object of class \code{"RDData"}
 ## @param f Least favorable function of class \code{"RDLFFunction"}
-Q <- function(d, f) sum(f$m(d$X[d$m])^2/d$sigma2[d$m])+
-                        sum(f$p(d$X[d$p])^2/d$sigma2[d$p])
-
+Q <- function(d, f) sum(f(d$X)^2/d$sigma2)
 
 ## Solution to inverse modulus problem in RD under Taylor(2) class
 ## Compute function \eqn{g_{b, C}(x)} that solves the inverse modulus problem
@@ -41,8 +39,7 @@ RDgbC <- function(d, b, C) {
     dp <- dstar(d$X[d$p], bp, C, d$sigma2[d$p])
     dm <- dstar(d$X[d$m], bm, C, d$sigma2[d$m])
 
-    list(m=function(x) SY(x, bm, dm, C)*(x<=0),
-         p=function(x) SY(x, bp, dp, C)*(x>=0))
+    function(x) SY(x, bp, dp, C)*(x>=0)-SY(x, bm, dm, C)*(x<0)
 }
 
 
@@ -63,11 +60,10 @@ RDLFFunction <- function(d, C, delta) {
 ## @param d Object of class \code{"RDData"}
 ## @param f RDLFFunction
 RDTEstimator <- function(d, f, alpha, se.method, J) {
-    den <- sum(f$p(d$X[d$p]) / d$sigma2[d$p]) # denominator
-    ## By (S3) in supplement of 1511.06028v2, this = sum(f$m(d$Xm) / d$sigma2m)
+    den <- sum(f(d$X[d$p]) / d$sigma2[d$p]) # denominator
+    ## By (S3) in 1511.06028v2, this = sum(f(d$X[d$m]) / d$sigma2[d$m])
 
-    W <- c(-f$m(d$X[d$m]) / (d$sigma2[d$m]*den),
-           f$p(d$X[d$p]) / (d$sigma2[d$p]*den))
+    W <- f(d$X) / (d$sigma2*den)
     q <- Q(d, f)
     ## If not NN then it's suppled var
     if (se.method=="nn") {
@@ -82,7 +78,7 @@ RDTEstimator <- function(d, f, alpha, se.method, J) {
     W <- W[W!=0]
     Lhat <- sum(W * d$Y)
 
-    b <- f$m(0)+f$p(0)
+    b <- f(0)-f(-1e-10)
 
     sd <-  sqrt(sum(W^2 * d$sigma2))
     maxbias <- b - q/den                # b-q/den
@@ -114,8 +110,7 @@ RDTOpt.fit <- function(d, M, opt.criterion, alpha, beta, se.method, J) {
     } else if (opt.criterion=="MSE") {
         eq <- function(b) {
             r <- RDgbC(d, b, C)
-            C*sum((d$X[d$p])^2*abs(r$p(d$X[d$p])) / d$sigma2[d$p]) +
-                C*sum(d$X[d$m]^2 * abs(r$m(d$X[d$m])) / d$sigma2[d$m]) - 1
+            C*sum(d$X^2*abs(r(d$X)) / d$sigma2) - 1
         }
         lff <- RDgbC(d, FindZero(eq, negative=FALSE), C)
     } else if (opt.criterion=="FLCI") {
@@ -124,7 +119,7 @@ RDTOpt.fit <- function(d, M, opt.criterion, alpha, beta, se.method, J) {
             q1 <- Q(d, r)
             ## Instead of using the above formula from page S5 of 1511.06028v2,
             ## optimize half-length directly
-            den <- sum(r$p(d$X[d$p]) / d$sigma2[d$p]) # denominator
+            den <- sum(r(d$X[d$p]) / d$sigma2[d$p]) # denominator
             hse <- sqrt(q1)/den                   # standard deviation
             maxbias <- b - q1/den                # b-q/den
             CVb(maxbias/hse, alpha) * hse # Half-length
@@ -138,8 +133,8 @@ RDTOpt.fit <- function(d, M, opt.criterion, alpha, beta, se.method, J) {
     r <- RDTEstimator(d, lff, alpha, se.method, J)
 
     ## Two bandwidths in this case
-    r$coefficients$bandwidth.m <- (lff$m(0)/C)^(1/2)
-    r$coefficients$bandwidth.p <- (lff$p(0)/C)^(1/2)
+    r$coefficients$bandwidth.m <- sqrt(-lff(-1e-10)/C)
+    r$coefficients$bandwidth.p <- sqrt(lff(0)/C)
     r
 }
 
