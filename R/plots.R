@@ -30,32 +30,30 @@ plot_RDscatter <- function(formula, data, subset, cutoff=0, na.action, avg=10,
     mf <- mf[c(1L, m)]
     mf[[1L]] <- quote(stats::model.frame)
     mf <- eval(mf, parent.frame())
-    d <- RDData(mf, cutoff)
+    d <- NPRData(mf, cutoff, "SRD")
 
     if (avg==Inf) {
-        x <- c(d$Xm, d$Xp)
-        y <- c(d$Ym, d$Yp)
-        bd <- data.frame(x=unique(x),
-                         y=unname(stats::coef(stats::lm(y~0+as.factor(x)))),
-                         count=as.vector(table(x)))
+        bd <- data.frame(x=unique(d$X),
+                         y=unname(stats::coef(stats::lm(d$Y~0+as.factor(d$X)))),
+                         count=as.vector(table(d$X)))
     } else {
-        np <- length(d$Yp)
-        nm <- length(d$Ym)
+        np <- sum(d$p)
+        nm <- sum(d$m)
         ## don't recycle
         maxp <- (np %/% avg) * avg
         maxm <- (nm %/% avg) * avg
         bd <- data.frame(
-            x=c(colMeans(matrix(d$Xm[1:maxm], nrow=avg)),
-                colMeans(matrix(d$Xp[1:maxp], nrow=avg))),
-            y=c(colMeans(matrix(d$Ym[1:maxm], nrow=avg)),
-                colMeans(matrix(d$Yp[1:maxp], nrow=avg))))
+            x=c(colMeans(matrix(d$X[d$m][1:maxm], nrow=avg)),
+                colMeans(matrix(d$X[d$p][1:maxp], nrow=avg))),
+            y=c(colMeans(matrix(d$Y[d$m][1:maxm], nrow=avg)),
+                colMeans(matrix(d$Y[d$p][1:maxp], nrow=avg))))
         ## if there is a remainder, add it
         if (maxm+1<=nm)
-            bd <- rbind(bd, data.frame(x=mean(d$Xm[(maxm+1):nm]),
-                                       y=mean(d$Ym[(maxm+1):nm])))
+            bd <- rbind(bd, data.frame(x=mean(d$X[d$m][(maxm+1):nm]),
+                                       y=mean(d$Y[d$m][(maxm+1):nm])))
         if (maxp+1<=np)
-            bd <- rbind(bd, data.frame(x=mean(d$Xp[(maxp+1):np]),
-                                       y=mean(d$Yp[(maxp+1):np])))
+            bd <- rbind(bd, data.frame(x=mean(d$X[d$p][(maxp+1):np]),
+                                       y=mean(d$Y[d$p][(maxp+1):np])))
         bd$count <- avg
     }
     bd$x <- bd$x+d$orig.cutoff
@@ -63,7 +61,7 @@ plot_RDscatter <- function(formula, data, subset, cutoff=0, na.action, avg=10,
     if (propdotsize) {
         p <- ggplot2::qplot(x=bd$x, y=bd$y, size=bd$count)
     } else {
-        p <- ggplot2::qplot(x=x, y=y, data=bd)
+        p <- ggplot2::qplot(x=bd$x, y=bd$y)
     }
 
     p <- p + ggplot2::theme(legend.position = "none")

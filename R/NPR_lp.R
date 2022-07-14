@@ -15,26 +15,23 @@ NPRHonest.fit <- function(d, M, kern="triangular", h, opt.criterion, alpha=0.05,
         h <- NPROptBW.fit(d, M, kern, opt.criterion, alpha, beta, sclass, T0)
     r1 <- NPRreg.fit(d, h, kern, order=1, se.method, J)
 
-    if (inherits(d, "LPPData")) {
-        d$lind_w <- r1$w
-        wt <- r1$w[r1$w!=0]
-        xx <- d$X[r1$w!=0]
+    d$lind_w <- r1$w
+    wt <- r1$w[r1$w!=0]
+    xx <- d$X[r1$w!=0]
+    if (d$class=="IP") {
         nobs <- length(wt)
         ## Are we at a boundary?
         bd <- length(unique(d$X>=0))==1
     } else {
-        d$lind_wp <- r1$wp
-        d$lind_wm <- r1$wm
-        wt <- c(r1$wm[r1$wm!=0], r1$wp[r1$wp!=0])
-        xx <-  c(d$Xm[r1$wm!=0], d$Xp[r1$wp!=0])
-        nobs <- min(sum(r1$wm!=0), sum(r1$wp!=0))
+        nobs <- min(sum(xx>=0), sum(xx<0))
         bd <- TRUE
     }
-    if (T0bias && inherits(d, "FRDData")) {
+
+    if (T0bias && d$class=="FRD") {
         ## multiply bias and sd by r1$fs to make if free of first stage
         r1$se <- r1$se*abs(r1$fs)
         M <- unname(c((M[1]+M[2]*abs(T0)), M))
-    } else if (!T0bias && inherits(d, "FRDData")) {
+    } else if (!T0bias && d$class=="FRD") {
         M <- unname(c((M[1]+M[2]*abs(r1$estimate)) / abs(r1$fs), M))
     }
 
@@ -59,10 +56,10 @@ NPRHonest.fit <- function(d, M, kern="triangular", h, opt.criterion, alpha=0.05,
     upper <- r1$estimate + bias + stats::qnorm(1-alpha)*r1$se
     cv <- CVb(bias/r1$se, alpha)
 
-    term <- switch(class(d), LPPData="Value of conditional mean",
-                   RDData="Sharp RD Parameter", "Fuzzy RD Parameter")
+    term <- switch(d$class, IP="Value of conditional mean",
+                   SRD="Sharp RD Parameter", "Fuzzy RD Parameter")
     method <- switch(sclass, H="Holder", "Tayor")
-    if (!inherits(d, "FRDData")) M[2:3] <- c(NA, NA)
+    if (d$class!="FRD") M[2:3] <- c(NA, NA)
     coef <- data.frame(term=term, estimate=r1$estimate, std.error=r1$se,
                        maximum.bias=bias, conf.low=r1$estimate-cv*r1$se,
                        conf.high=r1$estimate+cv*r1$se, conf.low.onesided=lower,
@@ -80,7 +77,7 @@ NPROptBW.fit <- function(d, M, kern="triangular", opt.criterion, alpha=0.05,
                          beta=0.8, sclass="H", T0=0) {
 
     ## First check if sigma2 is supplied
-    if (is.null(d$sigma2) && (is.null(d$sigma2p) || is.null(d$sigma2m)))
+    if (is.null(d$sigma2))
         d <- NPRPrelimVar.fit(d, se.initial="EHW")
 
     ## Objective function for optimizing bandwidth
@@ -94,22 +91,20 @@ NPROptBW.fit <- function(d, M, kern="triangular", opt.criterion, alpha=0.05,
                FLCI=r$conf.high-r$conf.low)
     }
 
-    if (inherits(d, "LPPData")) {
-        hmin <- sort(unique(abs(d$X)))[2]
-        X <- d$X
-    } else {
-        hmin <- max(unique(d$Xp)[2], sort(unique(abs(d$Xm)))[2])
-        X <- c(d$Xp, d$Xm)
-    }
+    hmin <- if (d$class=="IP") {
+                sort(unique(abs(d$X)))[2]
+            } else {
+                max(unique(d$X[d$p])[2], sort(unique(abs(d$X[d$m])))[2])
+            }
 
     ## Optimize piecewise constant function using modification of golden
     ## search. In fact, the criterion may not be unimodal, so proceed with
     ## caution. (For triangular kernel, it appears unimodal)
     if (kern=="uniform") {
-        supp <- sort(unique(abs(X)))
+        supp <- sort(unique(abs(d$X)))
         h <- gss(obj, supp[supp>=hmin])
     } else {
-        h <- abs(stats::optimize(obj, interval=c(hmin, max(abs(X))),
+        h <- abs(stats::optimize(obj, interval=c(hmin, max(abs(d$X))),
                                  tol=.Machine$double.eps^0.75)$minimum)
     }
 

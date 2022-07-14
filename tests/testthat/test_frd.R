@@ -1,8 +1,8 @@
 context("Test inference under no bias")
 
 test_that("Selected bw is infinite", {
-    d <- FRDData(cbind(logcn=log(rcp[1:5000, 6]), rcp[1:5000, c(3, 2)]),
-                 cutoff=0)
+    d <- NPRData(cbind(logcn=log(rcp[1:5000, 6]), rcp[1:5000, c(3, 2)]),
+                 cutoff=0, "FRD")
 
     ## Expect using all data
     r0 <- NPRHonest.fit(d, M=c(0, 0), kern="triangular", opt.criterion="OCI",
@@ -15,9 +15,9 @@ test_that("Selected bw is infinite", {
     expect_identical(r1$maximum.bias, 0)
     ## For triangular kernel, maximum bw is given by end of support, so we
     ## expect to find minimum at boundary
-    expect_equal(r1$bandwidth, max(abs(c(d$Xp, d$Xm))))
+    expect_equal(r1$bandwidth, max(abs(d$X)))
 
-    d <- RDData(lee08, cutoff=0)
+    d <- NPRData(lee08, cutoff=0, "SRD")
     r1 <- NPRHonest.fit(d, M=0, kern="uniform",
                         opt.criterion="MSE")$coefficients
     r2 <- NPRreg.fit(d, Inf, "uniform")
@@ -29,7 +29,7 @@ test_that("Selected bw is infinite", {
 context("Test FRD")
 
 test_that("FRD data example check", {
-    d <- FRDData(cbind(logcn=log(rcp[, 6]), rcp[, c(3, 2)]), cutoff=0)
+    d <- NPRData(cbind(logcn=log(rcp[, 6]), rcp[, c(3, 2)]), cutoff=0, "FRD")
     M <- NPR_MROT.fit(d)
     r1 <- NPRHonest.fit(d, M, kern="triangular",
                         opt.criterion="MSE", T0=0)$coefficients
@@ -42,25 +42,25 @@ test_that("FRD data example check", {
 })
 
 test_that("FRD with almost perfect first stage", {
-    d <- FRDData(data.frame(y=lee08$voteshare,
-                            d=lee08$margin>0, x=lee08$margin), cutoff=0)
+    d <- NPRData(data.frame(y=lee08$voteshare,
+                            d=lee08$margin>0, x=lee08$margin), cutoff=0, "FRD")
     M <- NPR_MROT.fit(d)
     r0 <- NPRHonest.fit(d, M, kern="triangular", opt.criterion="FLCI")
     r1 <- NPRHonest.fit(d, M, kern="triangular", opt.criterion="FLCI",
                         T0=r0$coefficients$estimate)$coefficients
-    r2 <- NPRHonest.fit(RDData(lee08, cutoff=0), unname(M[1]),
+    r2 <- NPRHonest.fit(NPRData(lee08, cutoff=0, "SRD"), unname(M[1]),
                         kern="triangular", opt.criterion="FLCI")$coefficients
     expect_lt(max(abs(r2[2:6]-r2[2:6])), 3e-7)
 
     df <- data.frame(y=lee08$voteshare,
                      d=lee08$margin+rnorm(n=length(lee08$margin), sd=0.1)>0,
                      x=lee08$margin)
-    d <- FRDData(df, cutoff=0)
+    d <- NPRData(df, cutoff=0, "FRD")
     M <- NPR_MROT.fit(d)
     r0 <- NPRHonest.fit(d, M, kern="triangular", opt.criterion="MSE")
     r1 <- NPRHonest.fit(d, M, kern="triangular", opt.criterion="MSE",
                         T0=r0$coefficients$estimate)$coefficients
-    r2 <- NPRHonest.fit(RDData(lee08, cutoff=0), unname(M[1]),
+    r2 <- NPRHonest.fit(NPRData(lee08, cutoff=0, "SRD"), unname(M[1]),
                         kern="triangular", opt.criterion="MSE")$coefficients
     expect_lt(abs(r1$estimate*r1$first.stage-r2$estimate), 1e-2)
     expect_lt(abs(r1$bandwidth-r2$bandwidth), 0.1)
@@ -68,8 +68,8 @@ test_that("FRD with almost perfect first stage", {
 })
 
 test_that("FRD interface", {
-    d <- FRDData(cbind(logf=log(rcp[1:10000, 6]), rcp[1:10000, c(3, 2)]),
-                 cutoff=0)
+    d <- NPRData(cbind(logf=log(rcp[1:10000, 6]), rcp[1:10000, c(3, 2)]),
+                 cutoff=0, "FRD")
     M <- NPR_MROT.fit(d)
     rcp1 <- rcp[1:10000, ]
     r1 <- NPRHonest.fit(d, M, kern="triangular", opt.criterion="OCI", T0=0)

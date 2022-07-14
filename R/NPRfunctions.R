@@ -28,9 +28,10 @@ LPReg <- function(X, Y, h, K, order=1, se.method=NULL, sigma2, J=3,
         r[, rep(seq_len(ncol(r)), each=ncol(r))] *
         r[, rep(seq_len(ncol(r)), ncol(r))]
     }
-    hsigma2 <-
-        if(se.method=="nn") sigmaNN(X, Y, J, weights) else sig(Y - R %*% beta)
-
+    hsigma2 <- switch(se.method,
+                      nn=sigmaNN(X, Y, J, weights),
+                      EHW=sig(Y - R %*% beta),
+                      supplied.var=sigma2)
     ## Robust variance-based formulae
     EHW <- function(sigma2) {
         if (NCOL(sigma2)==1)
@@ -38,10 +39,9 @@ LPReg <- function(X, Y, h, K, order=1, se.method=NULL, sigma2, J=3,
         else
             colSums(wgt^2 * sigma2)
     }
-    v <- if(se.method=="supplied.var") EHW(sigma2) else EHW(hsigma2)
 
     ## eff.obs=1/sum(w^2) TODO
-    list(theta=beta[1, ], sigma2=hsigma2, var=v, w=wgt, eff.obs=NA)
+    list(theta=beta[1, ], sigma2=hsigma2, var=EHW(hsigma2), w=wgt, eff.obs=NA)
 }
 
 
@@ -53,37 +53,34 @@ LPReg <- function(X, Y, h, K, order=1, se.method=NULL, sigma2, J=3,
 NPRreg.fit <- function(d, h, kern="triangular", order=1, se.method="nn", J=3) {
     if (!is.function(kern))
         kern <- EqKern(kern, boundary=FALSE, order=0)
-
-    if (inherits(d, "LPPData")) {
-        ## Keep only positive kernel weights
-        W <- if (h<=0) 0*d$X else kern(d$X/h) # kernel weights
-        d$X <- d$X[W>0]
-        r <- LPReg(d$X, d$Y[W>0], h, kern, order, se.method, d$sigma2[W>0],
+    ## Keep only positive kernel weights
+    W <- if (h<=0) 0*d$X else kern(d$X/h) # kernel weights
+    sigma2 <- matrix(NA, nrow=length(W), ncol=NCOL(d$Y)^2)
+    if (d$class=="IP") {
+        r <- LPReg(d$X[W>0], d$Y[W>0], h, kern, order, se.method, d$sigma2[W>0],
                    J, weights=d$w[W>0])
         ## Estimation weights
+        sigma2[W>0] <- r$sigma2
         W[W>0] <- r$w
-        return(list(estimate=r$theta, se=sqrt(r$var), w=W, sigma2=r$sigma2,
+        return(list(estimate=r$theta, se=sqrt(r$var), w=W,
+                    sigma2=sigma2,
                     eff.obs=r$eff.obs, fs=NA))
     }
+    if(!is.null(d$sigma2)) d$sigma2 <- as.matrix(d$sigma2)
+    rm <- LPReg(d$X[W>0 & d$m], as.matrix(d$Y)[W>0 & d$m, ], h, kern, order,
+                se.method, d$sigma2[W>0 & d$m, ], J, weights=d$w[W>0 & d$m])
+    rp <- LPReg(d$X[W> 0 & d$p], as.matrix(d$Y)[W>0 & d$p, ], h, kern, order,
+                se.method, d$sigma2[W>0 & d$p, ], J, weights=d$w[W>0 & d$p])
 
-    Wm <- if (h<=0) 0*d$Xm else kern(d$Xm/h)
-    Wp <- if (h<=0) 0*d$Xp else kern(d$Xp/h)
-    d$Xp <- d$Xp[Wp>0]
-    d$Xm <- d$Xm[Wm>0]
-    if(!is.null(d$sigma2p)) d$sigma2p <- as.matrix(d$sigma2p)
-    if(!is.null(d$sigma2m)) d$sigma2m <- as.matrix(d$sigma2m)
+    sigma2[W>0 & d$m, ] <- rm$sigma2
+    sigma2[W>0 & d$p, ] <- rp$sigma2
+    W[W>0 & d$m] <- rm$w
+    W[W>0 & d$p] <- rp$w
 
-    rm <- LPReg(d$Xm, as.matrix(d$Ym)[Wm>0, ], h, kern, order, se.method,
-                d$sigma2m[Wm>0, ], J, weights=d$wm[Wm>0])
-    rp <- LPReg(d$Xp, as.matrix(d$Yp)[Wp>0, ], h, kern, order, se.method,
-                d$sigma2p[Wp>0, ], J, weights=d$wp[Wp>0])
-    Wm[Wm>0] <- rm$w
-    Wp[Wp>0] <- rp$w
     ret <- list(estimate=rp$theta[1]-rm$theta[1], se=sqrt(rm$var[1]+rp$var[1]),
-                wm=Wm, wp=Wp, sigma2m=rm$sigma2, sigma2p=rp$sigma2,
-                eff.obs=rm$eff.obs+rp$eff.obs, fs=NA)
+                w=W, sigma2=drop(sigma2), eff.obs=rm$eff.obs+rp$eff.obs, fs=NA)
 
-    if (inherits(d, "FRDData")) {
+    if (d$class=="FRD") {
         ret$fs <- rp$theta[2]-rm$theta[2]
         ret$estimate <- (rp$theta[1]-rm$theta[1]) / ret$fs
         ret$se <- sqrt(sum(c(1, -ret$estimate, -ret$estimate, ret$estimate^2) *
@@ -99,15 +96,19 @@ NPRreg.fit <- function(d, h, kern="triangular", order=1, se.method="nn", J=3) {
 ## for inference under under second order Hölder class. For RD, use a separate
 ## regression on either side of the cutoff
 NPR_MROT.fit <- function(d) {
-    if (inherits(d, "RDData")) {
-        max(NPR_MROT.fit(LPPData(data.frame(Y=d$Yp, X=d$Xp), 0)),
-            NPR_MROT.fit(LPPData(data.frame(Y=d$Ym, X=d$Xm), 0)))
-    } else if (inherits(d, "FRDData")) {
-        c(M1=max(NPR_MROT.fit(LPPData(data.frame(Y=d$Yp[, 1], X=d$Xp), 0)),
-                 NPR_MROT.fit(LPPData(data.frame(Y=d$Ym[, 1], X=d$Xm), 0))),
-          M2=max(NPR_MROT.fit(LPPData(data.frame(Y=d$Yp[, 2], X=d$Xp), 0)),
-                 NPR_MROT.fit(LPPData(data.frame(Y=d$Ym[, 2], X=d$Xm), 0))))
-    } else if (inherits(d, "LPPData")) {
+    if (d$class=="SRD") {
+        max(NPR_MROT.fit(NPRData(data.frame(Y=d$Y[d$p], X=d$X[d$p]), 0, "IP")),
+            NPR_MROT.fit(NPRData(data.frame(Y=d$Y[d$m], X=d$X[d$m]), 0, "IP")))
+    } else if (d$class=="FRD") {
+        c(M1=max(NPR_MROT.fit(NPRData(data.frame(Y=d$Y[d$p, 1], X=d$X[d$p]), 0,
+                                      "IP")),
+                 NPR_MROT.fit(NPRData(data.frame(Y=d$Y[d$m, 1], X=d$X[d$m]), 0,
+                                      "IP"))),
+          M2=max(NPR_MROT.fit(NPRData(data.frame(Y=d$Y[d$p, 2], X=d$X[d$p]), 0,
+                                      "IP")),
+                 NPR_MROT.fit(NPRData(data.frame(Y=d$Y[d$m, 2], X=d$X[d$m]), 0,
+                                      "IP"))))
+    } else if (d$class=="IP") {
         ## STEP 1: Estimate global polynomial regression
         r1 <- unname(stats::lm(d$Y ~ 0 + outer(d$X, 0:4, "^"))$coefficients)
         f2 <- function(x) abs(2*r1[3]+6*x*r1[4]+12*x^2*r1[5])

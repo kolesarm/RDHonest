@@ -5,7 +5,8 @@
 ## \eqn{\omega^{-1}(2b)^2/4=sum_{i} g(x_i)^2/sigma^2(x_i)},
 ## @param d Object of class \code{"RDData"}
 ## @param f Least favorable function of class \code{"RDLFFunction"}
-Q <- function(d, f) sum(f$m(d$Xm)^2/d$sigma2m)+ sum(f$p(d$Xp)^2/d$sigma2p)
+Q <- function(d, f) sum(f$m(d$X[d$m])^2/d$sigma2[d$m])+
+                        sum(f$p(d$X[d$p])^2/d$sigma2[d$p])
 
 
 ## Solution to inverse modulus problem in RD under Taylor(2) class
@@ -28,17 +29,17 @@ RDgbC <- function(d, b, C) {
     }
     ## Find b_{-}
     eq <- function(bm) {
-        dm <- dstar(d$Xm, bm,   C, d$sigma2m)
-        dp <- dstar(d$Xp, b-bm, C, d$sigma2p)
+        dm <- dstar(d$X[d$m], bm,   C, d$sigma2[d$m])
+        dp <- dstar(d$X[d$p], b-bm, C, d$sigma2[d$p])
 
-        sum(SY(d$Xp, b-bm, dp, C) / d$sigma2p) -
-            sum(SY(d$Xm, bm, dm, C)/d$sigma2m)
+        sum(SY(d$X[d$p], b-bm, dp, C) / d$sigma2[d$p]) -
+            sum(SY(d$X[d$m], bm, dm, C)/d$sigma2[d$m])
     }
 
     bm <- FindZero(eq, b)
     bp <- b-bm
-    dp <- dstar(d$Xp, bp, C, d$sigma2p)
-    dm <- dstar(d$Xm, bm, C, d$sigma2m)
+    dp <- dstar(d$X[d$p], bp, C, d$sigma2[d$p])
+    dm <- dstar(d$X[d$m], bm, C, d$sigma2[d$m])
 
     list(m=function(x) SY(x, bm, dm, C)*(x<=0),
          p=function(x) SY(x, bp, dp, C)*(x>=0))
@@ -62,32 +63,28 @@ RDLFFunction <- function(d, C, delta) {
 ## @param d Object of class \code{"RDData"}
 ## @param f RDLFFunction
 RDTEstimator <- function(d, f, alpha, se.method, J) {
-    den <- sum(f$p(d$Xp) / d$sigma2p) # denominator
+    den <- sum(f$p(d$X[d$p]) / d$sigma2[d$p]) # denominator
     ## By (S3) in supplement of 1511.06028v2, this = sum(f$m(d$Xm) / d$sigma2m)
 
-    Wp <- f$p(d$Xp) / (d$sigma2p*den)
-    Wm <- f$m(d$Xm) / (d$sigma2m*den)
-
+    W <- c(-f$m(d$X[d$m]) / (d$sigma2[d$m]*den),
+           f$p(d$X[d$p]) / (d$sigma2[d$p]*den))
     q <- Q(d, f)
     ## If not NN then it's suppled var
     if (se.method=="nn") {
-        d$sigma2p <- sigmaNN(d$Xp, d$Yp, J=J)
-        d$sigma2m <- sigmaNN(d$Xm, d$Ym, J=J)
+        d$sigma2[d$p] <- sigmaNN(d$X[d$p], d$Y[d$p], J=J)
+        d$sigma2[d$m] <- sigmaNN(d$X[d$m], d$Y[d$m], J=J)
     }
+
     ## Drop observations with zero weight
-    d$Xp <- d$Xp[Wp!=0]
-    d$Xm <- d$Xm[Wm!=0]
-    d$Yp <- d$Yp[Wp!=0]
-    d$Ym <- d$Ym[Wm!=0]
-    d$sigma2p <- d$sigma2p[Wp!=0]
-    d$sigma2m <- d$sigma2m[Wm!=0]
-    Wp <- Wp[Wp!=0]
-    Wm <- Wm[Wm!=0]
-    Lhat <- sum(Wp * d$Yp) - sum(Wm * d$Ym)
+    d$X <- d$X[W!=0]
+    d$Y <- d$Y[W!=0]
+    d$sigma2 <- d$sigma2[W!=0]
+    W <- W[W!=0]
+    Lhat <- sum(W * d$Y)
 
     b <- f$m(0)+f$p(0)
 
-    sd <-  sqrt(sum(Wp^2 * d$sigma2p) + sum(Wm^2 * d$sigma2m))
+    sd <-  sqrt(sum(W^2 * d$sigma2))
     maxbias <- b - q/den                # b-q/den
     lower <- Lhat - maxbias - stats::qnorm(1-alpha)*sd
     upper <- Lhat + maxbias + stats::qnorm(1-alpha)*sd
@@ -108,9 +105,8 @@ RDTEstimator <- function(d, f, alpha, se.method, J) {
 ## Optimal inference in RD under Taylor class
 RDTOpt.fit <- function(d, M, opt.criterion, alpha, beta, se.method, J) {
     ## First check if sigma2 is supplied
-    if (is.null(d$sigma2p) || is.null(d$sigma2m))
+    if (is.null(d$sigma2))
         d <- NPRPrelimVar.fit(d, se.initial="EHW")
-
     C <-  M/2
     ## Find optimal delta, see Supplement to 1511.06028v2
     if (opt.criterion=="OCI") {
@@ -118,8 +114,8 @@ RDTOpt.fit <- function(d, M, opt.criterion, alpha, beta, se.method, J) {
     } else if (opt.criterion=="MSE") {
         eq <- function(b) {
             r <- RDgbC(d, b, C)
-            C*sum((d$Xp)^2*abs(r$p(d$Xp)) / d$sigma2p) +
-                C*sum(d$Xm^2 * abs(r$m(d$Xm)) / d$sigma2m) - 1
+            C*sum((d$X[d$p])^2*abs(r$p(d$X[d$p])) / d$sigma2[d$p]) +
+                C*sum(d$X[d$m]^2 * abs(r$m(d$X[d$m])) / d$sigma2[d$m]) - 1
         }
         lff <- RDgbC(d, FindZero(eq, negative=FALSE), C)
     } else if (opt.criterion=="FLCI") {
@@ -128,7 +124,7 @@ RDTOpt.fit <- function(d, M, opt.criterion, alpha, beta, se.method, J) {
             q1 <- Q(d, r)
             ## Instead of using the above formula from page S5 of 1511.06028v2,
             ## optimize half-length directly
-            den <- sum(r$p(d$Xp) / d$sigma2p) # denominator
+            den <- sum(r$p(d$X[d$p]) / d$sigma2[d$p]) # denominator
             hse <- sqrt(q1)/den                   # standard deviation
             maxbias <- b - q1/den                # b-q/den
             CVb(maxbias/hse, alpha) * hse # Half-length
@@ -140,6 +136,7 @@ RDTOpt.fit <- function(d, M, opt.criterion, alpha, beta, se.method, J) {
 
     ## Compute optimal estimator
     r <- RDTEstimator(d, lff, alpha, se.method, J)
+
     ## Two bandwidths in this case
     r$coefficients$bandwidth.m <- (lff$m(0)/C)^(1/2)
     r$coefficients$bandwidth.p <- (lff$p(0)/C)^(1/2)

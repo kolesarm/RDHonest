@@ -33,52 +33,52 @@ NPRPrelimVar.fit <- function(d, se.initial="EHW") {
     ## IK) for uniform kernel making sure this results in enough distinct values
     ## on either side of threshold so we don't have perfect fit
 
-    if (inherits(d, "LPPData")) {
+    if (d$class=="IP") {
         hmin <- max(sort(unique(abs(d$X)))[2], sort(abs(d$X))[4])
     } else {
-        hmin <- max(sort(unique(d$Xp))[3], sort(abs(unique(d$Xm)))[3],
-                    sort(d$Xp)[4], sort(abs(d$Xm))[4])
+        hmin <- max(sort(unique(d$X[d$p]))[3], sort(abs(unique(d$X[d$m])))[3],
+                    sort(d$X[d$p])[4], sort(abs(d$X[d$m]))[4])
     }
-
-    ## Use reduced form for FRD
+    ## Use reduced form for FRD bandwidth selector
     drf <- d
-    if (inherits(d, "FRDData")) {
-        drf$Yp <- drf$Yp[, 1]
-        drf$Ym <- drf$Ym[, 1]
-        class(drf) <- "RDData"
+    if (d$class=="FRD") {
+        drf$Y <- drf$Y[, 1]
+        drf$class <- "SRD"
     }
 
     if (se.initial == "EHW") {
-        h1 <- if (inherits(d, "LPPData")) ROTBW.fit(drf) else IKBW.fit(drf)
+        h1 <- if (d$class=="IP") ROTBW.fit(drf) else IKBW.fit(drf)
         if(is.nan(h1)) {
             warning("Preliminary bandwidth is NaN, setting it to Inf")
             h1 <- Inf
         }
         r1 <- NPRreg.fit(d, max(h1, hmin), se.method="EHW")
-    } else if (inherits(d, "RDData") && se.initial == "Silverman") {
+    } else if (d$class == "SRD" && se.initial == "Silverman") {
         ## Silverman only for RD/IK
-        X <- c(d$Xm, d$Xp)
-        h1 <- max(1.84*stats::sd(X)/sum(length(X))^(1/5), hmin)
+        h1 <- max(1.84*stats::sd(d$X)/sum(length(d$X))^(1/5), hmin)
         r1 <- NPRreg.fit(d, h1, "uniform", order=0, se.method="EHW")
         ## Variance adjustment for backward compatibility
-        r1$sigma2p <- r1$sigma2p*length(r1$sigma2p) / (length(r1$sigma2p)-1)
-        r1$sigma2m <- r1$sigma2m*length(r1$sigma2m) / (length(r1$sigma2m)-1)
+        lp <- length(r1$sigma2[d$p & r1$w != 0])
+        lm <- length(r1$sigma2[d$m & r1$w != 0])
+        r1$sigma2[d$p] <- r1$sigma2[d$p]*lp/(lp-1)
+        r1$sigma2[d$m] <- r1$sigma2[d$m]*lm/(lm-1)
     } else {
         stop("This method for preliminary variance estimation not supported")
     }
-
-
-    if (inherits(d, "LPPData")) {
-        d$sigma2 <- rep(mean(r1$sigma2), length(d$X))
-    } else if (inherits(d, "RDData")) {
-        d$sigma2p <- rep(mean(r1$sigma2p), length(d$Xp))
-        d$sigma2m <- rep(mean(r1$sigma2m), length(d$Xm))
+    if (d$class == "IP") {
+        d$sigma2 <- rep(mean(r1$sigma2[r1$w != 0]), length(d$X))
+    } else if (d$class=="SRD") {
+        d$sigma2 <- rep(NA, length(d$X))
+        d$sigma2[d$p] <- mean(r1$sigma2[d$p & r1$w != 0])
+        d$sigma2[d$m] <- mean(r1$sigma2[d$m & r1$w != 0])
     } else {
-        d$sigma2m <- matrix(rep(colMeans(r1$sigma2m), each=length(d$Xm)),
-                                nrow=length(d$Xm))
-        d$sigma2p <- matrix(rep(colMeans(r1$sigma2p), each=length(d$Xp)),
-                            nrow=length(d$Xp))
+        d$sigma2 <- matrix(NA, nrow=length(d$X), ncol=4)
+        d$sigma2[d$p] <- matrix(rep(colMeans(r1$sigma2[d$p & r1$w != 0, ]),
+                                    each=sum(d$p)), nrow=sum(d$p))
+        d$sigma2[d$m] <- matrix(rep(colMeans(r1$sigma2[d$m & r1$w != 0, ]),
+                                    each=sum(d$m)), nrow=sum(d$m))
     }
+
     d
 }
 
@@ -125,9 +125,8 @@ ROTBW.fit <- function(d, kern="triangular") {
 ##
 ##  Reproduce bandwidth from Section 6.2 in Imbens and Kalyanaraman (2012)
 IKBW.fit <- function(d, kern="triangular", verbose=FALSE) {
-    X <- c(d$Xm, d$Xp)
-    Nm <- length(d$Xm)
-    Np <- length(d$Xp)
+    Nm <- sum(d$m)
+    Np <- sum(d$p)
     N <- Nm+Np
 
     ## STEP 0: Kernel constant
@@ -139,31 +138,32 @@ IKBW.fit <- function(d, kern="triangular", verbose=FALSE) {
     ## STEP 1: Estimate f(0), sigma^2_(0) and sigma^2_+(0), using Silverman
     ## pilot bandwidth for uniform kernel
     d <- NPRPrelimVar.fit(d, se.initial="Silverman")
-    h1 <- 1.84*stats::sd(X)/N^(1/5)
-    f0 <- sum(abs(X) <= h1) / (2*N*h1)
-    varm <- d$sigma2m[1]
-    varp <- d$sigma2p[1]
+    h1 <- 1.84*stats::sd(d$X)/N^(1/5)
+    f0 <- sum(abs(d$X) <= h1) / (2*N*h1)
+    varm <- d$sigma2[d$m][1]
+    varp <- d$sigma2[d$p][1]
 
     ## STEP 2: Estimate second derivatives m_{+}^(2) and m_{-}^(2)
 
     ## Estimate third derivative using 3rd order polynomial: Equation (14)
-    m3 <- 6*stats::coef(stats::lm(I(c(d$Ym, d$Yp)) ~ I(X>=0) + X +
-                                      I(X^2) + I(X^3)))[5]
+    m3 <- 6*stats::coef(stats::lm(d$Y ~ I(d$X>=0) + d$X + I(d$X^2) +
+                                      I(d$X^3)))[5]
 
     ## Left and right bandwidths, Equation (15) and page 956.
     ## Optimal constant based on one-sided uniform Kernel, 7200^(1/7),
     h2m <- 7200^(1/7) * (varm/(f0*m3^2))^(1/7) * Nm^(-1/7)
     h2p <- 7200^(1/7) * (varp/(f0*m3^2))^(1/7) * Np^(-1/7)
 
+
     ## estimate second derivatives by local quadratic
-    m2m <- 2*stats::coef(stats::lm(d$Ym ~ d$Xm + I(d$Xm^2),
-                                   subset=(d$Xm >= -h2m)))[3]
-    m2p <- 2*stats::coef(stats::lm(d$Yp ~ d$Xp + I(d$Xp^2),
-                                   subset=(d$Xp <= h2p)))[3]
+    m2m <- 2*stats::coef(stats::lm(d$Y ~ d$X + I(d$X^2),
+                                   subset=(d$X >= -h2m & d$X<0)))[3]
+    m2p <- 2*stats::coef(stats::lm(d$Y ~ d$X + I(d$X^2),
+                                   subset=(d$X <= h2p & d$X>=0)))[3]
 
     ## STEP 3: Calculate regularization terms, Equation (16)
-    rm <- 2160*varm / (sum(d$Xm >= -h2m) * h2m^4)
-    rp <- 2160*varp / (sum(d$Xp <= h2p) * h2p^4)
+    rm <- 2160*varm / (sum(d$X >= -h2m & d$X<0) * h2m^4)
+    rp <- 2160*varp / (sum(d$X <= h2p & d$X>=0) * h2p^4)
 
     if(verbose)
         cat("\n h1: ", h1, "\n N_{-}, N_{+}: ", Nm, Np, "\n f(0): ", f0,

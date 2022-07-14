@@ -1,24 +1,23 @@
 context("Test NPR")
 
 test_that("Test NN variance estimator", {
-    d <- FRDData(rcp[1:5000, c(6, 3, 2)], cutoff=0)
-    s0 <- sigmaNN(d$Xp, d$Yp, J=5)
-    s1 <- sigmaNN(d$Xp, d$Yp[, 1], J=5)
-    s2 <- sigmaNN(d$Xp, d$Yp[, 2], J=5)
+    d <- NPRData(rcp[1:5000, c(6, 3, 2)], cutoff=0, "FRD")
+    s0 <- sigmaNN(d$X[d$p], d$Y[d$p, ], J=5)
+    s1 <- sigmaNN(d$X[d$p], d$Y[d$p, 1], J=5)
+    s2 <- sigmaNN(d$X[d$p], d$Y[d$p, 2], J=5)
     expect_equal(s0[, 1], s1)
     expect_equal(s0[, 4], s2)
-
 })
 
 test_that("Test LPreg", {
-    d <- FRDData(rcp[1:5000, c(6, 3, 2)], cutoff=0)
+    d <- NPRData(rcp[1:5000, c(6, 3, 2)], cutoff=0, "FRD")
     K <- EqKern("triangular", boundary=FALSE, order=0)
-    r0e <- LPReg(d$Xm, d$Ym, h=10, K, order=2, se.method="EHW")
-    r0n <- LPReg(d$Xm, d$Ym, h=10, K, order=2, se.method="nn", J=4)
-    r1e <- LPReg(d$Xm, d$Ym[, 1], h=10, K, order=2, "EHW")
-    r1n <- LPReg(d$Xm, d$Ym[, 1], h=10, K, order=2, "nn", J=4)
-    r2e <- LPReg(d$Xm, d$Ym[, 2], h=10, K, order=2, se.method="EHW")
-    r2n <- LPReg(d$Xm, d$Ym[, 2], h=10, K, order=2, se.method="nn", J=4)
+    r0e <- LPReg(d$X[d$m], d$Y[d$m, ], h=10, K, order=2, se.method="EHW")
+    r0n <- LPReg(d$X[d$m], d$Y[d$m, ], h=10, K, order=2, se.method="nn", J=4)
+    r1e <- LPReg(d$X[d$m], d$Y[d$m, 1], h=10, K, order=2, "EHW")
+    r1n <- LPReg(d$X[d$m], d$Y[d$m, 1], h=10, K, order=2, "nn", J=4)
+    r2e <- LPReg(d$X[d$m], d$Y[d$m, 2], h=10, K, order=2, se.method="EHW")
+    r2n <- LPReg(d$X[d$m], d$Y[d$m, 2], h=10, K, order=2, se.method="nn", J=4)
     expect_lt(max(abs(r0e$theta- c(r1e$theta, r2e$theta))), 1e-10)
     expect_lt(max(abs(r0n$theta- c(r1n$theta, r2n$theta))), 1e-10)
 
@@ -37,9 +36,9 @@ test_that("Test LPreg", {
 test_that("Test NPRreg", {
     ## Replicate Ludwig-Miller
     lumi <- headst[!is.na(headst$mortHS), c("mortHS", "povrate60")]
-    mort <- RDData(lumi, cutoff=0)
-    mortm <- LPPData(lumi[lumi$povrate<0, ], point=0)
-    mortp <- LPPData(lumi[lumi$povrate>=0, ], point=0)
+    mort <- NPRData(lumi, cutoff=0, "SRD")
+    mortm <- NPRData(lumi[lumi$povrate<0, ], cutoff=0, "IP")
+    mortp <- NPRData(lumi[lumi$povrate>=0, ], cutoff=0, "IP")
     t1 <- data.frame()
     t2 <- data.frame()
     bws <- c(9, 18, 36)
@@ -63,9 +62,10 @@ test_that("Test NPRreg", {
     expect_identical(max(abs(round(t1-t2, 14))), 0)
 
     ## Replicate Battistin et al
-    df <- RDData(cbind(rcp[, c(3, 2)]), cutoff=0)
-    dr <- RDData(cbind(logcn=log(rcp[, 6]), rcp[, 2, drop=FALSE]), cutoff=0)
-    d <- FRDData(cbind(logcn=log(rcp[, 6]), rcp[, c(3, 2)]), cutoff=0)
+    df <- NPRData(cbind(rcp[, c(3, 2)]), cutoff=0, "SRD")
+    dr <- NPRData(cbind(logcn=log(rcp[, 6]), rcp[, 2, drop=FALSE]),
+                  cutoff=0, "SRD")
+    d <- NPRData(cbind(logcn=log(rcp[, 6]), rcp[, c(3, 2)]), cutoff=0, "FRD")
     rf <- NPRreg.fit(df, 10, "uniform", order=1, se.method="EHW")
     rr <- NPRreg.fit(dr, 10, "uniform", order=1, se.method="EHW")
     expect_equal(unname(c(rf$estimate, round(rf$se, 4))),

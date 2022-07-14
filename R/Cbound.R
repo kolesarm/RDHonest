@@ -66,11 +66,11 @@ RDSmoothnessBound <- function(object, s, separate=FALSE, multiple=TRUE,
           range(X[I2]), range(X[I3]))
     }
 
-    xp <- unique(d$Xp)
-    xm <- sort(unique(abs(d$Xm)))
+    xp <- unique(d$X[d$p])
+    xm <- sort(unique(abs(d$X[d$m])))
 
-    Dpj <- function(j) Dk(d$Yp, d$Xp, xp, d$sigma2p, j)
-    Dmj <- function(j) Dk(d$Ym, abs(d$Xm), xm, d$sigma2m, j)
+    Dpj <- function(j) Dk(d$Y[d$p], d$X[d$p], xp, d$sigma2[d$p], j)
+    Dmj <- function(j) Dk(d$Y[d$m], abs(d$X[d$m]), xm, d$sigma2[d$m], j)
 
     Sp <- floor(length(xp)/(3*s))
     Sm <- floor(length(xm)/(3*s))

@@ -1,10 +1,10 @@
 context("Test Inference at a point")
 
 test_that("Inference at point agrees with RD", {
-    d <- RDData(lee08, cutoff=0)
+    d <- NPRData(lee08, cutoff=0, "SRD")
     rde <- NPRHonest.fit(d, h=5, M=2)$coefficients
-    dp <- LPPData(lee08[lee08$margin>0, ], point=0)
-    dm <- LPPData(lee08[lee08$margin<0, ], point=0)
+    dp <- NPRData(lee08[lee08$margin>0, ], cutoff=0, "IP")
+    dm <- NPRData(lee08[lee08$margin<0, ], cutoff=0, "IP")
     p0 <- NPRHonest.fit(dp, h=5, M=2)
     pp <- p0$coefficients
     mm <- NPRHonest.fit(dm, h=5, M=2)$coefficients
@@ -42,7 +42,7 @@ test_that("MROT matches paper", {
 
 test_that("ROT bandwidth check", {
     ## Interior
-    d <- LPPData(lee08, point=0)
+    d <- NPRData(lee08, cutoff=0, "IP")
     b1 <- ROTBW.fit(d, kern="uniform")
 
     ## f0 using Silverman:
@@ -52,7 +52,7 @@ test_that("ROT bandwidth check", {
     h <- (C*sigma(ll)^2/(length(d$X)*f0*ll$coefficients[3]^2))^(1/5)
     expect_equal(b1, unname(h))
 
-    dp <- LPPData(lee08[lee08$margin>0, ], point=0)
+    dp <- NPRData(lee08[lee08$margin>0, ], cutoff=0, "IP")
     bp1 <- ROTBW.fit(dp, kern="uniform")
 
     ## f0 using Silverman:
@@ -69,7 +69,7 @@ test_that("Optimal bandwidth calculations", {
                    kern="uniform", opt.criterion="FLCI", point.inference=TRUE)
     expect_equal(rr$coefficients$conf.high.onesided,
                  55.24963853)
-    dp <- LPPData(lee08[lee08$margin>0, ], point=0)
+    dp <- NPRData(lee08[lee08$margin>0, ], cutoff=0, "IP")
     Mh <- rr$coefficients$M
     r1 <- RDHonest(voteshare~margin, data=lee08, subset=margin>0, M=2*Mh,
                    opt.criterion="MSE", point.inference=TRUE)

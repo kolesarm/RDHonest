@@ -154,11 +154,11 @@ RDHonest <- function(formula, data, subset, weights, cutoff=0, M,
     mf <- eval(mf, parent.frame())
     mf$weights  <- mf$"(weights)"
     d <- if (point.inference) {
-             LPPData(mf, cutoff)
+             NPRData(mf, cutoff, "IP")
          } else if (length(formula)[2]==2) {
-             FRDData(mf, cutoff)
+             NPRData(mf, cutoff, "FRD")
          } else {
-             RDData(mf, cutoff)
+             NPRData(mf, cutoff, "SRD")
          }
 
     if (missing(M)) {

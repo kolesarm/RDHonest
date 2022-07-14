@@ -13,28 +13,32 @@ test_that("Test weighting using cghs", {
                                    weights=length(d$yearat14[d$cell==j])))
     }
 
-    d1 <- RDData(dd, cutoff=1947)
-    d2 <- RDData(data.frame(y=log(cghs$earnings), x=cghs$yearat14), cutoff=1947)
+    d1 <- NPRData(dd, cutoff=1947, "SRD")
+    d2 <- NPRData(data.frame(y=log(cghs$earnings), x=cghs$yearat14), cutoff=1947,
+                  "SRD")
     ## Initial estimates
     r2 <- NPRreg.fit(d2, 5, "triangular")
     r1 <- NPRreg.fit(d1, 5, "triangular")
 
     ## Checks weights match
-    wp1 <- vapply(unique(d1$Xp), function(j) sum(r1$wp[d1$Xp==j]), numeric(1))
-    wp2 <- vapply(unique(d2$Xp), function(j) sum(r2$wp[d2$Xp==j]), numeric(1))
-    wm1 <- vapply(unique(d1$Xm), function(j) sum(r1$wm[d1$Xm==j]), numeric(1))
-    wm2 <- vapply(unique(d2$Xm), function(j) sum(r2$wm[d2$Xm==j]), numeric(1))
+    wp1 <- vapply(unique(d1$X[d1$p]), function(j) sum(r1$w[d1$X==j]), numeric(1))
+    wp2 <- vapply(unique(d2$X[d2$p]), function(j) sum(r2$w[d2$X==j]), numeric(1))
+    wm1 <- vapply(unique(d1$X[d1$m]), function(j) sum(r1$w[d1$X==j]), numeric(1))
+    wm2 <- vapply(unique(d2$X[d2$m]), function(j) sum(r2$w[d2$X==j]), numeric(1))
     expect_equal(wm1, wm2)
     expect_equal(wp1, wp2)
     ## Variance by hand
-    np <- vapply(unique(d2$Xp), function(j) sum(d2$Xp==j), numeric(1))
-    nm <- vapply(unique(d2$Xm), function(j) sum(d2$Xm==j), numeric(1))
+    np <- vapply(unique(d2$X[d2$p]), function(j) sum(d2$X==j), numeric(1))
+    nm <- vapply(unique(d2$X[d2$m]), function(j) sum(d2$X==j), numeric(1))
 
-    d2$sigma2p <- rep(mean(r2$sigma2p), length(d2$Xp))
-    d2$sigma2m <- rep(mean(r2$sigma2m), length(d2$Xm))
-    d1$sigma2p <- mean(r2$sigma2p)/d1$wp
-    d1$sigma2m <- mean(r2$sigma2m)/d1$wm
-    v1 <- sqrt(sum(wp1^2/np)*mean(r2$sigma2p)+sum(wm1^2/nm)*mean(r2$sigma2m))
+    d2$sigma2[d2$p] <- mean(r2$sigma2[r2$w!=0 & d2$p])
+    d2$sigma2[d2$m] <- mean(r2$sigma2[r2$w!=0 & d2$m])
+
+    d1$sigma2[d1$p] <- mean(r2$sigma2[r2$w!=0 & d2$p])/d1$w[d1$p]
+    d1$sigma2[d1$m] <- mean(r2$sigma2[r2$w!=0 & d2$m])/d1$w[d1$m]
+
+    v1 <- sqrt(sum(wp1^2/np)*mean(r2$sigma2[r2$w!=0 & d2$p])+
+               sum(wm1^2/nm)*mean(r2$sigma2[r2$w!=0 & d2$m]))
 
     m2 <- NPRHonest.fit(d2, M=1, kern="triangular", h=5,
                         se.method="supplied.var")$coefficients

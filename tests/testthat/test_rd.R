@@ -1,19 +1,19 @@
 context("Test RD")
 
 test_that("Test class constructor sorting", {
-    d0 <- FRDData(rcp[, c(6, 3, 2)], cutoff=3)
-    d1 <- FRDData(rcp[sort(rcp$elig_year,
-                           index.return=TRUE)$ix, c(6, 3, 2)], cutoff=3)
+    d0 <- NPRData(rcp[, c(6, 3, 2)], cutoff=3, "FRD")
+    d1 <- NPRData(rcp[sort(rcp$elig_year,
+                           index.return=TRUE)$ix, c(6, 3, 2)], cutoff=3, "FRD")
     expect_identical(d1, d0)
 
-    d0 <- RDData(rcp[, c(6, 2)], cutoff=3)
-    d1 <- RDData(rcp[sort(rcp$elig_year,
-                           index.return=TRUE)$ix, c(6, 2)], cutoff=3)
+    d0 <- NPRData(rcp[, c(6, 2)], cutoff=3, "SRD")
+    d1 <- NPRData(rcp[sort(rcp$elig_year,
+                           index.return=TRUE)$ix, c(6, 2)], cutoff=3, "SRD")
     expect_identical(d1, d0)
 
-    d0 <- LPPData(rcp[, c(6, 2)], point=-3)
-    d1 <- LPPData(rcp[sort(rcp$elig_year,
-                           index.return=TRUE)$ix, c(6, 2)], point=-3)
+    d0 <- NPRData(rcp[, c(6, 2)], cutoff=-3, "IP")
+    d1 <- NPRData(rcp[sort(rcp$elig_year,
+                           index.return=TRUE)$ix, c(6, 2)], cutoff=-3, "IP")
     expect_identical(d1, d0)
 
     ## Now test that I() works
@@ -29,7 +29,7 @@ test_that("Test class constructor sorting", {
 
 test_that("IK bandwidth calculations", {
     ## Test IK bandwidth in Lee data, IK Table 1
-    d <- RDData(lee08, cutoff=0)
+    d <- NPRData(lee08, cutoff=0, "SRD")
 
     dig <- getOption("digits")
     options(digits=8)
@@ -45,9 +45,10 @@ test_that("IK bandwidth calculations", {
 
     r <- NPRreg.fit(d, IKBW.fit(d, kern="uniform"), "uniform")
     expect_equal(r$estimate, 8.0770003749)
-    d <- NPRPrelimVar.fit(RDData(lee08, cutoff=0), se.initial="EHW")
-    expect_equal(sqrt(mean(d$sigma2p)), 12.58183131)
-    expect_equal(sqrt(mean(d$sigma2m)), 10.79067278)
+    d <- NPRPrelimVar.fit(NPRData(lee08, cutoff=0, "SRD"), se.initial="EHW")
+    ## TODO
+    expect_equal(sqrt(mean(d$sigma2[d$p])), 12.58183131)
+    expect_equal(sqrt(mean(d$sigma2[d$m])), 10.79067278)
 })
 
 test_that("Plots", {
@@ -82,8 +83,8 @@ test_that("Honest inference in Lee and LM data",  {
     expect_equal(r2o[10], "Onesided CIs:  (-Inf, 4.742), (-7.138, Inf)")
     expect_equal(r1o[14], "24 observations with missing values dropped")
 
-    d <- RDData(headst[!is.na(headst$mortHS), c("mortHS", "povrate60")],
-                cutoff=0)
+    d <- NPRData(headst[!is.na(headst$mortHS), c("mortHS", "povrate60")],
+                cutoff=0, "SRD")
     d <- NPRPrelimVar.fit(d, se.initial="Silverman")
     es <- function(kern, se.method) {
         NPRHonest.fit(d, M=0.0076085544, kern=kern, sclass="H",
@@ -173,7 +174,8 @@ test_that("Honest inference in Lee and LM data",  {
     ## expect_equal(r3$h, 5.0590753991)
 
     ## Decrease M, these results are not true minima...
-    d <- NPRPrelimVar.fit(RDData(lee08, cutoff=0), se.initial="Silverman")
+    d <- NPRPrelimVar.fit(NPRData(lee08, cutoff=0, "SRD"),
+                          se.initial="Silverman")
     r1 <- NPRHonest.fit(d, M=0.01, kern="uniform", opt.criterion="MSE",
                         beta=0.8, sclass="T")$coefficients
     r2 <- NPRHonest.fit(d, M=0.01, kern="uniform", opt.criterion="MSE",
