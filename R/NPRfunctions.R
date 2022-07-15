@@ -10,12 +10,14 @@
 ## @param sigma2 Optionally, supply estimates of \eqn{\sigma^{2}_{i}} (for
 ##     \code{"supplied.var"} \code{se.method})
 LPReg <- function(X, Y, h, K, order=1, se.method=NULL, sigma2, J=3,
-                  weights=rep(1L, length(X))) {
+                  weights=rep(1L, length(X)), RD=FALSE) {
     R <- outer(X, 0:order, "^")
+    if (RD)
+        R <- cbind((X>=0)*R, R)
     W <- K(X/h)*weights
     Gamma <- crossprod(R, W*R)
 
-    if (sum(W>0) <= order || h==0 ||
+    if (h==0 ||
         inherits(try(solve(Gamma), silent=TRUE), "try-error"))
         return(list(theta=0, sigma2=NA, var=NA, w=0, eff.obs=0))
 
@@ -28,20 +30,24 @@ LPReg <- function(X, Y, h, K, order=1, se.method=NULL, sigma2, J=3,
         r[, rep(seq_len(ncol(r)), each=ncol(r))] *
         r[, rep(seq_len(ncol(r)), ncol(r))]
     }
-    hsigma2 <- switch(se.method,
-                      nn=sigmaNN(X, Y, J, weights),
-                      EHW=sig(Y - R %*% beta),
-                      supplied.var=sigma2)
-    ## Robust variance-based formulae
-    EHW <- function(sigma2) {
-        if (NCOL(sigma2)==1)
-            sum(wgt^2 * sigma2)
+    ## For RD, compute variance separately on either side of cutoff
+    signn <- function(X) {
+        if (RD && NCOL(Y)==1) # Sharp RD
+            c(sigmaNN(X[X<0], Y[X<0], J, weights[X<0]),
+              sigmaNN(X[X>=0], Y[X>=0], J, weights[X>=0]))
+        else if (RD && NCOL(Y)>1) # Fuzzy RD
+            rbind(sigmaNN(X[X<0], Y[X<0, ], J, weights[X<0]),
+                  sigmaNN(X[X>=0], Y[X>=0, ], J, weights[X>=0]))
         else
-            colSums(wgt^2 * sigma2)
+            sigmaNN(X, Y, J, weights)
     }
 
+    hsigma2 <- switch(se.method, nn=signn(X), EHW=sig(Y - R %*% beta),
+                      supplied.var=sigma2)
+
     ## eff.obs=1/sum(w^2) TODO
-    list(theta=beta[1, ], sigma2=hsigma2, var=EHW(hsigma2), w=wgt, eff.obs=NA)
+    list(theta=beta[1, ], sigma2=hsigma2,
+         var=colSums(as.matrix(wgt^2 * hsigma2)), w=wgt, eff.obs=NA)
 }
 
 
@@ -56,35 +62,20 @@ NPRreg.fit <- function(d, h, kern="triangular", order=1, se.method="nn", J=3) {
     ## Keep only positive kernel weights
     W <- if (h<=0) 0*d$X else kern(d$X/h) # kernel weights
     sigma2 <- matrix(NA, nrow=length(W), ncol=NCOL(d$Y)^2)
-    if (d$class=="IP") {
-        r <- LPReg(d$X[W>0], d$Y[W>0], h, kern, order, se.method, d$sigma2[W>0],
-                   J, weights=d$w[W>0])
-        ## Estimation weights
-        sigma2[W>0] <- r$sigma2
-        W[W>0] <- r$w
-        return(list(estimate=r$theta, se=sqrt(r$var), w=W,
-                    sigma2=sigma2,
-                    eff.obs=r$eff.obs, fs=NA))
-    }
     if(!is.null(d$sigma2)) d$sigma2 <- as.matrix(d$sigma2)
-    rm <- LPReg(d$X[W>0 & d$m], as.matrix(d$Y)[W>0 & d$m, ], h, kern, order,
-                se.method, d$sigma2[W>0 & d$m, ], J, weights=d$w[W>0 & d$m])
-    rp <- LPReg(d$X[W> 0 & d$p], as.matrix(d$Y)[W>0 & d$p, ], h, kern, order,
-                se.method, d$sigma2[W>0 & d$p, ], J, weights=d$w[W>0 & d$p])
+    r <- LPReg(d$X[W>0], as.matrix(d$Y)[W>0, ], h, kern, order, se.method,
+               d$sigma2[W>0, ], J, weights=d$w[W>0], RD=(d$class!="IP"))
+    sigma2[W>0, ] <- r$sigma2
+    W[W>0] <- r$w
 
-    sigma2[W>0 & d$m, ] <- rm$sigma2
-    sigma2[W>0 & d$p, ] <- rp$sigma2
-    W[W>0 & d$m] <- rm$w
-    W[W>0 & d$p] <- rp$w
-
-    ret <- list(estimate=rp$theta[1]-rm$theta[1], se=sqrt(rm$var[1]+rp$var[1]),
-                w=W, sigma2=drop(sigma2), eff.obs=rm$eff.obs+rp$eff.obs, fs=NA)
+    ret <- list(estimate=r$theta[1], se=sqrt(r$var[1]), w=W,
+                sigma2=drop(sigma2), eff.obs=r$eff.obs, fs=NA)
 
     if (d$class=="FRD") {
-        ret$fs <- rp$theta[2]-rm$theta[2]
-        ret$estimate <- (rp$theta[1]-rm$theta[1]) / ret$fs
+        ret$fs <- r$theta[2]
+        ret$estimate <- r$theta[1]/r$theta[2]
         ret$se <- sqrt(sum(c(1, -ret$estimate, -ret$estimate, ret$estimate^2) *
-                           (rp$var+rm$var)) / ret$fs^2)
+                           r$var) / ret$fs^2)
     }
     ret
 }

@@ -46,7 +46,6 @@ test_that("IK bandwidth calculations", {
     r <- NPRreg.fit(d, IKBW.fit(d, kern="uniform"), "uniform")
     expect_equal(r$estimate, 8.0770003749)
     d <- NPRPrelimVar.fit(NPRData(lee08, cutoff=0, "SRD"), se.initial="EHW")
-    ## TODO
     expect_equal(sqrt(mean(d$sigma2[d$p])), 12.58183131)
     expect_equal(sqrt(mean(d$sigma2[d$m])), 10.79067278)
 })

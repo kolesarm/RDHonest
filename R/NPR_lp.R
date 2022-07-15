@@ -43,7 +43,8 @@ NPRHonest.fit <- function(d, M, kern="triangular", h, opt.criterion, alpha=0.05,
         bias <- M[1]/2 * (sum(abs(wt*xx^2)))
     } else if (sclass=="H" && bd) {
         ## At boundary we know form of least favorable function
-        bias <- -M[1]/2 * (sum(wt*xx^2))
+        bias <- M[1]/2 *
+            abs(sum(wt[xx<0]*xx[xx<0]^2)-sum(wt[xx>=0]*xx[xx>=0]^2))
     } else {
         ## Else need to find numerically (same formula if order=2)
         w2p <- function(s) abs(sum((wt*(xx-s))[xx>=s]))
@@ -90,7 +91,6 @@ NPROptBW.fit <- function(d, M, kern="triangular", opt.criterion, alpha=0.05,
                MSE=r$maximum.bias^2+r$std.error^2,
                FLCI=r$conf.high-r$conf.low)
     }
-
     hmin <- if (d$class=="IP") {
                 sort(unique(abs(d$X)))[2]
             } else {
@@ -139,11 +139,11 @@ print.RDResults <- function(x, digits = getOption("digits"), ...) {
     cat("\nNumber of effective observations:", fmt(y$eff.obs))
     if(!is.null(y$first.stage) && !is.na(y$first.stage))
         cat("\nFirst stage estimate:", fmt(y$first.stage),
-            "\nFirst stage smoothness parameter:", fmt(y$M.fs),
-            "\nReduced form smoothness parameter:", fmt(y$M.rf),
+            "\nFirst stage smoothness constant M:", fmt(y$M.fs),
+            "\nReduced form smoothness constant M:", fmt(y$M.rf),
             "\n")
     else
-        cat("\nSmoothness parameter:", fmt(y$M),
+        cat("\nSmoothness constant M:", fmt(y$M),
             "\n")
 
     if (inherits(x$na.action, "omit"))

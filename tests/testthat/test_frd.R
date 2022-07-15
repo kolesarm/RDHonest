@@ -31,8 +31,8 @@ context("Test FRD")
 test_that("FRD data example check", {
     d <- NPRData(cbind(logcn=log(rcp[, 6]), rcp[, c(3, 2)]), cutoff=0, "FRD")
     M <- NPR_MROT.fit(d)
-    r1 <- NPRHonest.fit(d, M, kern="triangular",
-                        opt.criterion="MSE", T0=0)$coefficients
+    r1 <- NPRHonest.fit(d, M, kern="triangular", opt.criterion="MSE",
+                        T0=0)$coefficients
     r2 <- NPRHonest.fit(d, M, kern="triangular", opt.criterion="MSE",
                         T0=r1$estimate)$coefficients
     ## With positive T0, expect greater effective M, and thus smaller bandwidth
@@ -52,6 +52,7 @@ test_that("FRD with almost perfect first stage", {
                         kern="triangular", opt.criterion="FLCI")$coefficients
     expect_lt(max(abs(r2[2:6]-r2[2:6])), 3e-7)
 
+    set.seed(42)
     df <- data.frame(y=lee08$voteshare,
                      d=lee08$margin+rnorm(n=length(lee08$margin), sd=0.1)>0,
                      x=lee08$margin)
@@ -76,6 +77,15 @@ test_that("FRD interface", {
     p1 <- RDHonest(log(cn)~retired | elig_year, data=rcp1, cutoff=0, M=M,
                     kern="triangular", opt.criterion="OCI", T0=0)
     expect_equal(r1$coefficients$estimate, p1$coefficients$estimate)
+    p1.1 <- RDHonest(log(cn)~retired | elig_year, data=rcp1, cutoff=0,
+                     kern="triangular", T0=0, h=6)
+    expect_lt(abs(p1.1$coefficients$conf.high-0.150118293818), 1e-11)
+    expect_lt(abs(p1.1$coefficients$maximum.bias-0.0980630668382), 1e-11)
+    p1.2 <- RDHonest(log(cn)~retired | elig_year, data=rcp1, cutoff=0)
+    expect_lt(abs(p1.2$coefficients$M.fs-0.00626732839127), 1e-11)
+    expect_lt(abs(p1.2$coefficients$M.rf-0.00436022188088), 1e-11)
+    expect_equal(p1.2$coefficients$conf.high, 0.17195578263)
+    expect_equal(p1.2$coefficients$estimate, -0.172378084757)
 
     r2 <- NPRHonest.fit(d, M, kern="triangular", opt.criterion="OCI",
                         T0=r1$coefficients$estimate)
