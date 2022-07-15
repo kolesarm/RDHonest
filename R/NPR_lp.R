@@ -15,7 +15,6 @@ NPRHonest.fit <- function(d, M, kern="triangular", h, opt.criterion, alpha=0.05,
         h <- NPROptBW.fit(d, M, kern, opt.criterion, alpha, beta, sclass, T0)
     r1 <- NPRreg.fit(d, h, kern, order=1, se.method, J)
 
-    d$lind_w <- r1$w
     wt <- r1$w[r1$w!=0]
     xx <- d$X[r1$w!=0]
     if (d$class=="IP") {
@@ -61,14 +60,14 @@ NPRHonest.fit <- function(d, M, kern="triangular", h, opt.criterion, alpha=0.05,
                    SRD="Sharp RD Parameter", "Fuzzy RD Parameter")
     method <- switch(sclass, H="Holder", "Tayor")
     if (d$class!="FRD") M[2:3] <- c(NA, NA)
+    d$est_w <- r1$w
     coef <- data.frame(term=term, estimate=r1$estimate, std.error=r1$se,
                        maximum.bias=bias, conf.low=r1$estimate-cv*r1$se,
                        conf.high=r1$estimate+cv*r1$se, conf.low.onesided=lower,
                        conf.high.onesided=upper, bandwidth=h,
-                       eff.obs=r1$eff.obs, # TODO
+                       eff.obs=r1$eff.obs, lind.weight=max(r1$w^2)/sum(r1$w^2),
                        cv=cv, alpha=alpha, method=method, M=M[1], M.rf=M[2],
                        M.fs=M[3], first.stage=r1$fs)
-
     structure(list(coefficients=coef, data=d), class="RDResults")
 }
 
@@ -137,6 +136,7 @@ print.RDResults <- function(x, digits = getOption("digits"), ...) {
             fmt(y$bandwidth.m), sep="")
 
     cat("\nNumber of effective observations:", fmt(y$eff.obs))
+    cat("\nMaximum Lindeberg weight:", fmt(y$lind.weight))
     if(!is.null(y$first.stage) && !is.na(y$first.stage))
         cat("\nFirst stage estimate:", fmt(y$first.stage),
             "\nFirst stage smoothness constant M:", fmt(y$M.fs),
@@ -148,6 +148,8 @@ print.RDResults <- function(x, digits = getOption("digits"), ...) {
 
     if (inherits(x$na.action, "omit"))
         cat(length(x$na.action), "observations with missing values dropped\n")
+
+
 
     invisible(x)
 }

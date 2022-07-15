@@ -41,10 +41,11 @@ LPReg <- function(X, Y, h, K, order=1, se.method=NULL, sigma2, J=3,
 
     hsigma2 <- switch(se.method, nn=signn(X), EHW=sig(Y - R %*% beta),
                       supplied.var=sigma2)
-
-    ## eff.obs=1/sum(w^2) TODO
+    ## To compute effective observations, rescale against uniform kernel
+    wgt_unif <- ((weights)*R %*% solve(crossprod(R, weights*R)))[, 1]
+    eff.obs <- length(X)*sum(wgt_unif^2)/sum(wgt^2)
     list(theta=beta[1, ], sigma2=hsigma2,
-         var=colSums(as.matrix(wgt^2 * hsigma2)), w=wgt, eff.obs=NA)
+         var=colSums(as.matrix(wgt^2 * hsigma2)), w=wgt, eff.obs=eff.obs)
 }
 
 

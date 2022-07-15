@@ -80,7 +80,7 @@ test_that("Honest inference in Lee and LM data",  {
     expect_equal(r1o[8], m1)
     expect_equal(r1o[10], "Onesided CIs:  (-Inf, 4.684), (-7.081, Inf)")
     expect_equal(r2o[10], "Onesided CIs:  (-Inf, 4.742), (-7.138, Inf)")
-    expect_equal(r1o[14], "24 observations with missing values dropped")
+    expect_equal(r1o[15], "24 observations with missing values dropped")
 
     d <- NPRData(headst[!is.na(headst$mortHS), c("mortHS", "povrate60")],
                 cutoff=0, "SRD")
@@ -191,13 +191,15 @@ test_that("Honest inference in Lee and LM data",  {
     r1 <- RDHonest(mortHS ~ povrate60, data=headst, kern="uniform",
                    na.action="na.omit")
     r1 <- capture.output(print(r1, digits=6))
-    expect_equal(r1[c(11, 14)],
+    expect_equal(r1[c(11, 12, 15)],
                  c("Bandwidth: 3.98048",
+                   "Number of effective observations:     239",
                    "24 observations with missing values dropped"))
     r2 <- RDHonest(mortHS ~ povrate60, data=headst, kern="epanechnikov",
                    point.inference=TRUE, cutoff=4)
-    expect_equal(capture.output(print(r2, digits=6))[c(11, 14)],
+    expect_equal(capture.output(print(r2, digits=6))[c(11, 12, 15)],
                  c("Bandwidth: 9.42625",
+                   "Number of effective observations: 373.642",
                    "24 observations with missing values dropped"))
 })
 

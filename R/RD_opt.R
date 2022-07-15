@@ -70,23 +70,15 @@ RDTEstimator <- function(d, f, alpha, se.method, J) {
         d$sigma2[d$p] <- sigmaNN(d$X[d$p], d$Y[d$p], J=J)
         d$sigma2[d$m] <- sigmaNN(d$X[d$m], d$Y[d$m], J=J)
     }
-
-    ## Drop observations with zero weight
-    d$X <- d$X[W!=0]
-    d$Y <- d$Y[W!=0]
-    d$sigma2 <- d$sigma2[W!=0]
-    W <- W[W!=0]
     Lhat <- sum(W * d$Y)
-
     b <- f(0)-f(-1e-10)
-
     sd <-  sqrt(sum(W^2 * d$sigma2))
     maxbias <- b - q/den                # b-q/den
     lower <- Lhat - maxbias - stats::qnorm(1-alpha)*sd
     upper <- Lhat + maxbias + stats::qnorm(1-alpha)*sd
     hl <- CVb(maxbias/sd, alpha) * sd # Half-length
 
-    ## Effective number of observations
+    ## Effective number of observations: TODO
     ## eff.obs <- 1/sum(Wp^2) + 1/sum(Wm^2)
     coef <- data.frame(term="Sharp RD parameter", estimate=Lhat, std.error=sd,
                        maximum.bias=maxbias, conf.low=Lhat-hl,

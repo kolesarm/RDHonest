@@ -73,9 +73,9 @@ NPRPrelimVar.fit <- function(d, se.initial="EHW") {
         d$sigma2[d$m] <- mean(r1$sigma2[d$m & r1$w != 0])
     } else {
         d$sigma2 <- matrix(NA, nrow=length(d$X), ncol=4)
-        d$sigma2[d$p] <- matrix(rep(colMeans(r1$sigma2[d$p & r1$w != 0, ]),
+        d$sigma2[d$p, ] <- matrix(rep(colMeans(r1$sigma2[d$p & r1$w != 0, ]),
                                     each=sum(d$p)), nrow=sum(d$p))
-        d$sigma2[d$m] <- matrix(rep(colMeans(r1$sigma2[d$m & r1$w != 0, ]),
+        d$sigma2[d$m, ] <- matrix(rep(colMeans(r1$sigma2[d$m & r1$w != 0, ]),
                                     each=sum(d$m)), nrow=sum(d$m))
     }
 
