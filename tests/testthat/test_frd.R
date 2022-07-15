@@ -84,8 +84,8 @@ test_that("FRD interface", {
     p1.2 <- RDHonest(log(cn)~retired | elig_year, data=rcp1, cutoff=0)
     expect_lt(abs(p1.2$coefficients$M.fs-0.00626732839127), 1e-11)
     expect_lt(abs(p1.2$coefficients$M.rf-0.00436022188088), 1e-11)
-    expect_equal(p1.2$coefficients$conf.high, 0.17195578263)
-    expect_equal(p1.2$coefficients$estimate, -0.172378084757)
+    expect_lt(abs(p1.2$coefficients$conf.high- 0.17195578263), 1e-6)
+    expect_lt(abs(p1.2$coefficients$estimate+0.172378084757), 1e-6)
 
     r2 <- NPRHonest.fit(d, M, kern="triangular", opt.criterion="OCI",
                         T0=r1$coefficients$estimate)

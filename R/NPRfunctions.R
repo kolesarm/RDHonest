@@ -1,8 +1,6 @@
-## Local polynomial regression at a point, normalized to 0
+## Local polynomial regression/RD at a point, normalized to 0
 ## Calculate estimate of a function at a point and its variance given a
 ## bandwidth using local polynomial regression of order \code{order}.
-## @section Note: Nearest neighbor method assumes data are sorted so that
-##     \code{X[i] <= X[i+1]}
 ## @param Y,X Outcome variable and regressor
 ## @param h Bandwidth
 ## @param K Kernel function
@@ -17,8 +15,7 @@ LPReg <- function(X, Y, h, K, order=1, se.method=NULL, sigma2, J=3,
     W <- K(X/h)*weights
     Gamma <- crossprod(R, W*R)
 
-    if (h==0 ||
-        inherits(try(solve(Gamma), silent=TRUE), "try-error"))
+    if (h==0 || inherits(try(solve(Gamma), silent=TRUE), "try-error"))
         return(list(theta=0, sigma2=NA, var=NA, w=0, eff.obs=0))
 
     ## weights if we think of the estimator as linear estimator

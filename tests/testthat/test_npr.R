@@ -59,7 +59,7 @@ test_that("Test NPRreg", {
                  c(18, -1.198258131, 0.6608206598, 0.6955768728),
                  c(36, -1.113938949, 0.5001394599, 0.5223659480))
     expect_equal(unname(as.matrix(t1)), exp)
-    expect_identical(max(abs(round(t1-t2, 14))), 0)
+    expect_lt(max(abs(t1-t2)), 1e-11)
 
     ## Replicate Battistin et al
     df <- NPRData(cbind(rcp[, c(3, 2)]), cutoff=0, "SRD")
