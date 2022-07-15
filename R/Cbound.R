@@ -38,7 +38,7 @@
 #'
 #' }
 #' @examples
-#' r <- RDHonest(log(earnings)~yearat14, data=cghs, cutoff=1947, M=0.04, h=2)
+#' r <- RDHonest(log(earnings)~yearat14, data=cghs, cutoff=1947, M=0.04, h=3)
 #' RDSmoothnessBound(r, s=2)
 #' @export
 RDSmoothnessBound <- function(object, s, separate=FALSE, multiple=TRUE,

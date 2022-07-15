@@ -178,5 +178,12 @@ RDHonest <- function(formula, data, subset, weights, cutoff=0, M,
     ret$call <- cl
     ret$na.action <- attr(mf, "na.action")
 
+    if (is.nan(ret$coefficients$lind.weight) ||
+        ret$coefficients$lind.weight>0.1)
+        message(paste0("Maximal Lindeberg weight is large:",
+                      round(ret$coefficients$lind.weight, 2),
+                      ".\nInference may be inaccurate. ",
+                      "Consider using bigger bandwidth."))
+
     ret
 }

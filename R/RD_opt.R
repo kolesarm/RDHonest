@@ -80,11 +80,13 @@ RDTEstimator <- function(d, f, alpha, se.method, J) {
 
     r.u <- NPRreg.fit(d, max(abs(d$X[W!=0])), kern="uniform")
     eff.obs <- r.u$eff.obs*sum(r.u$w^2)/sum(W^2)
+    d$est_w <- W
 
     coef <- data.frame(term="Sharp RD parameter", estimate=Lhat, std.error=sd,
                        maximum.bias=maxbias, conf.low=Lhat-hl,
                        conf.high=Lhat+hl, conf.low.onesided=lower,
                        conf.high.onesided=upper, eff.obs=eff.obs,
+                       lind.weight=max(W^2)/sum(W^2),
                        cv=CVb(maxbias/sd, alpha), alpha=alpha, method="Taylor")
 
     structure(list(coefficients=coef, data=d, delta=sqrt(4*q), omega=2*b),
