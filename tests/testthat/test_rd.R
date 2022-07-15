@@ -70,6 +70,17 @@ test_that("Honest inference in Lee and LM data",  {
                   kern="uniform", h=18, M=0.1, se.method="EHW")
     r2 <- RDHonest(mortHS ~ povrate60, data=headst,
                   kern="uniform", h=18, M=0.1, se.method="nn")
+    ## Should match regression
+    rl <- lm(mortHS ~ povrate60*I(povrate60>=0), data=headst,
+             subset=abs(povrate60)<=18)
+    XX <- model.matrix(rl)
+    meat <- crossprod(XX, rl$residuals^2*XX)
+    vl <- (solve(crossprod(XX)) %*% meat %*% solve(crossprod(XX)))[3, 3]
+    expect_equal(sqrt(vl), r1$coefficients$std.error)
+    expect_equal(unname(rl$coefficients[3]), r1$coefficients$estimate)
+
+    expect_equal(r1$coefficients$eff.obs, 954)
+    expect_equal(954, sum(abs(r1$d$X)<=18))
     r1o <- capture.output(print(r1, digits=4))
     r2o <- capture.output(print(r2, digits=4))
     expect_equal(r1$coefficients$estimate, -1.1982581306)

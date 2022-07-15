@@ -536,7 +536,7 @@ RDHonest(voteshare ~ margin, data=lee08, subset=margin>0,
 
 In fuzzy RD, by Theorem B.2 in the appendix to @ArKo16honest, the estimator is asymptotically equivalent to
 \begin{equation*}
-\sum_i w_i (Y_i-D_i\beta)/fs,
+\sum_i w_i (Y_i-D_i\beta)/first stage,
 \end{equation*}
 so the Lindeberg weights are the same as in the sharp case.
 

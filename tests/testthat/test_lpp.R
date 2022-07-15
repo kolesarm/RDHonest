@@ -11,8 +11,8 @@ test_that("Inference at point agrees with RD", {
     expect_equal(pp$estimate-mm$estimate, rde$estimate)
     expect_equal(pp$std.error^2+mm$std.error^2, rde$std.error^2)
     expect_equal(pp$maximum.bias+mm$maximum.bias, rde$maximum.bias)
-    ## TODO
-    ## expect_equal(mm$eff.obs+pp$eff.obs, rde$eff.obs)
+
+
 
     p2 <- RDHonest(voteshare~margin, data=lee08, subset=margin>=0, h=5, M=2,
                    point.inference=TRUE)
@@ -70,8 +70,24 @@ test_that("Optimal bandwidth calculations", {
                    kern="uniform", opt.criterion="FLCI", point.inference=TRUE)
     expect_equal(rr$coefficients$conf.high.onesided,
                  55.24963853)
+    expect_equal(rr$coefficients$eff.obs, 858)
+    expect_equal(rr$coefficients$eff.obs,
+                 sum(lee08$margin<=rr$coefficients$bandwidth & lee08$margin>0))
     dp <- NPRData(lee08[lee08$margin>0, ], cutoff=0, "IP")
     Mh <- rr$coefficients$M
+
+    re <- RDHonest(voteshare ~ margin, data=lee08, subset=(margin>0),
+                   kern="uniform", opt.criterion="FLCI", point.inference=TRUE,
+                   se.method="EHW")
+    ## Should match regression
+    rl <- lm(voteshare ~ margin, data=lee08,
+             subset=margin>0 & margin<=rr$coefficients$bandwidth)
+    XX <- model.matrix(rl)
+    meat <- crossprod(XX, rl$residuals^2*XX)
+    vl <- (solve(crossprod(XX)) %*% meat %*% solve(crossprod(XX)))[1, 1]
+    expect_equal(sqrt(vl), re$coefficients$std.error)
+    expect_equal(unname(rl$coefficients[1]), rr$coefficients$estimate)
+
     r1 <- RDHonest(voteshare~margin, data=lee08, subset=margin>0, M=2*Mh,
                    opt.criterion="MSE", point.inference=TRUE)
     r <- capture.output(print(r1, digits=4))
