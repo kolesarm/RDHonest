@@ -163,7 +163,7 @@ RDHonest <- function(formula, data, subset, weights, cutoff=0, M,
 
     if (missing(M)) {
         M <- NPR_MROT.fit(d)
-        message("Using Armstong Kolesar (2020) ROT for smoothness constant M")
+        message("Using Armstong & Kolesar (2020) ROT for smoothness constant M")
     }
     if (kern=="optimal") {
         ret <- RDTOpt.fit(d, M, opt.criterion, alpha, beta, se.method, J)
@@ -178,10 +178,10 @@ RDHonest <- function(formula, data, subset, weights, cutoff=0, M,
     ret$call <- cl
     ret$na.action <- attr(mf, "na.action")
 
-    if (is.nan(ret$coefficients$lind.weight) ||
-        ret$coefficients$lind.weight>0.1)
-        message(paste0("Maximal Lindeberg weight is large:",
-                      round(ret$coefficients$lind.weight, 2),
+    if (is.nan(ret$coefficients$leverage) ||
+        ret$coefficients$leverage>0.1)
+        message(paste0("Maximal leverage is large:",
+                      round(ret$coefficients$leverage, 2),
                       ".\nInference may be inaccurate. ",
                       "Consider using bigger bandwidth."))
 

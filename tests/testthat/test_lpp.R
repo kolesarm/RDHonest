@@ -30,12 +30,12 @@ test_that("Inference at point agrees with RD", {
 })
 
 test_that("MROT matches paper", {
-    Mh <- RDHonest(mortHS~povrate60, data=headst, cutoff=0, h=0)$coefficients$M
+    Mh <- RDHonest(mortHS~povrate, data=headst, cutoff=0, h=0)$coefficients$M
     expect_equal(Mh, 0.29939992)
 
-    Mp <- RDHonest(mortHS~povrate60, data=headst, subset=(povrate60>=0),
+    Mp <- RDHonest(mortHS~povrate, data=headst, subset=(povrate>=0),
                    cutoff=0, h=0, point.inference=TRUE)
-    Mm <- RDHonest(mortHS~povrate60, data=headst, subset=(povrate60<0),
+    Mm <- RDHonest(mortHS~povrate, data=headst, subset=(povrate<0),
                    h=0, point.inference=TRUE)
     expect_equal(Mp$coefficients$M, Mh)
     expect_lt(Mm$coefficients$M, Mh)

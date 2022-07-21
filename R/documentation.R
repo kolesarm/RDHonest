@@ -8,22 +8,29 @@
 #' outcomes. Counties with \code{oldcode} equal to (3014, 32032, 47010, 47040,
 #' 47074, 47074, 47078, 47079, 47096) matched more than one FIPS entry, so the
 #' county labels may not be correct. Mortality data is missing for Alaska.
-#' @format A data frame with 3,127 rows and 9 variables:
+#' @format A data frame with 3,127 rows and 18 variables:
 #'
 #' \describe{
 #' \item{statefp}{State FIPS code}
 #' \item{countyfp}{County FIPS code}
 #' \item{oldcode}{ID in Ludwig-Miller dataset}
-#' \item{povrate60}{Poverty rate in 1960 relative to 300th poorest county (which
+#' \item{povrate}{Poverty rate in 1960 relative to 300th poorest county (which
 #'      had poverty rate 59.1984)}
-#'
 #' \item{mortHS}{Average Mortality rate per 100,000 for children aged 5-9 over
-#' 1973--83 due to causes addressed as part of Head Start's health services.}
+#' 1973--83 due to causes addressed as part of Head Start's health services}
 #'
 #' \item{mortInj}{Average Mortality rate per 100,000 for children aged 5-9 over
-#' 1973--83 due to injury.}
-#'
-#' \item{highSchool}{High school completion rate in 1990 census, ages 18-24}
+#' 1973--83 due to injury}
+#' \item{hs90}{High school completion rate in 1990 census, ages 18-24}
+#' \item{pop}{County population (1960 census)}
+#' \item{sch1417}{Percent attending school, ages 14-17 (1960 census)}
+#' \item{sch534}{Percent attending school, ages 5-34 (1960 census)}
+#' \item{hs60}{High school completion rate in 1960 census, ages 25+}
+#' \item{pop1417}{Population aged 14-17 (1960 census)}
+#' \item{pop534}{Population aged 5-34 (1960 census)}
+#' \item{pop25}{Population aged 25+ (1960 census)}
+#' \item{urban}{Percent urban (1960 census)}
+#' \item{black}{Percent black (1960 census)}
 #' \item{statepc}{State postal code}
 #' \item{county}{County name}
 #' }
@@ -125,38 +132,38 @@
 #' @source American Economic Review data archive, \doi{10.1257/aer.99.5.2209}
 "rcp"
 
-#' Constants for common kernels.
-#'
-#' First four moments of uniform, triangular, and Epanechnikov equivalent
-#' kernels.
-#'
-#' @format A data frame with 18 rows and 19 variables:
-#' \describe{
-#'   \item{kernel}{Kernel type.}
-#'
-#'   \item{order}{Order of local polynomial.}
-#'
-#'   \item{boundary}{Boundary regression?}
-#'
-#'   \item{mu0, mu1, mu2, mu3, mu4}{\eqn{\int_X u^j k(u) d u}, raw moments}
-#'
-#'   \item{nu0, nu1, nu2, nu3, nu4}{\eqn{\int_X u^j k^2(u) d u}, raw moments of
-#'         kernel squared}
-#'
-#'   \item{pi0, pi1, pi2, pi3, pi4}{\eqn{\int_X |u^j k(u)| d u}, absolute
-#'         moments}
-#'
-#'   \item{pMSE}{constant for pointwise MSE optimal bandwidth,
-#'        \eqn{((p+1)!^2\nu_0 / (2(p+1)\mu_{p+1}^2))^{1/(2p+3)}}, see page 67 in
-#'        Fan and Gijbels (1996)}
-#'  }
-#' @source Computed analytically using symbolic math software
-#' @references{
-#'
-#' \cite{Jianqing Fan and Irène Gijbels. Local Polynomial Modelling and Its
-#'       Applications. Number 66 in Monographs on Statistics and Applied
-#'       Probability. Chapman & Hall/CRC, New York, NY, 1996.
-#'       \doi{10.1201/9780203748725}}
-#'
-#' }
-"kernC"
+## #' Constants for common kernels.
+## #'
+## #' First four moments of uniform, triangular, and Epanechnikov equivalent
+## #' kernels.
+## #'
+## #' @format A data frame with 18 rows and 19 variables:
+## #' \describe{
+## #'   \item{kernel}{Kernel type.}
+## #'
+## #'   \item{order}{Order of local polynomial.}
+## #'
+## #'   \item{boundary}{Boundary regression?}
+## #'
+## #'   \item{mu0, mu1, mu2, mu3, mu4}{\eqn{\int_X u^j k(u) d u}, raw moments}
+## #'
+## #'   \item{nu0, nu1, nu2, nu3, nu4}{\eqn{\int_X u^j k^2(u) d u}, raw moments of
+## #'         kernel squared}
+## #'
+## #'   \item{pi0, pi1, pi2, pi3, pi4}{\eqn{\int_X |u^j k(u)| d u}, absolute
+## #'         moments}
+## #'
+## #'   \item{pMSE}{constant for pointwise MSE optimal bandwidth,
+## #'        \eqn{((p+1)!^2\nu_0 / (2(p+1)\mu_{p+1}^2))^{1/(2p+3)}}, see page 67 in
+## #'        Fan and Gijbels (1996)}
+## #'  }
+## #' @source Computed analytically using symbolic math software
+## #' @references{
+## #'
+## #' \cite{Jianqing Fan and Irène Gijbels. Local Polynomial Modelling and Its
+## #'       Applications. Number 66 in Monographs on Statistics and Applied
+## #'       Probability. Chapman & Hall/CRC, New York, NY, 1996.
+## #'       \doi{10.1201/9780203748725}}
+## #'
+## #' }
+## "kernC"

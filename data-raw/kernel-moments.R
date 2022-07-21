@@ -57,4 +57,4 @@ kernC$pMSE[kernC$order==2] <- (6 * kernC$nu0[kernC$order==2] /
                                    kernC$mu3[kernC$order==2]^2)^(1/7)
 
 ## Save it
-devtools::use_data(kernC, overwrite=TRUE, internal=FALSE)
+usethis::use_data(kernC, overwrite=TRUE, internal=TRUE)

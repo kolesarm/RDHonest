@@ -107,9 +107,9 @@ ROTBW.fit <- function(d, kern="triangular") {
     sigma2 <- stats::sigma(r1)^2
 
     ## STEP 2: Kernel constants
-    s <- RDHonest::kernC[RDHonest::kernC$kernel==kern &
-                         RDHonest::kernC$order==order &
-                         RDHonest::kernC$boundary==boundary, ]
+    s <- kernC[kernC$kernel==kern &
+               kernC$order==order &
+               kernC$boundary==boundary, ]
     nu0 <- s$nu0
     mup <- s[[paste0("mu", order+1)]]
 
@@ -130,9 +130,9 @@ IKBW.fit <- function(d, kern="triangular", verbose=FALSE) {
     N <- Nm+Np
 
     ## STEP 0: Kernel constant
-    s <- RDHonest::kernC[RDHonest::kernC$order==1 &
-                         RDHonest::kernC$boundary==TRUE &
-                         RDHonest::kernC$kernel==kern, ]
+    s <- kernC[kernC$order==1 &
+               kernC$boundary==TRUE &
+               kernC$kernel==kern, ]
     const <- (s$nu0/s$mu2^2)^(1/5)
 
     ## STEP 1: Estimate f(0), sigma^2_(0) and sigma^2_+(0), using Silverman

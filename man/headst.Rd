@@ -5,22 +5,29 @@
 \alias{headst}
 \title{Head Start data from Ludwig and Miller (2007)}
 \format{
-A data frame with 3,127 rows and 9 variables:
+A data frame with 3,127 rows and 18 variables:
 
 \describe{
 \item{statefp}{State FIPS code}
 \item{countyfp}{County FIPS code}
 \item{oldcode}{ID in Ludwig-Miller dataset}
-\item{povrate60}{Poverty rate in 1960 relative to 300th poorest county (which
+\item{povrate}{Poverty rate in 1960 relative to 300th poorest county (which
      had poverty rate 59.1984)}
-
 \item{mortHS}{Average Mortality rate per 100,000 for children aged 5-9 over
-1973--83 due to causes addressed as part of Head Start's health services.}
+1973--83 due to causes addressed as part of Head Start's health services}
 
 \item{mortInj}{Average Mortality rate per 100,000 for children aged 5-9 over
-1973--83 due to injury.}
-
-\item{highSchool}{High school completion rate in 1990 census, ages 18-24}
+1973--83 due to injury}
+\item{hs90}{High school completion rate in 1990 census, ages 18-24}
+\item{pop}{County population (1960 census)}
+\item{sch1417}{Percent attending school, ages 14-17 (1960 census)}
+\item{sch534}{Percent attending school, ages 5-34 (1960 census)}
+\item{hs60}{High school completion rate in 1960 census, ages 25+}
+\item{pop1417}{Population aged 14-17 (1960 census)}
+\item{pop534}{Population aged 5-34 (1960 census)}
+\item{pop25}{Population aged 25+ (1960 census)}
+\item{urban}{Percent urban (1960 census)}
+\item{black}{Percent black (1960 census)}
 \item{statepc}{State postal code}
 \item{county}{County name}
 }

@@ -99,7 +99,7 @@ test_that("FRD interface", {
     expect_equal(capture.output(print(p2, digits=4))[15],
                  "First stage estimate: 0.3418 ")
     expect_equal(capture.output(print(p2, digits=4))[14],
-                 "Maximum Lindeberg weight: 0.00361")
+                 "Maximal leverage for Fuzzy RD Parameter: 0.00361")
 
     r3 <- NPRHonest.fit(d, M, kern="triangular", h=7,
                         T0=r1$coefficients$estimate)

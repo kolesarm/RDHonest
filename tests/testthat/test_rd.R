@@ -66,13 +66,13 @@ test_that("Plots", {
 test_that("Honest inference in Lee and LM data",  {
 
     ## Replicate 1606.01200v2, except we no longer provide SilvermanNN
-    r1 <- RDHonest(mortHS ~ povrate60, data=headst,
+    r1 <- RDHonest(mortHS ~ povrate, data=headst,
                   kern="uniform", h=18, M=0.1, se.method="EHW")
-    r2 <- RDHonest(mortHS ~ povrate60, data=headst,
+    r2 <- RDHonest(mortHS ~ povrate, data=headst,
                   kern="uniform", h=18, M=0.1, se.method="nn")
     ## Should match regression
-    rl <- lm(mortHS ~ povrate60*I(povrate60>=0), data=headst,
-             subset=abs(povrate60)<=18)
+    rl <- lm(mortHS ~ povrate*I(povrate>=0), data=headst,
+             subset=abs(povrate)<=18)
     XX <- model.matrix(rl)
     meat <- crossprod(XX, rl$residuals^2*XX)
     vl <- (solve(crossprod(XX)) %*% meat %*% solve(crossprod(XX)))[3, 3]
@@ -93,7 +93,7 @@ test_that("Honest inference in Lee and LM data",  {
     expect_equal(r2o[10], "Onesided CIs:  (-Inf, 4.742), (-7.138, Inf)")
     expect_equal(r1o[15], "24 observations with missing values dropped")
 
-    d <- NPRData(headst[!is.na(headst$mortHS), c("mortHS", "povrate60")],
+    d <- NPRData(headst[!is.na(headst$mortHS), c("mortHS", "povrate")],
                 cutoff=0, "SRD")
     d <- NPRPrelimVar.fit(d, se.initial="Silverman")
     es <- function(kern, se.method) {
@@ -197,16 +197,16 @@ test_that("Honest inference in Lee and LM data",  {
     expect_equal(unname(r3), 5.086645484)
 
     ## Missing values
-    expect_error(RDHonest(mortHS ~ povrate60, data=headst, kern="uniform", h=12,
+    expect_error(RDHonest(mortHS ~ povrate, data=headst, kern="uniform", h=12,
                           na.action="na.fail"))
-    r1 <- RDHonest(mortHS ~ povrate60, data=headst, kern="uniform",
+    r1 <- RDHonest(mortHS ~ povrate, data=headst, kern="uniform",
                    na.action="na.omit")
     r1 <- capture.output(print(r1, digits=6))
     expect_equal(r1[c(11, 12, 15)],
                  c("Bandwidth: 3.98048",
                    "Number of effective observations:     239",
                    "24 observations with missing values dropped"))
-    r2 <- RDHonest(mortHS ~ povrate60, data=headst, kern="epanechnikov",
+    r2 <- RDHonest(mortHS ~ povrate, data=headst, kern="epanechnikov",
                    point.inference=TRUE, cutoff=4)
     expect_equal(capture.output(print(r2, digits=6))[c(11, 12, 15)],
                  c("Bandwidth: 9.42625",

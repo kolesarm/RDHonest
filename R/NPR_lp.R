@@ -65,7 +65,7 @@ NPRHonest.fit <- function(d, M, kern="triangular", h, opt.criterion, alpha=0.05,
                        maximum.bias=bias, conf.low=r1$estimate-cv*r1$se,
                        conf.high=r1$estimate+cv*r1$se, conf.low.onesided=lower,
                        conf.high.onesided=upper, bandwidth=h,
-                       eff.obs=r1$eff.obs, lind.weight=max(r1$w^2)/sum(r1$w^2),
+                       eff.obs=r1$eff.obs, leverage=max(r1$w^2)/sum(r1$w^2),
                        cv=cv, alpha=alpha, method=method, M=M[1], M.rf=M[2],
                        M.fs=M[3], first.stage=r1$fs)
     structure(list(coefficients=coef, data=d), class="RDResults")
@@ -136,7 +136,8 @@ print.RDResults <- function(x, digits = getOption("digits"), ...) {
             fmt(y$bandwidth.m), sep="")
 
     cat("\nNumber of effective observations:", fmt(y$eff.obs))
-    cat("\nMaximum Lindeberg weight:", fmt(y$lind.weight))
+    cat("\nMaximal leverage for ", y$Parameter, ": ", fmt(y$leverage),
+        sep="")
     if(!is.null(y$first.stage) && !is.na(y$first.stage))
         cat("\nFirst stage estimate:", fmt(y$first.stage),
             "\nFirst stage smoothness constant M:", fmt(y$M.fs),

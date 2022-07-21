@@ -19,14 +19,14 @@ License: GPL-3
 Encoding: UTF-8
 LazyData: true
 Imports:
-    stats
+    stats,
+    Formula
 Suggests:
     spelling,
     ggplot2,
     testthat,
     knitr,
     rmarkdown,
-    Formula,
     formatR
 RoxygenNote: 7.2.0
 URL: https://github.com/kolesarm/RDHonest

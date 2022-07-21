@@ -39,11 +39,23 @@ devtools::use_data(rebp, overwrite=TRUE, internal=FALSE)
 dir4 <- "~/teaching/Datasets/LudwigMiller2007/analysis data/"
 ## Table 3 and 4
 d3 <- foreign::read.dta(paste0(dir4, "census3.dta"))
+ ## $ pct_urban_1960
+ ## $ pct_black_1960
+ ## $ pop60
 d4 <- foreign::read.dta(paste0(dir4, "census_1990.dta"))
+d5 <- foreign::read.dta(paste0(dir4, "census_1960.dta"))
+ ## $ pop14_17_1960
+ ## $ pop5_34_1960
+ ## $ pop25plus_1960
+ ## $ pctsch14_1960
+ ## $ pctsch5_34_1960
+ ## $ pct_hsormore_25plus_1960 # those twenty-five or older in 1960, completion of
+ ##                            # a high school or equivalent degree
 
 ## observation 3133 is full of NA's
 d4 <- d4[!is.na(d4$oldcode), ]
-## now both d3 and d4 have the same number of obs, 3138
+d5 <- d5[!is.na(d5$oldcode), ]
+## now both d3 and d4 have the same number of obs, 3138, d5 at 3137
 
 ## 27056 Yellowstone County, MT is there twice, remove it
 dup <- d3$oldcode[duplicated(d3$oldcode)]
@@ -55,15 +67,22 @@ d4 <- d4[-which.max(d4$oldcode==dup), ]
 d3$mortHS <- d3$age5_9_sum2
 d3$mortInj <- d3$age5_9_injury_rate
 d4$highSchool <- d4$hsplus18_24
-d <- merge(d3[, c("oldcode", "state", "povrate60", "mortHS", "mortInj")],
-           d4[, c("oldcode", "state", "povrate60", "highSchool")])
+
+dd <- merge(d3[, c("oldcode", "state", "povrate60", "mortHS", "mortInj",
+                   "pct_urban_1960", "pct_black_1960", "pop60")],
+            d4[, c("oldcode", "state", "povrate60", "highSchool")])
+dd <- merge(dd,
+            d5[, c("oldcode", "pctsch14_1960", "pctsch5_34_1960",
+                   "pct_hsormore_25plus_1960", "pop14_17_1960", "pop5_34_1960",
+                   "pop25plus_1960", "povrate60")])
+
 ## remove 6 with all three outcomes missing
-d$oldcode[(is.na(d$mortHS) & is.na(d$highSchool))]
+dd$oldcode[(is.na(dd$mortHS) & is.na(dd$highSchool))]
 ## 12003 13045 42065 47061 47102 51024, most of these have most data missing
-d <- d[!(is.na(d$mortHS) & is.na(d$highSchool)), ]
+dd <- dd[!(is.na(dd$mortHS) & is.na(dd$highSchool)), ]
 
 ## remove 3 with poverty rate missing
-d <- d[!is.na(d$povrate60), ]
+dd <- dd[!is.na(dd$povrate60), ]
 
 ## left with 3128 observations
 
@@ -98,11 +117,11 @@ fips <- fips[fips$statefp<57, ]
 
 
 ## 2.1 Add county names to dateset
-lmfips <- foreign::read.dta(paste0(dir, "oldcode_fips.dta"))
+lmfips <- foreign::read.dta(paste0(dir4, "oldcode_fips.dta"))
 names(lmfips) <- c("oldcode", "statefp", "countyfp", "cfips")
 lmfips <- lmfips[!is.na(lmfips$oldcode), ]
 ## Drop first batch of duplicates and non-matching
-c(46135, 42068) %in%  d$oldcode
+c(46135, 42068) %in%  dd$oldcode
 lmfips <- lmfips[-c(313, 548, 2427, 2429, 2825, 2432, 1652), ] # drop duplicates
 lmfips[!complete.cases(lmfips), ]
 
@@ -117,7 +136,7 @@ lmfips[!complete.cases(lmfips), ]
 lmfipsnd <- lmfips[!duplicated(lmfips$oldcode), ]
 lmfipsd <- lmfips[duplicated(lmfips$oldcode), ]
 
-d2 <- merge(x=d, y=lmfipsnd, by="oldcode", all.x=TRUE)
+d2 <- merge(x=dd, y=lmfipsnd, by="oldcode", all.x=TRUE)
 ## merged everything
 
 dd <- merge(d2, fips, all.x=TRUE)
@@ -133,8 +152,18 @@ headst$state <- NULL
 
 ## Check that we match Table III before removing the Yellowstone outlier
 headst <- headst[headst$oldcode!=27057, ] # Yellowstone National Park
-
-devtools::use_data(headst, overwrite=TRUE, internal=FALSE)
+## 3127 observations
+names(headst)[c(4, 7:10)] <- c("povrate", "urban", "black", "pop", "hs90")
+names(headst)[11:16] <- c("sch1417", "sch534", "hs60",
+                          "pop1417", "pop534", "pop25")
+headst <- headst[, c(1:6, 10, 9, 11:16, 7:8, 17:18)]
+# % attending school aged 14-17,
+# ?
+# Percent completed HS or equivalent among those 25+ in 1960
+# Population aged 14-17 in 1960
+# Population ?
+# Population aged 25+ in 1960
+usethis::use_data(headst, overwrite=TRUE, internal=FALSE)
 
 ## 4. Battistin et al data from AER website
 dir5 <- "~/teaching/Datasets/BattistinEtAl2009/datapaper_ab.dta"

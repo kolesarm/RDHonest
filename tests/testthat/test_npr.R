@@ -35,7 +35,7 @@ test_that("Test LPreg", {
 
 test_that("Test NPRreg", {
     ## Replicate Ludwig-Miller
-    lumi <- headst[!is.na(headst$mortHS), c("mortHS", "povrate60")]
+    lumi <- headst[!is.na(headst$mortHS), c("mortHS", "povrate")]
     mort <- NPRData(lumi, cutoff=0, "SRD")
     mortm <- NPRData(lumi[lumi$povrate<0, ], cutoff=0, "IP")
     mortp <- NPRData(lumi[lumi$povrate>=0, ], cutoff=0, "IP")

@@ -86,7 +86,7 @@ RDTEstimator <- function(d, f, alpha, se.method, J) {
                        maximum.bias=maxbias, conf.low=Lhat-hl,
                        conf.high=Lhat+hl, conf.low.onesided=lower,
                        conf.high.onesided=upper, eff.obs=eff.obs,
-                       lind.weight=max(W^2)/sum(W^2),
+                       leverage=max(W^2)/sum(W^2),
                        cv=CVb(maxbias/sd, alpha), alpha=alpha, method="Taylor")
 
     structure(list(coefficients=coef, data=d, delta=sqrt(4*q), omega=2*b),
