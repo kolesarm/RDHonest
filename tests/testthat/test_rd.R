@@ -203,13 +203,13 @@ test_that("Honest inference in Lee and LM data",  {
                    na.action="na.omit")
     r1 <- capture.output(print(r1, digits=6))
     expect_equal(r1[c(11, 12, 15)],
-                 c("Bandwidth: 3.98048",
+                 c("Bandwidth: 3.98048, Kernel: uniform",
                    "Number of effective observations:     239",
                    "24 observations with missing values dropped"))
     r2 <- RDHonest(mortHS ~ povrate, data=headst, kern="epanechnikov",
                    point.inference=TRUE, cutoff=4)
     expect_equal(capture.output(print(r2, digits=6))[c(11, 12, 15)],
-                 c("Bandwidth: 9.42625",
+                 c("Bandwidth: 9.42625, Kernel: epanechnikov",
                    "Number of effective observations: 373.642",
                    "24 observations with missing values dropped"))
 })

@@ -39,18 +39,8 @@ devtools::use_data(rebp, overwrite=TRUE, internal=FALSE)
 dir4 <- "~/teaching/Datasets/LudwigMiller2007/analysis data/"
 ## Table 3 and 4
 d3 <- foreign::read.dta(paste0(dir4, "census3.dta"))
- ## $ pct_urban_1960
- ## $ pct_black_1960
- ## $ pop60
 d4 <- foreign::read.dta(paste0(dir4, "census_1990.dta"))
 d5 <- foreign::read.dta(paste0(dir4, "census_1960.dta"))
- ## $ pop14_17_1960
- ## $ pop5_34_1960
- ## $ pop25plus_1960
- ## $ pctsch14_1960
- ## $ pctsch5_34_1960
- ## $ pct_hsormore_25plus_1960 # those twenty-five or older in 1960, completion of
- ##                            # a high school or equivalent degree
 
 ## observation 3133 is full of NA's
 d4 <- d4[!is.na(d4$oldcode), ]

@@ -132,38 +132,38 @@
 #' @source American Economic Review data archive, \doi{10.1257/aer.99.5.2209}
 "rcp"
 
-## #' Constants for common kernels.
-## #'
-## #' First four moments of uniform, triangular, and Epanechnikov equivalent
-## #' kernels.
-## #'
-## #' @format A data frame with 18 rows and 19 variables:
-## #' \describe{
-## #'   \item{kernel}{Kernel type.}
-## #'
-## #'   \item{order}{Order of local polynomial.}
-## #'
-## #'   \item{boundary}{Boundary regression?}
-## #'
-## #'   \item{mu0, mu1, mu2, mu3, mu4}{\eqn{\int_X u^j k(u) d u}, raw moments}
-## #'
-## #'   \item{nu0, nu1, nu2, nu3, nu4}{\eqn{\int_X u^j k^2(u) d u}, raw moments of
-## #'         kernel squared}
-## #'
-## #'   \item{pi0, pi1, pi2, pi3, pi4}{\eqn{\int_X |u^j k(u)| d u}, absolute
-## #'         moments}
-## #'
-## #'   \item{pMSE}{constant for pointwise MSE optimal bandwidth,
-## #'        \eqn{((p+1)!^2\nu_0 / (2(p+1)\mu_{p+1}^2))^{1/(2p+3)}}, see page 67 in
-## #'        Fan and Gijbels (1996)}
-## #'  }
-## #' @source Computed analytically using symbolic math software
-## #' @references{
-## #'
-## #' \cite{Jianqing Fan and Irène Gijbels. Local Polynomial Modelling and Its
-## #'       Applications. Number 66 in Monographs on Statistics and Applied
-## #'       Probability. Chapman & Hall/CRC, New York, NY, 1996.
-## #'       \doi{10.1201/9780203748725}}
-## #'
-## #' }
+## Constants for common kernels.
+##
+## First four moments of uniform, triangular, and Epanechnikov equivalent
+## kernels.
+##
+## @format A data frame with 18 rows and 19 variables:
+## \describe{
+##   \item{kernel}{Kernel type.}
+##
+##   \item{order}{Order of local polynomial.}
+##
+##   \item{boundary}{Boundary regression?}
+##
+##   \item{mu0, mu1, mu2, mu3, mu4}{\eqn{\int_X u^j k(u) d u}, raw moments}
+##
+##   \item{nu0, nu1, nu2, nu3, nu4}{\eqn{\int_X u^j k^2(u) d u}, raw moments of
+##         kernel squared}
+##
+##   \item{pi0, pi1, pi2, pi3, pi4}{\eqn{\int_X |u^j k(u)| d u}, absolute
+##         moments}
+##
+##   \item{pMSE}{constant for pointwise MSE optimal bandwidth,
+##        \eqn{((p+1)!^2\nu_0 / (2(p+1)\mu_{p+1}^2))^{1/(2p+3)}}, see page 67 in
+##        Fan and Gijbels (1996)}
+##  }
+## @source Computed analytically using symbolic math software
+## @references{
+##
+## \cite{Jianqing Fan and Irène Gijbels. Local Polynomial Modelling and Its
+##       Applications. Number 66 in Monographs on Statistics and Applied
+##       Probability. Chapman & Hall/CRC, New York, NY, 1996.
+##       \doi{10.1201/9780203748725}}
+##
+## }
 ## "kernC"

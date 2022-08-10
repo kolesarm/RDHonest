@@ -61,13 +61,14 @@ NPRHonest.fit <- function(d, M, kern="triangular", h, opt.criterion, alpha=0.05,
     method <- switch(sclass, H="Holder", "Tayor")
     if (d$class!="FRD") M[2:3] <- c(NA, NA)
     d$est_w <- r1$w
+    kernel <- if (!is.function(kern)) kern else "user-supplied"
     coef <- data.frame(term=term, estimate=r1$estimate, std.error=r1$se,
                        maximum.bias=bias, conf.low=r1$estimate-cv*r1$se,
                        conf.high=r1$estimate+cv*r1$se, conf.low.onesided=lower,
                        conf.high.onesided=upper, bandwidth=h,
                        eff.obs=r1$eff.obs, leverage=max(r1$w^2)/sum(r1$w^2),
                        cv=cv, alpha=alpha, method=method, M=M[1], M.rf=M[2],
-                       M.fs=M[3], first.stage=r1$fs)
+                       M.fs=M[3], first.stage=r1$fs, kernel=kernel)
     structure(list(coefficients=coef, data=d), class="RDResults")
 }
 
@@ -129,7 +130,7 @@ print.RDResults <- function(x, digits = getOption("digits"), ...) {
                      digits=digits, row.names=FALSE)
     cat("\nOnesided CIs: ", y$OCI)
     if(!is.null(y$bandwidth))
-        cat("\nBandwidth: ", fmt(y$bandwidth), sep="")
+        cat("\nBandwidth: ", fmt(y$bandwidth), ", Kernel: ", y$kernel, sep="")
     else
         cat("\nSmoothing parameters below and above cutoff: ",
             fmt(y$bandwidth.m), ", ",

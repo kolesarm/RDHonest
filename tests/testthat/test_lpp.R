@@ -91,7 +91,7 @@ test_that("Optimal bandwidth calculations", {
     r1 <- RDHonest(voteshare~margin, data=lee08, subset=margin>0, M=2*Mh,
                    opt.criterion="MSE", point.inference=TRUE)
     r <- capture.output(print(r1, digits=4))
-    expect_equal(r[11], "Bandwidth: 13.41")
+    expect_equal(r[11], "Bandwidth: 13.41, Kernel: triangular")
     r2 <- NPROptBW.fit(dp, M=2*Mh, opt.criterion="MSE")
     expect_identical(r2,  r1$coefficients$bandwidth)
     expect_lt(abs(r2- 13.4109133), 1e-6)
