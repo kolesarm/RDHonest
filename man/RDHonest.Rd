@@ -21,7 +21,8 @@ RDHonest(
   J = 3,
   sclass = "H",
   T0 = 0,
-  point.inference = FALSE
+  point.inference = FALSE,
+  sigma2
 )
 }
 \arguments{
@@ -114,6 +115,8 @@ optimal bandwidth. Only relevant for Fuzzy RD.}
 
 \item{point.inference}{Do inference at a point determined by \code{cutoff}
 instead of RD.}
+
+\item{sigma2}{Supply variance. Ignored when kernel is optimal.}
 }
 \value{
 Returns an object of class \code{"NPRResults"}. The function

@@ -61,6 +61,7 @@ NPRHonest.fit <- function(d, M, kern="triangular", h, opt.criterion, alpha=0.05,
     method <- switch(sclass, H="Holder", "Tayor")
     if (d$class!="FRD") M[2:3] <- c(NA, NA)
     d$est_w <- r1$w
+    d$sigma2 <- r1$sigma2
     kernel <- if (!is.function(kern)) kern else "user-supplied"
     coef <- data.frame(term=term, estimate=r1$estimate, std.error=r1$se,
                        maximum.bias=bias, conf.low=r1$estimate-cv*r1$se,
@@ -137,7 +138,8 @@ print.RDResults <- function(x, digits = getOption("digits"), ...) {
             fmt(y$bandwidth.m), sep="")
 
     cat("\nNumber of effective observations:", fmt(y$eff.obs))
-    cat("\nMaximal leverage for ", y$Parameter, ": ", fmt(y$leverage),
+    par <- paste0(tolower(substr(y$Parameter, 1, 1)), substring(y$Parameter, 2))
+    cat("\nMaximal leverage for ", par, ": ", fmt(y$leverage),
         sep="")
     if(!is.null(y$first.stage) && !is.na(y$first.stage))
         cat("\nFirst stage estimate:", fmt(y$first.stage),
