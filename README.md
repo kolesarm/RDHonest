@@ -9,7 +9,12 @@ Kolesár (2020)](https://doi.org/10.3982/QE1199)
 (2018)](https://doi.org/10.3982/ECTA14434)
 ([preprint](https://arxiv.org/abs/1511.06028)), and [Kolesár and Rothe
 (2018)](https://doi.org/10.1257/aer.20160945)
-([preprint](https://arxiv.org/abs/1606.04086)).
+([preprint](https://arxiv.org/abs/1606.04086)). See
+[RDHonest-vStata](https://github.com/tbarmstr/RDHonest-vStata) for a Stata
+version of this package.
+
+
+
 
 See vignette [RDHonest](doc/RDHonest.pdf) for description of the package
 (available through `vignette("RDHonest")` once package is installed), and the
