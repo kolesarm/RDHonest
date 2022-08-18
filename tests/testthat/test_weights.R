@@ -1,19 +1,23 @@
 context("Test weighted RD")
 
 test_that("Test weighting using cghs", {
-    d <- cghs
+    s0 <- RDHonest(log(earnings)~yearat14, cutoff=1947, h=5, data=cghs, M=1)
+    d <- s0$data
+
     ## Make 10 groups
-    d$mod <- floor(10*(d$earnings - floor(d$earnings)))
+    d$mod <- floor(10*(d$Y - floor(d$Y)))
     ## Make cells by group and year
-    d$cell <- d$mod/10+d$yearat14
+    d$cell <- d$mod/10+d$X
     dd <- data.frame()
     for (j in unique(d$cell)) {
-        dd <- rbind(dd, data.frame(y=mean(log(d$earnings)[d$cell==j]),
-                                   x=mean(d$yearat14[d$cell==j]),
-                                   weights=length(d$yearat14[d$cell==j])))
+        ix <- d$cell==j
+        df <- data.frame(y=mean(d$Y[ix]), x=mean(d$X[ix]),
+                         weights=length(d$X[ix]),
+                         sigma2=mean(d$sigma2[ix])/length(d$X[ix]))
+        dd <- rbind(dd, df)
     }
 
-    d1 <- NPRData(dd, cutoff=1947, "SRD")
+    d1 <- NPRData(dd, cutoff=0, "SRD")
     d2 <- NPRData(data.frame(y=log(cghs$earnings), x=cghs$yearat14),
                   cutoff= 1947, "SRD")
     ## Initial estimates
@@ -52,18 +56,21 @@ test_that("Test weighting using cghs", {
     expect_equal(m1[2:6], m2[2:6])
 
     ## Same thing with RDHonest
-    s1 <- RDHonest(log(earnings)~yearat14, cutoff=1947, h=5,
-                   data=cghs, M=1)$coefficients
-    s2 <- RDHonest(y~x, cutoff=1947, weights=weights, h=5,
-                   data=dd, M=1)$coefficients
-    expect_equal(c(s2$estimate, s2$maximum.bias),
-                 c(s1$estimate, s1$maximum.bias))
+    s1 <- s0$coefficients
+    s2 <- RDHonest(y~x, cutoff=0, weights=weights, h=5, data=dd, M=1,
+                   sigma2=sigma2, se.method="supplied.var")$coefficients
+    expect_equal(s1[2:9], s2[2:9])
+
     ## LPP Honest
     t1 <- RDHonest(log(earnings)~yearat14, cutoff=1947, h=5,
                    data=cghs[cghs$yearat14>=1947, ], M=1,
                    point.inference=TRUE)$coefficients
-    t2 <- RDHonest(y~x, cutoff=1947, h=5, data=dd[dd$x>=1947, ], M=1,
+    t2 <- RDHonest(y~x, cutoff=0, h=5, data=dd[dd$x>=0, ], M=1,
                    weights=weights, point.inference=TRUE)$coefficients
+    t3 <- RDHonest(y~x, cutoff=0, h=5, data=dd[dd$x>=0, ], M=1, weights=weights,
+                   point.inference=TRUE, sigma2=sigma2,
+                   se.method="supplied.var")$coefficients
     expect_equal(c(t2$estimate, t2$maximum.bias),
                  c(t1$estimate, t1$maximum.bias))
+    expect_equal(t1[2:9], t3[2:9])
 })
