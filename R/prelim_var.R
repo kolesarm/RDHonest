@@ -65,6 +65,9 @@ NPRPrelimVar.fit <- function(d, se.initial="EHW") {
     } else {
         stop("This method for preliminary variance estimation not supported")
     }
+    if (!is.null(d$clusterid))
+        d$rho <- Moulton(r1$res, d)
+
     if (d$class == "IP") {
         d$sigma2 <- rep(mean(r1$sigma2[r1$w != 0]), length(d$X))
     } else if (d$class=="SRD") {
@@ -78,8 +81,24 @@ NPRPrelimVar.fit <- function(d, se.initial="EHW") {
         d$sigma2[d$m, ] <- matrix(rep(colMeans(r1$sigma2[d$m & r1$w != 0, ]),
                                     each=sum(d$m)), nrow=sum(d$m))
     }
-
     d
+}
+
+## Moulton estimate of rho, set rho=0 if no clustering
+Moulton <- function(u, d) {
+    m <- function(u, clusterid) {
+        den <- sum(tapply(u[, 1], clusterid, length)^2)-NROW(u)
+        if (den>0) {
+            us <- apply(u, 2, function(x) tapply(x, clusterid, sum))
+            as.vector(crossprod(us)-crossprod(u)) / den
+        } else {
+            rep(0, NCOL(u)^2)
+        }
+    }
+    u <- as.matrix(u)
+    ix <- !is.na(u[, 1])
+
+    m(u[ix, , drop=FALSE], d$clusterid[ix])
 }
 
 
@@ -119,7 +138,6 @@ ROTBW.fit <- function(d, kern="triangular") {
 
     (V/(B^2 * 2 * (order+1) * N))^(1/(2*order+3))
 }
-
 
 ## Imbens and Kalyanaraman bandwidth. Only used by NPRPrelimVar.fit
 ##

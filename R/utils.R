@@ -18,8 +18,9 @@ NPRData <- function(d, cutoff, class) {
                class=class, var.names=names(d)[1:Xindex])
     df$p <- df$X>=0
     df$m <- df$X<0
-    df$sigma2 <- d$sigma2
-    df$w <- if(is.null(d$weights)) rep(1L, length(df$X)) else d$weights
+    df$sigma2 <- d$"(sigma2)"
+    df$clusterid <- d$"(clusterid)"
+    df$w <- if(is.null(d$"(weights)")) rep(1L, length(df$X)) else d$"(weights)"
     df
 }
 

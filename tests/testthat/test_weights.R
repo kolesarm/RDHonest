@@ -16,6 +16,7 @@ test_that("Test weighting using cghs", {
                          sigma2=mean(d$sigma2[ix])/length(d$X[ix]))
         dd <- rbind(dd, df)
     }
+    names(dd)[3:4] <- c("(weights)", "(sigma2)")
 
     d1 <- NPRData(dd, cutoff=0, "SRD")
     d2 <- NPRData(data.frame(y=log(cghs$earnings), x=cghs$yearat14),
@@ -56,9 +57,11 @@ test_that("Test weighting using cghs", {
     expect_equal(m1[2:6], m2[2:6])
 
     ## Same thing with RDHonest
+    ss <- dd$"(sigma2)"
+    ww <- dd$"(weights)"
     s1 <- s0$coefficients
-    s2 <- RDHonest(y~x, cutoff=0, weights=weights, h=5, data=dd, M=1,
-                   sigma2=sigma2, se.method="supplied.var")$coefficients
+    s2 <- RDHonest(y~x, cutoff=0, weights=ww, h=5, data=dd, M=1,
+                   sigma2=ss, se.method="supplied.var")$coefficients
     expect_equal(s1[2:9], s2[2:9])
 
     ## LPP Honest
@@ -66,10 +69,10 @@ test_that("Test weighting using cghs", {
                    data=cghs[cghs$yearat14>=1947, ], M=1,
                    point.inference=TRUE)$coefficients
     t2 <- RDHonest(y~x, cutoff=0, h=5, data=dd[dd$x>=0, ], M=1,
-                   weights=weights, point.inference=TRUE)$coefficients
-    t3 <- RDHonest(y~x, cutoff=0, h=5, data=dd[dd$x>=0, ], M=1, weights=weights,
-                   point.inference=TRUE, sigma2=sigma2,
-                   se.method="supplied.var")$coefficients
+                   weights=ww[dd$x>=0], point.inference=TRUE)$coefficients
+    t3 <- RDHonest(y~x, cutoff=0, h=5, data=dd[dd$x>=0, ], M=1,
+                   weights=ww[dd$x>=0], point.inference=TRUE,
+                   sigma2=ss[dd$x>=0], se.method="supplied.var")$coefficients
     expect_equal(c(t2$estimate, t2$maximum.bias),
                  c(t1$estimate, t1$maximum.bias))
     expect_equal(t1[2:9], t3[2:9])

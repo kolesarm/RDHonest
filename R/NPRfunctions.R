@@ -8,7 +8,8 @@
 ## @param sigma2 Optionally, supply estimates of \eqn{\sigma^{2}_{i}} (for
 ##     \code{"supplied.var"} \code{se.method})
 LPReg <- function(X, Y, h, K, order=1, se.method=NULL, sigma2, J=3,
-                  weights=rep(1L, length(X)), RD=FALSE) {
+                  weights=rep(1L, length(X)), RD=FALSE, rho=NULL,
+                  clusterid=NULL) {
     R <- outer(X, 0:order, "^")
     if (RD)
         R <- cbind((X>=0)*R, R)
@@ -38,15 +39,27 @@ LPReg <- function(X, Y, h, K, order=1, se.method=NULL, sigma2, J=3,
         else
             sigmaNN(X, Y, J, weights)
     }
-
-    hsigma2 <- switch(se.method, nn=signn(X), EHW=sig(Y - R %*% beta),
-                      supplied.var=sigma2)
+    res <- Y - R %*% beta
+    hsigma2 <- switch(se.method, nn=signn(X), EHW=sig(res), supplied.var=sigma2)
     ## To compute effective observations, rescale against uniform kernel
     wgt_unif <- ((weights)*R %*% solve(crossprod(R, weights*R)))[, 1]
     eff.obs <- length(X)*sum(wgt_unif^2)/sum(wgt^2)
-    list(theta=beta[1, ], sigma2=hsigma2,
-         var=colSums(as.matrix(wgt^2 * hsigma2)), w=wgt, eff.obs=eff.obs)
+    ## Variance
+    V <- if (is.null(clusterid)) {
+             colSums(as.matrix(wgt^2 * hsigma2))
+         } else if (se.method == "supplied.var") {
+             colSums(as.matrix(wgt^2 * hsigma2))+
+                 rho*(sum(tapply(wgt, clusterid, sum)^2)-sum(wgt^2))
+         } else {
+             us <- apply(wgt*res, 2, function(x) tapply(x, clusterid, sum))
+             as.vector(crossprod(us))
+         }
+
+    list(theta=beta[1, ], sigma2=hsigma2, res=res,
+         var=V, w=wgt, eff.obs=eff.obs)
 }
+
+
 
 
 ## Nonparametric Regression
@@ -59,14 +72,17 @@ NPRreg.fit <- function(d, h, kern="triangular", order=1, se.method="nn", J=3) {
         kern <- EqKern(kern, boundary=FALSE, order=0)
     ## Keep only positive kernel weights
     W <- if (h<=0) 0*d$X else kern(d$X/h) # kernel weights
-    sigma2 <- matrix(NA, nrow=length(W), ncol=NCOL(d$Y)^2)
     if(!is.null(d$sigma2)) d$sigma2 <- as.matrix(d$sigma2)
     r <- LPReg(d$X[W>0], as.matrix(d$Y)[W>0, ], h, kern, order, se.method,
-               d$sigma2[W>0, ], J, weights=d$w[W>0], RD=(d$class!="IP"))
+               d$sigma2[W>0, ], J, weights=d$w[W>0], RD=(d$class!="IP"),
+               d$rho, d$clusterid[W>0])
+    sigma2 <- matrix(NA, nrow=length(W), ncol=NCOL(d$Y)^2)
     sigma2[W>0, ] <- r$sigma2
+    res <- matrix(NA, nrow=length(W), ncol=NCOL(d$Y))
+    res[W>0] <- r$res # residuals
     W[W>0] <- r$w
 
-    ret <- list(estimate=r$theta[1], se=sqrt(r$var[1]), w=W,
+    ret <- list(estimate=r$theta[1], se=sqrt(r$var[1]), w=W, res=drop(res),
                 sigma2=drop(sigma2), eff.obs=r$eff.obs, fs=NA)
 
     if (d$class=="FRD") {

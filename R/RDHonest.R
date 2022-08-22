@@ -71,6 +71,7 @@
 #' @param T0 Initial estimate of the treatment effect for calculating the
 #'     optimal bandwidth. Only relevant for Fuzzy RD.
 #' @param sigma2 Supply variance. Ignored when kernel is optimal.
+#' @param clusterid Cluster id for cluster-robust standard errors
 #' @return Returns an object of class \code{"NPRResults"}. The function
 #'     \code{print} can be used to obtain and print a summary of the results. An
 #'     object of class \code{"NPRResults"} is a list containing the following
@@ -139,12 +140,12 @@
 RDHonest <- function(formula, data, subset, weights, cutoff=0, M,
                      kern="triangular", na.action, opt.criterion="MSE", h,
                      se.method="nn", alpha=0.05, beta=0.8, J=3, sclass="H",
-                     T0=0, point.inference=FALSE, sigma2) {
+                     T0=0, point.inference=FALSE, sigma2, clusterid) {
 
     ## construct model frame
     cl <- mf <- match.call(expand.dots = FALSE)
-    m <- match(c("formula", "data", "subset", "weights", "na.action", "sigma2"),
-               names(mf), 0L)
+    m <- match(c("formula", "data", "subset", "weights", "na.action", "sigma2",
+                 "clusterid"), names(mf), 0L)
     mf <- mf[c(1L, m)]
     formula <- Formula::as.Formula(formula)
     ## one LHS, at most 2 RHS
@@ -153,8 +154,7 @@ RDHonest <- function(formula, data, subset, weights, cutoff=0, M,
 
     mf[[1L]] <- quote(stats::model.frame)
     mf <- eval(mf, parent.frame())
-    mf$weights  <- mf$"(weights)"
-    mf$sigma2  <- mf$"(sigma2)"
+
     d <- if (point.inference) {
              NPRData(mf, cutoff, "IP")
          } else if (length(formula)[2]==2) {

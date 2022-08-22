@@ -98,6 +98,10 @@ RDTOpt.fit <- function(d, M, opt.criterion, alpha, beta, se.method, J) {
     ## First check if sigma2 is supplied
     if (is.null(d$sigma2))
         d <- NPRPrelimVar.fit(d, se.initial="EHW")
+    if (!is.null(d$clusterid))
+        warning(paste0("Optimal kernel can only be used with independent data.",
+                       "Ignoring clusterid"))
+
     C <-  M/2
     ## Find optimal delta, see Supplement to 1511.06028v2
     if (opt.criterion=="OCI") {

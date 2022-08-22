@@ -22,7 +22,8 @@ RDHonest(
   sclass = "H",
   T0 = 0,
   point.inference = FALSE,
-  sigma2
+  sigma2,
+  clusterid
 )
 }
 \arguments{
@@ -117,6 +118,8 @@ optimal bandwidth. Only relevant for Fuzzy RD.}
 instead of RD.}
 
 \item{sigma2}{Supply variance. Ignored when kernel is optimal.}
+
+\item{clusterid}{Cluster id for cluster-robust standard errors}
 }
 \value{
 Returns an object of class \code{"NPRResults"}. The function
