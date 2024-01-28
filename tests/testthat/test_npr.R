@@ -33,7 +33,7 @@ test_that("Test LPreg", {
     expect_identical(r0e$eff.obs, r1e$eff.obs)
 })
 
-test_that("Test NPRreg", {
+test_that("Test NPReg", {
     ## Replicate Ludwig-Miller
     lumi <- headst[!is.na(headst$mortHS), c("mortHS", "povrate")]
     mort <- NPRData(lumi, cutoff=0, "SRD")
@@ -43,14 +43,14 @@ test_that("Test NPRreg", {
     t2 <- data.frame()
     bws <- c(9, 18, 36)
     for (bw in bws) {
-        rfe <- NPRreg.fit(mort, bw, "uniform", order=1, se.method="EHW")
-        rfn <- NPRreg.fit(mort, bw, "uniform", order=1, se.method="nn")
+        rfe <- NPReg(mort, bw, "uniform", order=1, se.method="EHW")
+        rfn <- NPReg(mort, bw, "uniform", order=1, se.method="nn")
         t1 <- rbind(t1, data.frame(bw=bw, estimate=rfe$estimate,
                                    EHW=rfe$se, nn=rfn$se))
-        rme <- NPRreg.fit(mortm, bw, "uniform", order=1, se.method="EHW")
-        rmn <- NPRreg.fit(mortm, bw, "uniform", order=1, se.method="nn")
-        rpe <- NPRreg.fit(mortp, bw, "uniform", order=1, se.method="EHW")
-        rpn <- NPRreg.fit(mortp, bw, "uniform", order=1, se.method="nn")
+        rme <- NPReg(mortm, bw, "uniform", order=1, se.method="EHW")
+        rmn <- NPReg(mortm, bw, "uniform", order=1, se.method="nn")
+        rpe <- NPReg(mortp, bw, "uniform", order=1, se.method="EHW")
+        rpn <- NPReg(mortp, bw, "uniform", order=1, se.method="nn")
         t2 <- rbind(t2, data.frame(bw=bw, estimate=rpe$estimate-rme$estimate,
                                    EHW=sqrt(rpe$se^2+rme$se^2),
                                    nn=sqrt(rpn$se^2+rmn$se^2)))
@@ -66,13 +66,13 @@ test_that("Test NPRreg", {
     dr <- NPRData(cbind(logcn=log(rcp[, 6]), rcp[, 2, drop=FALSE]),
                   cutoff=0, "SRD")
     d <- NPRData(cbind(logcn=log(rcp[, 6]), rcp[, c(3, 2)]), cutoff=0, "FRD")
-    rf <- NPRreg.fit(df, 10, "uniform", order=1, se.method="EHW")
-    rr <- NPRreg.fit(dr, 10, "uniform", order=1, se.method="EHW")
+    rf <- NPReg(df, 10, "uniform", order=1, se.method="EHW")
+    rr <- NPReg(dr, 10, "uniform", order=1, se.method="EHW")
     expect_equal(unname(c(rf$estimate, round(rf$se, 4))),
                  c(0.43148435, 0.0181))
     expect_equal(unname(c(rr$estimate, round(rr$se, 4))),
                  c(-0.0355060, 0.0211))
-    r1 <- NPRreg.fit(d, 10, "uniform", order=1, se.method="EHW")
+    r1 <- NPReg(d, 10, "uniform", order=1, se.method="EHW")
     expect_equal(c(r1$estimate, r1$se),
                  c(-0.08228802, 0.0483039))
     ## Numbers from
@@ -83,8 +83,7 @@ test_that("Test NPRreg", {
     ## summary(r4, vcov = sandwich::sandwich,
     ##         diagnostics=TRUE)$coefficients[2, 1:2]
     expect_lt(abs(r1$estimate- rr$estimate/rf$estimate), 1e-10)
-    r2 <- NPRreg.fit(d, 5, function(x) abs(x)<=1, order=0,
-                     se.method="EHW")
+    r2 <- NPReg(d, 5, function(x) abs(x)<=1, order=0, se.method="EHW")
     ## r3 <- AER::ivreg(logcn~retired | Z, subset=(abs(elig_year)<=5), data=dt)
     ## summary(r3, vcov = sandwich::sandwich,
     ## diagnostics = TRUE)$coefficients[2, 1:2]

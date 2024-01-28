@@ -16,7 +16,7 @@ EqKern <- function(kernel = "uniform", boundary = TRUE, order = 0) {
     ## support
     su <- function(u) (u <= 1) * (u >= -1 + boundary)
     ## Boundary and order type
-    if(is.function(kernel)) {
+    if (is.function(kernel)) {
         EqKernN(kernel, boundary = boundary, order = order)
     } else if (order > 2) {
         K <- EqKern(kernel = kernel, boundary=boundary, order = 0)
@@ -33,7 +33,7 @@ EqKern <- function(kernel = "uniform", boundary = TRUE, order = 0) {
                "1FALSEtriangular" = function(u) (1 - abs(u)) * su(u),
                "1FALSEepanechnikov" = function(u) 3/4 * (1 - u^2) * su(u),
                "1TRUEuniform" = function(u) (4 - 6*u) * su(u),
-               "1TRUEtriangular" = function(u) 6*(1 - 2*u) * (1 - u) * su(u),
+               "1TRUEtriangular" = function(u) 6 * (1 - 2*u) * (1 - u) * su(u),
                "1TRUEepanechnikov" =
                    function(u) 6/19 * (16-30*u) * (1-u^2) * su(u),
                "2FALSEuniform" = function(u) (9 - 15 * u^2) / 8 * su(u),

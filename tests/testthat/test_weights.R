@@ -5,7 +5,7 @@ test_that("Test weighting using cghs", {
     d <- s0$data
 
     ## Make 10 groups
-    d$mod <- floor(10*(d$Y - floor(d$Y)))
+    d$mod <- floor(10 * (d$Y - floor(d$Y)))
     ## Make cells by group and year
     d$cell <- d$mod/10+d$X
     dd <- data.frame()
@@ -22,8 +22,8 @@ test_that("Test weighting using cghs", {
     d2 <- NPRData(data.frame(y=log(cghs$earnings), x=cghs$yearat14),
                   cutoff= 1947, "SRD")
     ## Initial estimates
-    r2 <- NPRreg.fit(d2, 5, "triangular")
-    r1 <- NPRreg.fit(d1, 5, "triangular")
+    r2 <- NPReg(d2, 5, "triangular")
+    r1 <- NPReg(d1, 5, "triangular")
 
     ## Checks weights match
     wp1 <- vapply(unique(d1$X[d1$p]), function(j) sum(r1$w[d1$X==j]),
@@ -47,12 +47,12 @@ test_that("Test weighting using cghs", {
     d1$sigma2[d1$m] <- mean(r2$sigma2[r2$w!=0 & d2$m])/d1$w[d1$m]
 
     v1 <- sqrt(sum(wp1^2/np)*mean(r2$sigma2[r2$w!=0 & d2$p])+
-               sum(wm1^2/nm)*mean(r2$sigma2[r2$w!=0 & d2$m]))
+                   sum(wm1^2/nm)*mean(r2$sigma2[r2$w!=0 & d2$m]))
 
-    m2 <- NPRHonest.fit(d2, M=1, kern="triangular", h=5,
-                        se.method="supplied.var")$coefficients
-    m1 <- NPRHonest.fit(d1, M=1, kern="triangular", h=5,
-                        se.method="supplied.var")$coefficients
+    m2 <- NPRHonest(d2, M=1, kern="triangular", h=5,
+                    se.method="supplied.var")$coefficients
+    m1 <- NPRHonest(d1, M=1, kern="triangular", h=5,
+                    se.method="supplied.var")$coefficients
     expect_equal(v1, m1$std.error)
     expect_equal(m1[2:6], m2[2:6])
 

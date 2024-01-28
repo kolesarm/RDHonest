@@ -98,10 +98,9 @@ fips <- rbind(fips,
                          statefp=c(2, 30, 51, 12, 2, 2),
                          countyfp=c(280, 113, 780, 25, 231, 201),
                          county=c("Wrangell-Petersburg",
-                             "Yellowstone National Park",
-                             "South Boston", "Date County",
-                             "Skagway-Yakutat-Angoon",
-                             "Prince of Wales-Outer Ketchikan"),
+                                  "Yellowstone National Park", "South Boston",
+                                  "Date County", "Skagway-Yakutat-Angoon",
+                                  "Prince of Wales-Outer Ketchikan"),
                          cfips=c(2280, 30113, 51780, 12025, 2231, 2201)))
 fips <- fips[fips$statefp<57, ]
 

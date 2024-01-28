@@ -1,13 +1,13 @@
 ## Formula for local polynomial regression
 RDlpformula <- function(order) {
-    f1 <- if (order>0) {
-              f <- vapply(seq_len(order),
-                           function(p) paste0("I(x^", p, ")"),
-                           character(1))
-              paste0("(", paste(f, collapse="+"), ") * I(x>=0)")
-          } else  {
-              paste0("I(x>=0)")
-          }
+    if (order>0) {
+        f <- vapply(seq_len(order),
+                    function(p) paste0("I(x^", p, ")"),
+                    character(1))
+        f1 <- paste0("(", paste(f, collapse="+"), ") * I(x>=0)")
+    } else  {
+        f1 <- paste0("I(x>=0)")
+    }
     paste0("y ~ ", f1)
 }
 
@@ -73,7 +73,7 @@ RDHonestBME <- function(formula, data, subset, cutoff=0, na.action,
     mf[[1L]] <- quote(stats::model.frame)
     mf <- eval(mf, parent.frame())
 
-    if(missing(regformula))
+    if (missing(regformula))
         regformula <- RDlpformula(order)
     regformula <- stats::as.formula(regformula)
 
@@ -86,7 +86,7 @@ RDHonestBME <- function(formula, data, subset, cutoff=0, na.action,
     ## Count effective support points
     support <- sort(unique(x))
     G <- length(support)
-    G.m <- length(support[support<0])
+    Gm <- length(support[support<0])
 
     ## Estimate actual and dummied out model, and calculate delta
     m1 <- stats::lm(regformula)
@@ -97,20 +97,19 @@ RDHonestBME <- function(formula, data, subset, cutoff=0, na.action,
     ## Compute Q^{-1} manually so that sandwich package is not needed
     Q1inv <- chol2inv(qr(m1)$qr[1L:m1$rank, 1L:m1$rank, drop = FALSE])
     Q2inv <- chol2inv(qr(m2)$qr[1L:m2$rank, 1L:m2$rank, drop = FALSE])
-    v.m1m2 <- length(y) * stats::var(cbind(
-    (stats::model.matrix(m1)*stats::resid(m1)) %*% Q1inv,
-    (stats::model.matrix(m2)*stats::resid(m2)) %*% Q2inv))
+    v.m1m2 <- length(y) *
+        stats::var(cbind((stats::model.matrix(m1)*stats::resid(m1)) %*% Q1inv,
+                         (stats::model.matrix(m2)*stats::resid(m2)) %*% Q2inv))
 
     df <- data.frame(x=support, y=rep(0, length(support)))
     e2 <- rep(0, G+length(stats::coef(m1)))
     e2[order + 2] <- 1                  # inference on (p+2)th element
     aa <- rbind(cbind(-stats::model.matrix(regformula, data=df), diag(nrow=G)),
                 e2)
-    vdt <- aa %*% v.m1m2 %*% t(aa)      # V(W) in paper, except order of m1 and
-                                        # m2 swapped
+    vdt <- aa %*% v.m1m2 %*% t(aa) # V(W) in paper, but swap order of m1 and m2
 
     ## All possible combinations of g_-, g_+, s_-, s_+
-    gr <- as.matrix(expand.grid(1:G.m, (G.m+1):G, c(-1, 1), c(-1, 1)))
+    gr <- as.matrix(expand.grid(1:Gm, (Gm+1):G, c(-1, 1), c(-1, 1)))
     selvec <- matrix(0, nrow=nrow(gr), ncol=ncol(vdt))
     selvec[cbind(seq_len(nrow(selvec)), gr[, 1])] <- gr[, 3]
     selvec[cbind(seq_len(nrow(selvec)), gr[, 2])] <- gr[, 4]
@@ -120,21 +119,21 @@ RDHonestBME <- function(formula, data, subset, cutoff=0, na.action,
     dev <- drop(selvec[, -ncol(selvec)] %*% delta)
 
     ## Upper and lower CIs
-    CI.l <- stats::coef(m1)[order+2]+dev-stats::qnorm(1-alpha/2)*se
-    CI.u <- stats::coef(m1)[order+2]+dev+stats::qnorm(1-alpha/2)*se
+    ci_l <- stats::coef(m1)[order+2]+dev-stats::qnorm(1-alpha/2)*se
+    ci_u <- stats::coef(m1)[order+2]+dev+stats::qnorm(1-alpha/2)*se
     ## Onesided
-    OCI.l <- stats::coef(m1)[order+2]+dev-stats::qnorm(1-alpha)*se
-    OCI.u <- stats::coef(m1)[order+2]+dev+stats::qnorm(1-alpha)*se
+    oci_l <- stats::coef(m1)[order+2]+dev-stats::qnorm(1-alpha)*se #
+    oci_u <- stats::coef(m1)[order+2]+dev+stats::qnorm(1-alpha)*se
 
-    l <- which.min(CI.l)
-    u <- which.max(CI.u)
+    l <- which.min(ci_l)
+    u <- which.max(ci_u)
     coef <- data.frame(term="Sharp RD parameter",
                        estimate=unname(m1$coefficients[order +2]),
                        std.error=sqrt(vdt["e2", "e2"]),
                        maximum.bias=max(abs(c(dev[u], dev[l]))),
-                       conf.low=CI.l[l], conf.high=CI.u[u],
-                       conf.low.onesided=min(OCI.l),
-                       conf.high.onesided=max(OCI.u), bandwidth=h,
+                       conf.low=ci_l[l], conf.high=ci_u[u],
+                       conf.low.onesided=min(oci_l),
+                       conf.high.onesided=max(oci_u), bandwidth=h,
                        eff.obs=length(x), cv=NA, alpha=alpha, method="BME",
                        kernel="uniform")
     ret <- list(coefficients=coef, call=cl, na.action=attr(mf, "na.action"))

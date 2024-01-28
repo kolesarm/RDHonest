@@ -16,11 +16,11 @@
 #' @return An object of class \code{"ggplot"}, a scatterplot the binned raw
 #'     observations.
 #' @examples
-#' plot_RDscatter(log(earnings)~yearat14, data=cghs, cutoff=1947,
+#' RDScatter(log(earnings)~yearat14, data=cghs, cutoff=1947,
 #'                avg=Inf, propdotsize=TRUE)
 #' @export
-plot_RDscatter <- function(formula, data, subset, cutoff=0, na.action, avg=10,
-                           xlab=NULL, ylab=NULL, vert=TRUE, propdotsize=FALSE) {
+RDScatter <- function(formula, data, subset, cutoff=0, na.action, avg=10,
+                      xlab=NULL, ylab=NULL, vert=TRUE, propdotsize=FALSE) {
     if (!requireNamespace("ggplot2", quietly = TRUE))
         stop("This function requires the ggplot2 package", call. = FALSE)
     ## construct model frame
@@ -42,11 +42,10 @@ plot_RDscatter <- function(formula, data, subset, cutoff=0, na.action, avg=10,
         ## don't recycle
         maxp <- (np %/% avg) * avg
         maxm <- (nm %/% avg) * avg
-        bd <- data.frame(
-            x=c(colMeans(matrix(d$X[d$m][1:maxm], nrow=avg)),
-                colMeans(matrix(d$X[d$p][1:maxp], nrow=avg))),
-            y=c(colMeans(matrix(d$Y[d$m][1:maxm], nrow=avg)),
-                colMeans(matrix(d$Y[d$p][1:maxp], nrow=avg))))
+        bd <- data.frame(x=c(colMeans(matrix(d$X[d$m][1:maxm], nrow=avg)),
+                             colMeans(matrix(d$X[d$p][1:maxp], nrow=avg))),
+                         y=c(colMeans(matrix(d$Y[d$m][1:maxm], nrow=avg)),
+                             colMeans(matrix(d$Y[d$p][1:maxp], nrow=avg))))
         ## if there is a remainder, add it
         if (maxm+1<=nm)
             bd <- rbind(bd, data.frame(x=mean(d$X[d$m][(maxm+1):nm]),
@@ -65,10 +64,9 @@ plot_RDscatter <- function(formula, data, subset, cutoff=0, na.action, avg=10,
     }
 
     p <- p + ggplot2::theme(legend.position = "none")
-    if(!is.null(xlab)) p <- p + ggplot2::xlab(xlab)
-    if(!is.null(ylab)) p <- p + ggplot2::ylab(ylab)
-    if(vert) p <- p + ggplot2::geom_vline(xintercept=d$orig.cutoff,
-                                          linetype="dotted")
-
+    if (!is.null(xlab)) p <- p + ggplot2::xlab(xlab)
+    if (!is.null(ylab)) p <- p + ggplot2::ylab(ylab)
+    if (vert) p <- p + ggplot2::geom_vline(xintercept=d$orig.cutoff,
+                                           linetype="dotted")
     p
 }

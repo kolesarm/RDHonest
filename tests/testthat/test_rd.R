@@ -22,9 +22,9 @@ test_that("Test class constructor sorting", {
                  -RDHonest(voteshare ~ I(-margin), data=lee08,
                            M=0, h=2)$coefficients$estimate)
     expect_equal(RDHonest(cn~retired | elig_year, data=rcp, cutoff=0,
-                           M=c(1, 0.1), h=3)$coefficients$estimate,
+                          M=c(1, 0.1), h=3)$coefficients$estimate,
                  RDHonest(cn~retired | I(2*elig_year), data=rcp, cutoff=0,
-                           M=c(1, 0.1), h=6)$coefficients$estimate)
+                          M=c(1, 0.1), h=6)$coefficients$estimate)
 })
 
 test_that("IK bandwidth calculations", {
@@ -33,7 +33,7 @@ test_that("IK bandwidth calculations", {
 
     dig <- getOption("digits")
     options(digits=8)
-    r1 <- capture.output(IKBW.fit(d, verbose=TRUE))
+    r1 <- capture.output(IKBW(d, verbose=TRUE))
     expect_equal(r1[c(2, 4, 5, 6, 8)],
                  c(" h1:  14.44507 ", " f(0):  0.0089622411 ",
                    " sigma^2_{+}(0):  12.024424 ^2",
@@ -41,35 +41,35 @@ test_that("IK bandwidth calculations", {
                    " h_{2, +}: 60.513312 h_{2, -}: 60.993358 "))
     options(digits=dig)
 
-    expect_equal(IKBW.fit(d), 29.3872649956)
+    expect_equal(IKBW(d), 29.3872649956)
 
-    r <- NPRreg.fit(d, IKBW.fit(d, kern="uniform"), "uniform")
+    r <- NPReg(d, IKBW(d, kern="uniform"), "uniform")
     expect_equal(r$estimate, 8.0770003749)
-    d <- NPRPrelimVar.fit(NPRData(lee08, cutoff=0, "SRD"), se.initial="EHW")
+    d <- PrelimVar(NPRData(lee08, cutoff=0, "SRD"), se.initial="EHW")
     expect_equal(sqrt(mean(d$sigma2[d$p])), 12.58183131)
     expect_equal(sqrt(mean(d$sigma2[d$m])), 10.79067278)
 })
 
 test_that("Plots", {
     if (requireNamespace("ggplot2", quietly = TRUE)) {
-        expect_silent(invisible(plot_RDscatter(
-            earnings~yearat14, data=cghs,
-                   cutoff=1947, avg=Inf, propdotsize=TRUE)))
-        expect_silent(invisible(plot_RDscatter(
-            voteshare~margin, data=lee08, subset=abs(lee08$margin)<=50,
-            avg=50, propdotsize=FALSE,
-            xlab="margin", ylab="effect")))
-        }
+        expect_silent(invisible(RDScatter(earnings~yearat14, data=cghs,
+                                          cutoff=1947, avg=Inf,
+                                          propdotsize=TRUE)))
+        expect_silent(invisible(RDScatter(voteshare~margin, data=lee08,
+                                          subset=abs(lee08$margin)<=50, avg=50,
+                                          propdotsize=FALSE, xlab="margin",
+                                          ylab="effect")))
+    }
 })
 
 
 test_that("Honest inference in Lee and LM data",  {
 
     ## Replicate 1606.01200v2, except we no longer provide SilvermanNN
-    r1 <- RDHonest(mortHS ~ povrate, data=headst,
-                  kern="uniform", h=18, M=0.1, se.method="EHW")
-    r2 <- RDHonest(mortHS ~ povrate, data=headst,
-                  kern="uniform", h=18, M=0.1, se.method="nn")
+    r1 <- RDHonest(mortHS ~ povrate, data=headst, kern="uniform", h=18, M=0.1,
+                   se.method="EHW")
+    r2 <- RDHonest(mortHS ~ povrate, data=headst, kern="uniform", h=18, M=0.1,
+                   se.method="nn")
     ## Should match regression
     rl <- lm(mortHS ~ povrate*I(povrate>=0), data=headst,
              subset=abs(povrate)<=18)
@@ -94,15 +94,15 @@ test_that("Honest inference in Lee and LM data",  {
     expect_equal(r1o[16], "24 observations with missing values dropped")
 
     d <- NPRData(headst[!is.na(headst$mortHS), c("mortHS", "povrate")],
-                cutoff=0, "SRD")
-    d <- NPRPrelimVar.fit(d, se.initial="Silverman")
+                 cutoff=0, "SRD")
+    d <- PrelimVar(d, se.initial="Silverman")
     es <- function(kern, se.method) {
-        NPRHonest.fit(d, M=0.0076085544, kern=kern, sclass="H",
-                      se.method=se.method, J=3, alpha=0.05, opt.criterion="MSE")
+        NPRHonest(d, M=0.0076085544, kern=kern, sclass="H", se.method=se.method,
+                  J=3, alpha=0.05, opt.criterion="MSE")
     }
     ff <- function(h, kern, se.method) {
-        NPRHonest.fit(d, M=0.0076085544, kern=kern, sclass="H",
-                      se.method=se.method, J=3, alpha=0.05, h=h)
+        NPRHonest(d, M=0.0076085544, kern=kern, sclass="H", se.method=se.method,
+                  J=3, alpha=0.05, h=h)
     }
 
     ## In this case the objective is not unimodal, but the modification still
@@ -135,9 +135,8 @@ test_that("Honest inference in Lee and LM data",  {
                   M=0.2, opt.criterion="MSE", se.method="supplied.var")
     ## expect_equal(unname(r$lower), 2.2838100315)
     expect_equal(unname(r$coefficients$conf.low.onesided), 2.983141711)
-    r <- RDHonest(voteshare ~ margin, data=lee08, kern="optimal",
-             M=0.04, opt.criterion="OCI", se.method="supplied.var",
-             beta=0.8)
+    r <- RDHonest(voteshare ~ margin, data=lee08, kern="optimal", M=0.04,
+                  opt.criterion="OCI", se.method="supplied.var", beta=0.8)
     expect_equal(r$coefficients$conf.low.onesided, 2.761343298)
     r <- RDHonest(voteshare ~ margin, data=lee08, kern="optimal", M=0.04,
                   opt.criterion="FLCI", se.method="supplied.var")
@@ -184,14 +183,13 @@ test_that("Honest inference in Lee and LM data",  {
     ## expect_equal(r3$h, 5.0590753991)
 
     ## Decrease M, these results are not true minima...
-    d <- NPRPrelimVar.fit(NPRData(lee08, cutoff=0, "SRD"),
-                          se.initial="Silverman")
-    r1 <- NPRHonest.fit(d, M=0.01, kern="uniform", opt.criterion="MSE",
-                        beta=0.8, sclass="T")$coefficients
-    r2 <- NPRHonest.fit(d, M=0.01, kern="uniform", opt.criterion="MSE",
-                          beta=0.8, sclass="H")$coefficients
-    r3 <- NPROptBW.fit(d, kern = "uniform", M = 0.1,
-                       opt.criterion = "MSE", sclass = "T")
+    d <- PrelimVar(NPRData(lee08, cutoff=0, "SRD"), se.initial="Silverman")
+    r1 <- NPRHonest(d, M=0.01, kern="uniform", opt.criterion="MSE", beta=0.8,
+                    sclass="T")$coefficients
+    r2 <- NPRHonest(d, M=0.01, kern="uniform", opt.criterion="MSE", beta=0.8,
+                    sclass="H")$coefficients
+    r3 <- OptBW(d, kern = "uniform", M = 0.1, opt.criterion = "MSE",
+                sclass = "T")
     expect_equal(unname(r1$bandwidth), 12.85186708)
     expect_equal(unname(r2$conf.low.onesided), 6.056860266)
     expect_equal(unname(r3), 5.086645484)
@@ -215,21 +213,19 @@ test_that("Honest inference in Lee and LM data",  {
 })
 
 test_that("BME CIs match paper", {
-    r1 <- RDHonestBME(log(earnings)~yearat14, data=cghs,
-                     cutoff=1947, h=6, order=1)
-    expect_equal(as.numeric(r1$coefficients[
-                                   c("estimate", "std.error", "conf.low",
-                                     "conf.high", "eff.obs")]),
+    r1 <- RDHonestBME(log(earnings)~yearat14, data=cghs, cutoff=1947, h=6,
+                      order=1)$coefficients
+    expect_equal(as.numeric(r1[c("estimate", "std.error", "conf.low",
+                                 "conf.high", "eff.obs")]),
                  c(0.0212923111, 0.03272404599, -0.13218978736, 0.17499392431,
                    20883))
 
-    r2 <- RDHonestBME(log(earnings)~yearat14, cghs, cutoff=1947,
-                      regformula="y~I(x>=0)+x+I(x^2)+I(x^3)+I(x^4)")
-    ## expect_equal(r1$CI, c(-0.23749230603, 0.34429708773))
+    r2 <- RDHonestBME(log(earnings)~yearat14, cghs,
+                      regformula="y~I(x>=0)+x+I(x^2)+I(x^3)+I(x^4)",
+                      cutoff=1947)$coefficients
     ## Slightly different numbers with bug fixed
-    expect_equal(as.numeric(r2$coefficients[
-                                   c("estimate", "std.error", "conf.low",
-                                     "conf.high", "eff.obs")]),
+    expect_equal(as.numeric(r2[c("estimate", "std.error", "conf.low",
+                                 "conf.high", "eff.obs")]),
                  c(0.05481510635, 0.02975117527, -0.2473386327, 0.3548003576,
                    73954))
     r3 <- RDHonestBME(log(cghs$earnings)~yearat14, data=cghs, h=3,
@@ -237,9 +233,9 @@ test_that("BME CIs match paper", {
     r4 <- RDHonestBME(log(cghs$earnings)~yearat14, data=cghs, h=3, order=0,
                       cutoff=1947)
     expect_equal(r3$coefficients, r4$coefficients)
-    r5 <- RDHonestBME(duration~age, data=rebp, subset=(period==1 & female==0),
+    r5 <- RDHonestBME(duration~age, data=rebp, subset = (period==1 & female==0),
                       order=1, h=Inf, cutoff=50)
-    r6 <- RDHonestBME(duration~age, data=rebp, subset=(period==1 & female==0),
+    r6 <- RDHonestBME(duration~age, data=rebp, subset = (period==1 & female==0),
                       order=3, h=1, cutoff=50, alpha=0.1)
     r5 <- capture.output(print(r5, digits=5))
     est <- paste0(" Sharp RD parameter   14.798      ",
@@ -271,7 +267,7 @@ test_that("Optimizing bw", {
     x <- sample(xsupp, 100, prob=xprobs, replace=TRUE)
     d <- data.frame(y=rnorm(100, sd=1), x=x)
     r1 <- RDHonest(y~x, data=d, cutoff=0, M=40, kern="triangular",
-                  opt.criterion="FLCI")
+                   opt.criterion="FLCI")
     r2 <- RDHonest(y~x, data=d, cutoff=0, M=40, kern="triangular", h=0.51)
     expect_equal(r1$coefficients$conf.low, r2$coefficients$conf.low)
 })

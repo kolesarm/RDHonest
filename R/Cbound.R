@@ -33,8 +33,9 @@
 #' @references{
 #'
 #' \cite{Michal Kolesár and Christoph Rothe. Inference in regression
-#' discontinuity designs with a discrete running variable. American Economic
-#' Review, 108(8):2277—-2304, August 2018. \doi{10.1257/aer.20160945}}
+#'       discontinuity designs with a discrete running variable.
+#'       American Economic Review, 108(8):2277—-2304,
+#'       August 2018. \doi{10.1257/aer.20160945}}
 #'
 #' }
 #' @examples
@@ -43,7 +44,7 @@
 #' @export
 RDSmoothnessBound <- function(object, s, separate=FALSE, multiple=TRUE,
                               alpha=0.05, sclass="H") {
-    d <- NPRPrelimVar.fit(object$data, se.initial="EHW")
+    d <- PrelimVar(object$data, se.initial="EHW")
 
     ## Curvature estimate based on jth set of three points closest to zero
     Dk <- function(Y, X, xu, s2, j) {
@@ -52,16 +53,16 @@ RDSmoothnessBound <- function(object, s, separate=FALSE, multiple=TRUE,
         I3 <- X >= xu[3*j*s-  s+1]  & X <= xu[3*j*s]
 
         lam <- (mean(X[I3])-mean(X[I2])) / (mean(X[I3])-mean(X[I1]))
-        den <- if  (sclass=="T") {
-                   (1-lam)*mean(X[I3]^2) + lam*mean(X[I1]^2) + mean(X[I2]^2)
-               } else {
-                   (1-lam)*mean(X[I3]^2) + lam*mean(X[I1]^2) - mean(X[I2]^2)
-               }
+        if  (sclass=="T") {
+            den <- (1-lam)*mean(X[I3]^2) + lam*mean(X[I1]^2) + mean(X[I2]^2)
+        } else {
+            den <- (1-lam)*mean(X[I3]^2) + lam*mean(X[I1]^2) - mean(X[I2]^2)
+        }
         ## Delta is lower bound on M by lemma S2 in Kolesar and Rothe
-        Del <- 2*(lam*mean(Y[I1])+(1-lam)*mean(Y[I3])-mean(Y[I2])) / den
+        Del <- 2 * (lam*mean(Y[I1]) + (1-lam) * mean(Y[I3])-mean(Y[I2])) / den
         ## Variance of Delta
-        VD <- 4*(lam^2*mean(s2[I1])/sum(I1) +
-                 (1-lam)^2*mean(s2[I3])/sum(I3) + mean(s2[I2])/sum(I2)) / den^2
+        VD <- 4 * (lam^2*mean(s2[I1])/sum(I1) + (1-lam)^2*mean(s2[I3]) /
+                       sum(I3) + mean(s2[I2])/sum(I2)) / den^2
         c(Del, sqrt(VD), mean(Y[I1]), mean(Y[I2]), mean(Y[I3]), range(X[I1]),
           range(X[I2]), range(X[I3]))
     }
@@ -72,8 +73,8 @@ RDSmoothnessBound <- function(object, s, separate=FALSE, multiple=TRUE,
     Dpj <- function(j) Dk(d$Y[d$p], d$X[d$p], xp, d$sigma2[d$p], j)
     Dmj <- function(j) Dk(d$Y[d$m], abs(d$X[d$m]), xm, d$sigma2[d$m], j)
 
-    Sp <- floor(length(xp)/(3*s))
-    Sm <- floor(length(xm)/(3*s))
+    Sp <- floor(length(xp) / (3*s))
+    Sm <- floor(length(xm) / (3*s))
     if (min(Sp, Sm) == 0)
         stop("Value of s is too big")
 
@@ -111,8 +112,8 @@ RDSmoothnessBound <- function(object, s, separate=FALSE, multiple=TRUE,
         }
         list(estimate=hatM, conf.low=lower,
              diagnostics=c(Delta=maxt[1], sdDelta=maxt[2],
-             y1=maxt[3], y2=maxt[4], y3=maxt[5],
-             I1=maxt[6:7], I2=maxt[8:9], I3=maxt[10:11]))
+                           y1=maxt[3], y2=maxt[4], y3=maxt[5],
+                           I1=maxt[6:7], I2=maxt[8:9], I3=maxt[10:11]))
     }
 
     if (separate) {

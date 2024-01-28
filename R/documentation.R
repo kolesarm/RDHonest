@@ -1,3 +1,4 @@
+# nolint start
 #' Head Start data from Ludwig and Miller (2007)
 #'
 #' Subset of Ludwig-Miller (2007) data. Counties with missing poverty rate, or
@@ -45,7 +46,7 @@
 #'
 #' }
 "headst"
-
+# nolint end
 
 #' Austrian unemployment duration data from Lalive (2008)
 #'

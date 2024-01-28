@@ -1,1 +1,7 @@
-linters: linters_with_defaults(line_length_linter(80), commented_code_linter=NULL, infix_spaces_linter=NULL, object_name_linter = NULL, spaces_left_parentheses_linter=NULL)
+linters: linters_with_defaults(
+    line_length_linter(80),
+    infix_spaces_linter=NULL,
+    commented_code_linter=NULL,
+    object_name_linter(c("CamelCase", "camelCase", "dotted.case", "snake_case")),
+    indentation_linter(indent=4L)
+  )

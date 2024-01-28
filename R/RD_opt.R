@@ -39,7 +39,7 @@ RDgbC <- function(d, b, C) {
     dp <- dstar(d$X[d$p], bp, C, d$sigma2[d$p])
     dm <- dstar(d$X[d$m], bm, C, d$sigma2[d$m])
 
-    function(x) SY(x, bp, dp, C)*(x>=0)-SY(x, bm, dm, C)*(x<0)
+    function(x) SY(x, bp, dp, C) * (x>=0)-SY(x, bm, dm, C) * (x<0)
 }
 
 
@@ -78,7 +78,7 @@ RDTEstimator <- function(d, f, alpha, se.method, J) {
     upper <- Lhat + maxbias + stats::qnorm(1-alpha)*sd
     hl <- CVb(maxbias/sd, alpha) * sd # Half-length
 
-    r.u <- NPRreg.fit(d, max(abs(d$X[W!=0])), kern="uniform")
+    r.u <- NPReg(d, max(abs(d$X[W!=0])), kern="uniform")
     eff.obs <- r.u$eff.obs*sum(r.u$w^2)/sum(W^2)
     d$est_w <- W
 
@@ -94,10 +94,10 @@ RDTEstimator <- function(d, f, alpha, se.method, J) {
 }
 
 ## Optimal inference in RD under Taylor class
-RDTOpt.fit <- function(d, M, opt.criterion, alpha, beta, se.method, J) {
+RDTOpt <- function(d, M, opt.criterion, alpha, beta, se.method, J) {
     ## First check if sigma2 is supplied
     if (is.null(d$sigma2))
-        d <- NPRPrelimVar.fit(d, se.initial="EHW")
+        d <- PrelimVar(d, se.initial="EHW")
     if (!is.null(d$clusterid))
         warning(paste0("Optimal kernel can only be used with independent data.",
                        "Ignoring clusterid"))
@@ -124,7 +124,7 @@ RDTOpt.fit <- function(d, M, opt.criterion, alpha, beta, se.method, J) {
             CVb(maxbias/hse, alpha) * hse # Half-length
         }
         ## eq is convex, start around MSE optimal b
-        bs <- RDTOpt.fit(d, M, "MSE", alpha, beta, se.method, J)$omega/2
+        bs <- RDTOpt(d, M, "MSE", alpha, beta, se.method, J)$omega/2
         lff <- RDgbC(d, stats::optimize(eq, c(bs/2, 3*bs/2))$minimum, C)
     }
 
@@ -166,7 +166,7 @@ RDTEfficiencyBound <- function(object, opt.criterion="FLCI", beta=0.5) {
     d <- object$data
     alpha <- object$coefficients$alpha
     C <- object$coefficients$M/2
-    d <- NPRPrelimVar.fit(d, se.initial="EHW")
+    d <- PrelimVar(d, se.initial="EHW")
 
     if (opt.criterion=="OCI") {
         delta <- stats::qnorm(1-alpha)+stats::qnorm(beta)
@@ -174,7 +174,7 @@ RDTEfficiencyBound <- function(object, opt.criterion="FLCI", beta=0.5) {
                            se.method="supplied.var")
         r2 <- RDTEstimator(d, RDLFFunction(d, C, 2*delta), alpha,
                            se.method="supplied.var")
-        return(r2$omega/(r1$delta*r1$coefficients$std.error+r1$omega))
+        return(r2$omega / (r1$delta*r1$coefficients$std.error+r1$omega))
     } else {
         ## From proof of Pratt result, it follows that the expected length is
         ## int pnorm(z_{1-alpha}-delta_t) dt, where delta_t is value of inverse
@@ -187,9 +187,9 @@ RDTEfficiencyBound <- function(object, opt.criterion="FLCI", beta=0.5) {
         ## By symmetry, half-length is given by value of integral over R_+. The
         ## integrand equals 1-alpha at zero, need upper cutoff
         upper <- 10
-        while(integrand(upper)>1e-10) upper <- 2*upper
-        den <- RDTOpt.fit(d, 2*C, opt.criterion="FLCI", alpha, beta,
-                          se.method="supplied.var")$coefficients
+        while (integrand(upper)>1e-10) upper <- 2*upper
+        den <- RDTOpt(d, 2*C, opt.criterion="FLCI", alpha, beta,
+                      se.method="supplied.var")$coefficients
         den <- (den$conf.high-den$conf.low)/2
         return(stats::integrate(integrand, 1e-6, upper)$value / den)
     }

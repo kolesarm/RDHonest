@@ -25,8 +25,8 @@ LPReg <- function(X, Y, h, K, order=1, se.method=NULL, sigma2, J=3,
 
     ## Squared residuals, allowing for multivariate Y
     sig <- function(r) {
-        r[, rep(seq_len(ncol(r)), each=ncol(r))] *
-        r[, rep(seq_len(ncol(r)), ncol(r))]
+        r[, rep(seq_len(ncol(r)), each=ncol(r))] * r[, rep(seq_len(ncol(r)),
+                                                           ncol(r))]
     }
     ## For RD, compute variance separately on either side of cutoff
     signn <- function(X) {
@@ -45,15 +45,15 @@ LPReg <- function(X, Y, h, K, order=1, se.method=NULL, sigma2, J=3,
     wgt_unif <- ((weights)*R %*% solve(crossprod(R, weights*R)))[, 1]
     eff.obs <- length(X)*sum(wgt_unif^2)/sum(wgt^2)
     ## Variance
-    V <- if (is.null(clusterid)) {
-             colSums(as.matrix(wgt^2 * hsigma2))
-         } else if (se.method == "supplied.var") {
-             colSums(as.matrix(wgt^2 * hsigma2))+
-                 rho*(sum(tapply(wgt, clusterid, sum)^2)-sum(wgt^2))
-         } else {
-             us <- apply(wgt*res, 2, function(x) tapply(x, clusterid, sum))
-             as.vector(crossprod(us))
-         }
+    if (is.null(clusterid)) {
+        V <- colSums(as.matrix(wgt^2 * hsigma2))
+    } else if (se.method == "supplied.var") {
+        V <- colSums(as.matrix(wgt^2 * hsigma2))+
+            rho * (sum(tapply(wgt, clusterid, sum)^2)-sum(wgt^2))
+    } else {
+        us <- apply(wgt*res, 2, function(x) tapply(x, clusterid, sum))
+        V <- as.vector(crossprod(us))
+    }
 
     list(theta=beta[1, ], sigma2=hsigma2, res=res,
          var=V, w=wgt, eff.obs=eff.obs)
@@ -67,14 +67,14 @@ LPReg <- function(X, Y, h, K, order=1, se.method=NULL, sigma2, J=3,
 ## Calculate fuzzy or sharp RD estimate, or estimate of a conditional mean at a
 ## point (depending on the class of \code{d}), and its variance using local
 ## polynomial regression of order \code{order}.
-NPRreg.fit <- function(d, h, kern="triangular", order=1, se.method="nn", J=3) {
+NPReg <- function(d, h, kern="triangular", order=1, se.method="nn", J=3) {
     if (!is.function(kern))
         kern <- EqKern(kern, boundary=FALSE, order=0)
     ## Keep only positive kernel weights
     W <- if (h<=0) 0*d$X else kern(d$X/h) # kernel weights
-    if(!is.null(d$sigma2)) d$sigma2 <- as.matrix(d$sigma2)
+    if (!is.null(d$sigma2)) d$sigma2 <- as.matrix(d$sigma2)
     r <- LPReg(d$X[W>0], as.matrix(d$Y)[W>0, ], h, kern, order, se.method,
-               d$sigma2[W>0, ], J, weights=d$w[W>0], RD=(d$class!="IP"),
+               d$sigma2[W>0, ], J, weights=d$w[W>0], RD = (d$class!="IP"),
                d$rho, d$clusterid[W>0])
     sigma2 <- matrix(NA, nrow=length(W), ncol=NCOL(d$Y)^2)
     sigma2[W>0, ] <- r$sigma2
@@ -88,8 +88,8 @@ NPRreg.fit <- function(d, h, kern="triangular", order=1, se.method="nn", J=3) {
     if (d$class=="FRD") {
         ret$fs <- r$theta[2]
         ret$estimate <- r$theta[1]/r$theta[2]
-        ret$se <- sqrt(sum(c(1, -ret$estimate, -ret$estimate, ret$estimate^2) *
-                           r$var) / ret$fs^2)
+        ret$se <- sqrt(sum(c(1, -ret$estimate, -ret$estimate,
+                             ret$estimate^2) * r$var) / ret$fs^2)
     }
     ret
 }
@@ -100,26 +100,22 @@ NPRreg.fit <- function(d, h, kern="triangular", order=1, se.method="nn", J=3) {
 ## Use global quartic regression to estimate a bound on the second derivative
 ## for inference under under second order Hölder class. For RD, use a separate
 ## regression on either side of the cutoff
-NPR_MROT.fit <- function(d) {
+MROT <- function(d) {
     if (d$class=="SRD") {
-        max(NPR_MROT.fit(NPRData(data.frame(Y=d$Y[d$p], X=d$X[d$p]), 0, "IP")),
-            NPR_MROT.fit(NPRData(data.frame(Y=d$Y[d$m], X=d$X[d$m]), 0, "IP")))
+        max(MROT(NPRData(data.frame(Y=d$Y[d$p], X=d$X[d$p]), 0, "IP")),
+            MROT(NPRData(data.frame(Y=d$Y[d$m], X=d$X[d$m]), 0, "IP")))
     } else if (d$class=="FRD") {
-        c(M1=max(NPR_MROT.fit(NPRData(data.frame(Y=d$Y[d$p, 1], X=d$X[d$p]), 0,
-                                      "IP")),
-                 NPR_MROT.fit(NPRData(data.frame(Y=d$Y[d$m, 1], X=d$X[d$m]), 0,
-                                      "IP"))),
-          M2=max(NPR_MROT.fit(NPRData(data.frame(Y=d$Y[d$p, 2], X=d$X[d$p]), 0,
-                                      "IP")),
-                 NPR_MROT.fit(NPRData(data.frame(Y=d$Y[d$m, 2], X=d$X[d$m]), 0,
-                                      "IP"))))
+        c(M1=max(MROT(NPRData(data.frame(Y=d$Y[d$p, 1], X=d$X[d$p]), 0, "IP")),
+                 MROT(NPRData(data.frame(Y=d$Y[d$m, 1], X=d$X[d$m]), 0, "IP"))),
+          M2=max(MROT(NPRData(data.frame(Y=d$Y[d$p, 2], X=d$X[d$p]), 0, "IP")),
+                 MROT(NPRData(data.frame(Y=d$Y[d$m, 2], X=d$X[d$m]), 0, "IP"))))
     } else if (d$class=="IP") {
         ## STEP 1: Estimate global polynomial regression
         r1 <- unname(stats::lm(d$Y ~ 0 + outer(d$X, 0:4, "^"))$coefficients)
         f2 <- function(x) abs(2*r1[3]+6*x*r1[4]+12*x^2*r1[5])
         ## maximum occurs either at endpoints, or else at the extremum,
         ## -r1[4]/(4*r1[5]), if the extremum is in the support
-        f2e <- if(abs(r1[5])<=1e-10) Inf else -r1[4]/(4*r1[5])
+        f2e <- if (abs(r1[5])<=1e-10) Inf else -r1[4] / (4*r1[5])
         M <- max(f2(min(d$X)), f2(max(d$X)))
         if (min(d$X) < f2e && max(d$X) > f2e) M <- max(f2(f2e), M)
 

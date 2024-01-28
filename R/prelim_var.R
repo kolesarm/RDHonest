@@ -13,7 +13,7 @@ sigmaNN <- function(X, Y, J=3, weights=rep(1L, length(X))) {
         ind <- (abs(X-X[k])<=d)
         ind[k] <- FALSE                 # exclude oneself
         Jk <- sum(weights[ind])
-        sigma2[k, ] <- Jk/(Jk+weights[k])*
+        sigma2[k, ] <- Jk / (Jk+weights[k])*
             if (NCOL(Y)>1)
                 as.vector(outer(Y[k, ]-colSums(weights[ind]*Y[ind, ])/Jk,
                                 Y[k, ]-colSums(weights[ind]*Y[ind, ])/Jk))
@@ -28,7 +28,7 @@ sigmaNN <- function(X, Y, J=3, weights=rep(1L, length(X))) {
 ##
 ## Compute estimate of variance, which can then be used in optimal bandwidth
 ## calculations. These estimates are unweighted.
-NPRPrelimVar.fit <- function(d, se.initial="EHW") {
+PrelimVar <- function(d, se.initial="EHW") {
     ## Pilot bandwidth: either IK/ROT, or else Silverman (for actually computing
     ## IK) for uniform kernel making sure this results in enough distinct values
     ## on either side of threshold so we don't have perfect fit
@@ -47,21 +47,21 @@ NPRPrelimVar.fit <- function(d, se.initial="EHW") {
     }
 
     if (se.initial == "EHW") {
-        h1 <- if (d$class=="IP") ROTBW.fit(drf) else IKBW.fit(drf)
-        if(is.nan(h1)) {
+        h1 <- if (d$class=="IP") ROTBW(drf) else IKBW(drf)
+        if (is.nan(h1)) {
             warning("Preliminary bandwidth is NaN, setting it to Inf")
             h1 <- Inf
         }
-        r1 <- NPRreg.fit(d, max(h1, hmin), se.method="EHW")
+        r1 <- NPReg(d, max(h1, hmin), se.method="EHW")
     } else if (d$class == "SRD" && se.initial == "Silverman") {
         ## Silverman only for RD/IK
         h1 <- max(1.84*stats::sd(d$X)/sum(length(d$X))^(1/5), hmin)
-        r1 <- NPRreg.fit(d, h1, "uniform", order=0, se.method="EHW")
+        r1 <- NPReg(d, h1, "uniform", order=0, se.method="EHW")
         ## Variance adjustment for backward compatibility
         lp <- length(r1$sigma2[d$p & r1$w != 0])
         lm <- length(r1$sigma2[d$m & r1$w != 0])
-        r1$sigma2[d$p] <- r1$sigma2[d$p]*lp/(lp-1)
-        r1$sigma2[d$m] <- r1$sigma2[d$m]*lm/(lm-1)
+        r1$sigma2[d$p] <- r1$sigma2[d$p]*lp / (lp-1)
+        r1$sigma2[d$m] <- r1$sigma2[d$m]*lm / (lm-1)
     } else {
         stop("This method for preliminary variance estimation not supported")
     }
@@ -77,9 +77,9 @@ NPRPrelimVar.fit <- function(d, se.initial="EHW") {
     } else {
         d$sigma2 <- matrix(NA, nrow=length(d$X), ncol=4)
         d$sigma2[d$p, ] <- matrix(rep(colMeans(r1$sigma2[d$p & r1$w != 0, ]),
-                                    each=sum(d$p)), nrow=sum(d$p))
+                                      each=sum(d$p)), nrow=sum(d$p))
         d$sigma2[d$m, ] <- matrix(rep(colMeans(r1$sigma2[d$m & r1$w != 0, ]),
-                                    each=sum(d$m)), nrow=sum(d$m))
+                                      each=sum(d$m)), nrow=sum(d$m))
     }
     d
 }
@@ -103,11 +103,11 @@ Moulton <- function(u, d) {
 
 
 ## Rule of thumb bandwidth for inference at a point. Only used by
-## NPRPrelimVar.fit
+## PrelimVar
 ##
 ## Calculate bandwidth for inference at a point with local linear regression
 ## using method in Fan and Gijbels (1996, Chapter 4.2).
-ROTBW.fit <- function(d, kern="triangular") {
+ROTBW <- function(d, kern="triangular") {
     X <- d$X
     boundary <- if ((min(X)>=0) || (max(X)<=0)) TRUE else FALSE
     N <- length(d$X)
@@ -115,7 +115,7 @@ ROTBW.fit <- function(d, kern="triangular") {
     ## STEP 0: Estimate f_X(0) using Silverman
     h1 <- 1.843 *
         min(stats::sd(X), (stats::quantile(X, 0.75) -
-                           stats::quantile(X, 0.25)) / 1.349) / N^(1/5)
+                               stats::quantile(X, 0.25)) / 1.349) / N^(1/5)
     f0 <- sum(abs(X) <= h1) / (2*N*h1)
 
     ## STEP 1: Estimate (p+1)th derivative and sigma^2 using global polynomial
@@ -126,9 +126,8 @@ ROTBW.fit <- function(d, kern="triangular") {
     sigma2 <- stats::sigma(r1)^2
 
     ## STEP 2: Kernel constants
-    s <- kernC[kernC$kernel==kern &
-               kernC$order==order &
-               kernC$boundary==boundary, ]
+    s <- kernC[kernC$kernel==kern & kernC$order==order &
+                   kernC$boundary==boundary, ]
     nu0 <- s$nu0
     mup <- s[[paste0("mu", order+1)]]
 
@@ -136,26 +135,24 @@ ROTBW.fit <- function(d, kern="triangular") {
     B <- deriv * mup
     V <- sigma2 * nu0 /f0
 
-    (V/(B^2 * 2 * (order+1) * N))^(1/(2*order+3))
+    (V / (B^2 * 2 * (order+1) * N))^(1 / (2*order+3))
 }
 
-## Imbens and Kalyanaraman bandwidth. Only used by NPRPrelimVar.fit
+## Imbens and Kalyanaraman bandwidth. Only used by PrelimVar
 ##
 ##  Reproduce bandwidth from Section 6.2 in Imbens and Kalyanaraman (2012)
-IKBW.fit <- function(d, kern="triangular", verbose=FALSE) {
+IKBW <- function(d, kern="triangular", verbose=FALSE) {
     Nm <- sum(d$m)
     Np <- sum(d$p)
     N <- Nm+Np
 
     ## STEP 0: Kernel constant
-    s <- kernC[kernC$order==1 &
-               kernC$boundary==TRUE &
-               kernC$kernel==kern, ]
+    s <- kernC[kernC$order==1 & kernC$boundary==TRUE & kernC$kernel==kern, ]
     const <- (s$nu0/s$mu2^2)^(1/5)
 
     ## STEP 1: Estimate f(0), sigma^2_(0) and sigma^2_+(0), using Silverman
     ## pilot bandwidth for uniform kernel
-    d <- NPRPrelimVar.fit(d, se.initial="Silverman")
+    d <- PrelimVar(d, se.initial="Silverman")
     h1 <- 1.84*stats::sd(d$X)/N^(1/5)
     f0 <- sum(abs(d$X) <= h1) / (2*N*h1)
     varm <- d$sigma2[d$m][1]
@@ -169,21 +166,21 @@ IKBW.fit <- function(d, kern="triangular", verbose=FALSE) {
 
     ## Left and right bandwidths, Equation (15) and page 956.
     ## Optimal constant based on one-sided uniform Kernel, 7200^(1/7),
-    h2m <- 7200^(1/7) * (varm/(f0*m3^2))^(1/7) * Nm^(-1/7)
-    h2p <- 7200^(1/7) * (varp/(f0*m3^2))^(1/7) * Np^(-1/7)
+    h2m <- 7200^(1/7) * (varm / (f0*m3^2))^(1/7) * Nm^(-1/7)
+    h2p <- 7200^(1/7) * (varp / (f0*m3^2))^(1/7) * Np^(-1/7)
 
 
     ## estimate second derivatives by local quadratic
     m2m <- 2*stats::coef(stats::lm(d$Y ~ d$X + I(d$X^2),
-                                   subset=(d$X >= -h2m & d$X<0)))[3]
+                                   subset = (d$X >= -h2m & d$X<0)))[3]
     m2p <- 2*stats::coef(stats::lm(d$Y ~ d$X + I(d$X^2),
-                                   subset=(d$X <= h2p & d$X>=0)))[3]
+                                   subset = (d$X <= h2p & d$X>=0)))[3]
 
     ## STEP 3: Calculate regularization terms, Equation (16)
     rm <- 2160*varm / (sum(d$X >= -h2m & d$X<0) * h2m^4)
     rp <- 2160*varp / (sum(d$X <= h2p & d$X>=0) * h2p^4)
 
-    if(verbose)
+    if (verbose)
         cat("\n h1: ", h1, "\n N_{-}, N_{+}: ", Nm, Np, "\n f(0): ", f0,
             "\n sigma^2_{+}(0): ", sqrt(varp), "^2\n sigma^2_{+}(0):",
             sqrt(varm), "^2", "\n m3: ", m3, "\n h_{2, +}:", h2p, "h_{2, -}:",

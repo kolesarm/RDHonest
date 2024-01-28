@@ -57,10 +57,10 @@ test_that("Test clustering formulas", {
     expect_equal(p1h$coefficients$std.error, 792.2299439)
 
     p2c <- RDHonest(c~elig_year, data=rr, clusterid=clusterid,
-                    point.inference=TRUE)
-    h <- p2c$coefficients$bandwidth #8.27778
+                    point.inference=TRUE, h=8.27778063886)
+    h <- p2c$coefficients$bandwidth
     m3 <- lm(c~elig_year, data=rr, subset=abs(elig_year)<=h,
-             weights =(1 - abs(elig_year/h)))
+             weights = (1 - abs(elig_year/h)))
     ## sqrt(sandwich::vcovCL(m3, type="HC0",
     ##                       cluster=clusterid[abs(rr$elig_year)<=h],
     ##                       cadjust=FALSE)[1, 1])
@@ -88,18 +88,6 @@ test_that("Test clustering formulas", {
     dd <- data.frame(y=log(rr$c), x=rr$elig_year, "(clusterid)"=clusterid)
     names(dd)[3]<- "(clusterid)"
     d <- NPRData(dd, cutoff=0, class="SRD")
-    r0 <- NPRPrelimVar.fit(d)
+    r0 <- PrelimVar(d)
     expect_equal(r0$rho, -0.0008690793197)
-
-    ## Alternative
-    ## h <- IKBW.fit(d)
-    ## m4 <- lm(d$Y~d$X*I(d$X>0), subset=abs(d$X)<=h, weights=(1-abs(d$X/h)))
-    ## r <- dfadjust::dfadjustSE(m4, IK=TRUE,
-    ##                           clustervar=as.factor(d$clusterid[abs(d$X)<=h]))
-    ## print(r$rho, digits=10)
-
-
-
-
-
 })
