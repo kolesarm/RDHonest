@@ -55,16 +55,17 @@ test_that("Test clustering formulas", {
     ##                       cadjust=FALSE)[1, 1] 651509.586
     expect_equal(p1c$coefficients$std.error^2, 723178.2655)
     expect_equal(p1h$coefficients$std.error, 792.2299439)
+
     p2c <- RDHonest(c~elig_year, data=rr, clusterid=clusterid,
                     point.inference=TRUE)
-    h <- p2c$coefficients$bandwidth
-    m3 <- lm(c~elig_year, data=rr, subset=abs(elig_year)<=h, weights
-             =(1 - abs(elig_year/h)))
+    h <- p2c$coefficients$bandwidth #8.27778
+    m3 <- lm(c~elig_year, data=rr, subset=abs(elig_year)<=h,
+             weights =(1 - abs(elig_year/h)))
     ## sqrt(sandwich::vcovCL(m3, type="HC0",
     ##                       cluster=clusterid[abs(rr$elig_year)<=h],
     ##                       cadjust=FALSE)[1, 1])
     expect_equal(as.numeric(p2c$coefficients[2:3]),
-                 c(unname(m3$coefficients[1]), 919.1556447))
+                 c(unname(m3$coefficients[1]), 919.162944))
 
     f1c <- RDHonest(c~retired | elig_year, data=rr, clusterid=clusterid,
                     kern="uniform")

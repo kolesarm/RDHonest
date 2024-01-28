@@ -122,9 +122,9 @@ instead of RD.}
 \item{clusterid}{Cluster id for cluster-robust standard errors}
 }
 \value{
-Returns an object of class \code{"NPRResults"}. The function
+Returns an object of class \code{"RDResults"}. The function
     \code{print} can be used to obtain and print a summary of the results. An
-    object of class \code{"NPRResults"} is a list containing the following
+    object of class \code{"RDResults"} is a list containing the following
     components
 
     \describe{

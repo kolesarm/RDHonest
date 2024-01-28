@@ -72,9 +72,9 @@
 #'     optimal bandwidth. Only relevant for Fuzzy RD.
 #' @param sigma2 Supply variance. Ignored when kernel is optimal.
 #' @param clusterid Cluster id for cluster-robust standard errors
-#' @return Returns an object of class \code{"NPRResults"}. The function
+#' @return Returns an object of class \code{"RDResults"}. The function
 #'     \code{print} can be used to obtain and print a summary of the results. An
-#'     object of class \code{"NPRResults"} is a list containing the following
+#'     object of class \code{"RDResults"} is a list containing the following
 #'     components
 #'
 #'     \describe{
@@ -151,6 +151,8 @@ RDHonest <- function(formula, data, subset, weights, cutoff=0, M,
     ## one LHS, at most 2 RHS
     stopifnot(length(formula)[1] == 1L, length(formula)[2] <= 2)
     mf$formula <- formula
+
+    ## http://madrury.github.io/jekyll/update/statistics/2016/07/20/lm-in-R.html
 
     mf[[1L]] <- quote(stats::model.frame)
     mf <- eval(mf, parent.frame())

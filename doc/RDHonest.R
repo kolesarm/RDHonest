@@ -1,4 +1,4 @@
-## ---- include=FALSE, cache=FALSE----------------------------------------------
+## ----include=FALSE, cache=FALSE-----------------------------------------------
 library("knitr")
 knitr::opts_knit$set(self.contained = FALSE)
 knitr::opts_chunk$set(tidy = TRUE, collapse=TRUE, comment = "#>",
@@ -7,7 +7,7 @@ knitr::opts_chunk$set(tidy = TRUE, collapse=TRUE, comment = "#>",
 ## -----------------------------------------------------------------------------
 library("RDHonest")
 
-## ---- fig.width=4.5, fig.height=3.5, fig.cap="Lee (2008) data"----------------
+## ----fig.width=4.5, fig.height=3.5, fig.cap="Lee (2008) data"-----------------
 ## plot 25-bin averages in for observations 50 at most points
 ## away from the cutoff. See Figure 1.
 plot_RDscatter(voteshare~margin, data=lee08, subset=abs(lee08$margin)<=50,
@@ -15,7 +15,7 @@ plot_RDscatter(voteshare~margin, data=lee08, subset=abs(lee08$margin)<=50,
             xlab="Margin of victory",
             ylab="Vote share in next election")
 
-## ---- fig.width=4.5, fig.height=3.5, fig.cap="Oreopoulos (2006) data"---------
+## ----fig.width=4.5, fig.height=3.5, fig.cap="Oreopoulos (2006) data"----------
 ## see Figure 2
 f2 <- plot_RDscatter(I(log(earnings))~yearat14, data=cghs, cutoff=1947,
     avg=Inf, xlab="Year aged 14", ylab="Log earnings",

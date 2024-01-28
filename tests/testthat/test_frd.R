@@ -35,6 +35,10 @@ test_that("FRD data example check", {
                         T0=0)$coefficients
     r2 <- NPRHonest.fit(d, M, kern="triangular", opt.criterion="MSE",
                         T0=r1$estimate)$coefficients
+    r1a <- NPRHonest.fit(d, M, kern="triangular", opt.criterion="MSE",
+                        T0=0, alpha=r1$p.value)$coefficients
+    expect_equal(r1a$conf.high, 0)
+    expect_equal(max(abs(expect_equal(r1a$conf.high, 0))), 0)
     ## With positive T0, expect greater effective M, and thus smaller bandwidth
     expect_lt(r2$bandwidth, r1$bandwidth)
     ## On travis, only the first 6 digits match, not sure why

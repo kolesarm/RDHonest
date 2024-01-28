@@ -13,9 +13,6 @@ Kolesár (2020)](https://doi.org/10.3982/QE1199)
 [RDHonest-vStata](https://github.com/tbarmstr/RDHonest-vStata) for a Stata
 version of this package.
 
-
-
-
 See vignette [RDHonest](doc/RDHonest.pdf) for description of the package
 (available through `vignette("RDHonest")` once package is installed), and the
 package [manual](doc/manual.pdf) for documentation of the package functions.

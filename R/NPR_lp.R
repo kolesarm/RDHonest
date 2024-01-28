@@ -5,9 +5,6 @@
 ## @param T0bias When evaluating the maximum bias of the estimate, use the
 ##     estimate itself (if \code{T0bias==FALSE}), or use the preliminary
 ##     estimate \code{T0} (if \code{T0bias==TRUE}). Only relevant for Fuzzy RD.
-## @return Returns an object of class \code{"NPRResults"}, see descriptions in
-##     \code{\link{RDHonest}}, \code{\link{LPPHonest}}, and
-##     \code{\link{FRDHonest}}.
 NPRHonest.fit <- function(d, M, kern="triangular", h, opt.criterion, alpha=0.05,
                           beta=0.8, se.method="nn", J=3, sclass="H", T0=0,
                           T0bias=FALSE) {
@@ -54,8 +51,8 @@ NPRHonest.fit <- function(d, M, kern="triangular", h, opt.criterion, alpha=0.05,
     }
     lower <- r1$estimate - bias - stats::qnorm(1-alpha)*r1$se
     upper <- r1$estimate + bias + stats::qnorm(1-alpha)*r1$se
-    cv <- CVb(bias/r1$se, alpha)
-
+    B <- bias/r1$se
+    cv <- CVb(B, alpha)
     term <- switch(d$class, IP="Value of conditional mean",
                    SRD="Sharp RD Parameter", "Fuzzy RD Parameter")
     method <- switch(sclass, H="Holder", "Tayor")
@@ -69,7 +66,9 @@ NPRHonest.fit <- function(d, M, kern="triangular", h, opt.criterion, alpha=0.05,
                        conf.high.onesided=upper, bandwidth=h,
                        eff.obs=r1$eff.obs, leverage=max(r1$w^2)/sum(r1$w^2),
                        cv=cv, alpha=alpha, method=method, M=M[1], M.rf=M[2],
-                       M.fs=M[3], first.stage=r1$fs, kernel=kernel)
+                       M.fs=M[3], first.stage=r1$fs, kernel=kernel,
+                       p.value=stats::pnorm(B-abs(r1$estimate/r1$se))+
+                           stats::pnorm(-B-abs(r1$estimate/r1$se)))
     structure(list(coefficients=coef, data=d), class="RDResults")
 }
 
@@ -149,6 +148,7 @@ print.RDResults <- function(x, digits = getOption("digits"), ...) {
     else
         cat("\nSmoothness constant M:", fmt(y$M),
             "\n")
+    cat("P-value:", fmt(y$p.value), "\n")
 
     if (inherits(x$na.action, "omit"))
         cat(length(x$na.action), "observations with missing values dropped\n")

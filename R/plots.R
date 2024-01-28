@@ -57,11 +57,11 @@ plot_RDscatter <- function(formula, data, subset, cutoff=0, na.action, avg=10,
         bd$count <- avg
     }
     bd$x <- bd$x+d$orig.cutoff
-
     if (propdotsize) {
-        p <- ggplot2::qplot(x=bd$x, y=bd$y, size=bd$count)
+        p <- ggplot2::ggplot()+
+            ggplot2::geom_point(ggplot2::aes(x=bd$x, y=bd$y, size=bd$count))
     } else {
-        p <- ggplot2::qplot(x=bd$x, y=bd$y)
+        p <- ggplot2::ggplot()+ggplot2::geom_point(ggplot2::aes(x=bd$x, y=bd$y))
     }
 
     p <- p + ggplot2::theme(legend.position = "none")
