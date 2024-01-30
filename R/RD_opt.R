@@ -74,22 +74,19 @@ RDTEstimator <- function(d, f, alpha, se.method, J) {
     b <- f(0)-f(-1e-10)
     sd <-  sqrt(sum(W^2 * d$sigma2))
     maxbias <- b - q/den                # b-q/den
-    lower <- Lhat - maxbias - stats::qnorm(1-alpha)*sd
-    upper <- Lhat + maxbias + stats::qnorm(1-alpha)*sd
-    hl <- CVb(maxbias/sd, alpha) * sd # Half-length
 
     r.u <- NPReg(d, max(abs(d$X[W!=0])), kern="uniform")
     eff.obs <- r.u$eff.obs*sum(r.u$w^2)/sum(W^2)
     d$est_w <- W
-
-    coef <- data.frame(term="Sharp RD parameter", estimate=Lhat, std.error=sd,
-                       maximum.bias=maxbias, conf.low=Lhat-hl,
-                       conf.high=Lhat+hl, conf.low.onesided=lower,
-                       conf.high.onesided=upper, eff.obs=eff.obs,
-                       leverage=max(W^2)/sum(W^2),
-                       cv=CVb(maxbias/sd, alpha), alpha=alpha, method="Taylor")
-
-    structure(list(coefficients=coef, data=d, delta=sqrt(4*q), omega=2*b),
+    co <- data.frame(term="Sharp RD parameter", estimate=Lhat, std.error=sd,
+                     maximum.bias=maxbias, conf.low=NA, conf.high=NA,
+                     conf.low.onesided=NA, conf.high.onesided=NA,
+                     bandwidth.m=NA, bandwidth.p=NA, eff.obs=eff.obs,
+                     leverage=max(W^2)/sum(W^2), cv=NA, alpha=alpha,
+                     method="Taylor", M=NA, M.rf=NA, M.fs=NA, first.stage=NA,
+                     kernel="optimal", p.value=NA)
+    structure(list(coefficients=fill_coefs(co), data=d, delta=sqrt(4*q),
+                   omega=2*b),
               class="RDResults")
 }
 
@@ -132,8 +129,8 @@ RDTOpt <- function(d, M, opt.criterion, alpha, beta, se.method, J) {
     r <- RDTEstimator(d, lff, alpha, se.method, J)
 
     ## Two bandwidths in this case
-    r$coefficients$bandwidth.m <- sqrt(-lff(-1e-10)/C)
-    r$coefficients$bandwidth.p <- sqrt(lff(0)/C)
+    r$coefficients[c("bandwidth.m", "bandwidth.p", "M")] <-
+        c(sqrt(-lff(-1e-10)/C), sqrt(lff(0)/C), M)
     r
 }
 

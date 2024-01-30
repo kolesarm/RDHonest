@@ -12,14 +12,9 @@ test_that("Inference at point agrees with RD", {
     expect_equal(pp$std.error^2+mm$std.error^2, rde$std.error^2)
     expect_equal(pp$maximum.bias+mm$maximum.bias, rde$maximum.bias)
 
-
-
     p2 <- RDHonest(voteshare~margin, data=lee08, subset=margin>=0, h=5, M=2,
                    point.inference=TRUE)
-    ## 1:9 since something weird happens on codecov.io if lintr is included
-    expect_equal(capture.output(print(p0))[1:7],
-                 capture.output(print(p2))[6:12])
-
+    expect_equal(p0$coefficients, p2$coefficients)
     r <- NPRHonest(d, h=7, M=2)$coefficients
     rm <- NPRHonest(dp, h=7, M=2)$coefficients
     rp <- NPRHonest(dm, h=7, M=2)$coefficients

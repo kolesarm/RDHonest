@@ -135,6 +135,12 @@ test_that("Honest inference in Lee and LM data",  {
                   M=0.2, opt.criterion="MSE", se.method="supplied.var")
     ## expect_equal(unname(r$lower), 2.2838100315)
     expect_equal(unname(r$coefficients$conf.low.onesided), 2.983141711)
+    r2 <- RDHonest(voteshare ~ margin, data=lee08, kern="optimal", M=0.2,
+                   opt.criterion="MSE", se.method="supplied.var",
+                   alpha=r$coefficients$p.value)
+    expect_equal(r2$coefficients$conf.low, 0)
+    expect_equal(r$coefficients[1:4], r2$coefficients[1:4])
+
     r <- RDHonest(voteshare ~ margin, data=lee08, kern="optimal", M=0.04,
                   opt.criterion="OCI", se.method="supplied.var", beta=0.8)
     expect_equal(r$coefficients$conf.low.onesided, 2.761343298)

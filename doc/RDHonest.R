@@ -70,17 +70,14 @@ r1$conf.high-r1$conf.low
 r2$conf.high-r2$conf.low
 
 ## -----------------------------------------------------------------------------
-## Add variance estimate to the Lee (2008) data so that the RDSmoothnessBound
-## function doesn't have to compute them each time
-## dl <- PrelimVar(dl, se.initial="nn")
-
+r1 <- RDHonest(voteshare ~ margin, data=lee08, M=0.1, se.method="nn")
 ### Only use three point-average for averages of a 100 points closest to cutoff,
 ### and report results separately for points above and below cutoff
-## RDSmoothnessBound(dl, s=100, separate=TRUE, multiple=FALSE, sclass="T")
+RDSmoothnessBound(r1, s=100, separate=TRUE, multiple=FALSE, sclass="T")
 
-### Pool estimates based on observations below and above cutoff, and
-### use three-point averages over the entire support of the running variable
-## RDSmoothnessBound(dl, s=100, separate=FALSE, multiple=TRUE, sclass="H")
+## Pool estimates based on observations below and above cutoff, and
+## use three-point averages over the entire support of the running variable
+RDSmoothnessBound(r1, s=100, separate=FALSE, multiple=TRUE, sclass="H")
 
 ## -----------------------------------------------------------------------------
 d <- cghs

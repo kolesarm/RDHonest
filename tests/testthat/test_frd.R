@@ -3,7 +3,6 @@ context("Test inference under no bias")
 test_that("Selected bw is infinite", {
     d <- NPRData(cbind(logcn=log(rcp[1:5000, 6]), rcp[1:5000, c(3, 2)]),
                  cutoff=0, "FRD")
-
     ## Expect using all data
     r0 <- NPRHonest(d, M=c(0, 0), kern="triangular", opt.criterion="OCI",
                     T0=0)$coefficients
@@ -97,11 +96,11 @@ test_that("FRD interface", {
                    T0=p1$coefficients$estimate)
     expect_equal(r2$coefficients$estimate, p2$coefficients$estimate)
     ## codecov.io check
-    expect_equal(capture.output(print(r2))[1:7],
-                 capture.output(print(p2))[7:13])
+    expect_equal(capture.output(print(r2)),
+                 capture.output(print(p2))[7:18])
     expect_equal(capture.output(print(p2, digits=4))[15],
                  "First stage estimate: 0.3418 ")
-    expect_equal(capture.output(print(p2, digits=4))[14],
+    expect_equal(capture.output(print(r2, digits=4))[8],
                  "Maximal leverage for fuzzy RD Parameter: 0.00361")
 
     r3 <- NPRHonest(d, M, kern="triangular", h=7, T0=r1$coefficients$estimate)

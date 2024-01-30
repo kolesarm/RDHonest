@@ -245,27 +245,34 @@ NPRHonest <- function(d, M, kern="triangular", h, opt.criterion, alpha=0.05,
         bm <- stats::integrate(function(s) vapply(s, w2m, numeric(1)), -h, 0)
         bias <- M[1] * (bp$value+bm$value)
     }
-    lower <- r1$estimate - bias - stats::qnorm(1-alpha)*r1$se
-    upper <- r1$estimate + bias + stats::qnorm(1-alpha)*r1$se
-    B <- bias/r1$se
-    cv <- CVb(B, alpha)
     term <- switch(d$class, IP="Value of conditional mean",
                    SRD="Sharp RD Parameter", "Fuzzy RD Parameter")
-    method <- switch(sclass, H="Holder", "Tayor")
+    method <- switch(sclass, H="Holder", "Taylor")
 
     d$est_w <- r1$w
     d$sigma2 <- r1$sigma2
     kernel <- if (!is.function(kern)) kern else "user-supplied"
-    coef <- data.frame(term=term, estimate=r1$estimate, std.error=r1$se,
-                       maximum.bias=bias, conf.low=r1$estimate-cv*r1$se,
-                       conf.high=r1$estimate+cv*r1$se, conf.low.onesided=lower,
-                       conf.high.onesided=upper, bandwidth=h,
-                       eff.obs=r1$eff.obs, leverage=max(r1$w^2)/sum(r1$w^2),
-                       cv=cv, alpha=alpha, method=method, M=M[1], M.rf=M[2],
-                       M.fs=M[3], first.stage=r1$fs, kernel=kernel,
-                       p.value=stats::pnorm(B-abs(r1$estimate/r1$se))+
-                           stats::pnorm(-B-abs(r1$estimate/r1$se)))
-    structure(list(coefficients=coef, data=d), class="RDResults")
+    co <- data.frame(term=term, estimate=r1$estimate, std.error=r1$se,
+                     maximum.bias=bias, conf.low=NA, conf.high=NA,
+                     conf.low.onesided=NA, conf.high.onesided=NA, bandwidth=h,
+                     eff.obs=r1$eff.obs, leverage=max(r1$w^2)/sum(r1$w^2),
+                     cv=NA, alpha=alpha, method=method, M=M[1], M.rf=M[2],
+                     M.fs=M[3], first.stage=r1$fs, kernel=kernel, p.value=NA)
+    structure(list(coefficients=fill_coefs(co), data=d), class="RDResults")
+}
+
+## Same for RDTOpt and RD
+fill_coefs <- function(co) {
+    B <- co$maximum.bias/co$std.error
+    cv <- CVb(B, co$alpha)
+    co[, c("conf.low", "conf.high", "conf.low.onesided",
+           "conf.high.onesided", "cv", "p.value")] <-
+        c(co$estimate-cv*co$std.error, co$estimate+cv*co$std.error,
+          co$estimate - (B + stats::qnorm(1-co$alpha))*co$std.error,
+          co$estimate + (B + stats::qnorm(1-co$alpha))*co$std.error,
+          cv, stats::pnorm(B-abs(co$estimate/co$std.error))+
+              stats::pnorm(-B-abs(co$estimate/co$std.error)))
+    co
 }
 
 
@@ -311,8 +318,10 @@ OptBW <- function(d, M, kern="triangular", opt.criterion, alpha=0.05, beta=0.8,
 
 #' @export
 print.RDResults <- function(x, digits = getOption("digits"), ...) {
-    if (!is.null(x$call))
-        cat("Call:\n", deparse(x$call), "\n\n", sep = "", fill=TRUE)
+    if (!is.null(x$call)) {
+        cat("\nCall:\n", paste(deparse(x$call), sep = "\n", collapse = "\n"),
+            "\n\n", sep = "")
+    }
     fmt <- function(x) format(x, digits=digits, width=digits+1)
     y <- x$coefficients
     cat("Estimates (using ", y$method, " class):\n", sep="")
@@ -329,8 +338,7 @@ print.RDResults <- function(x, digits = getOption("digits"), ...) {
         cat("\nBandwidth: ", fmt(y$bandwidth), ", Kernel: ", y$kernel, sep="")
     else
         cat("\nSmoothing parameters below and above cutoff: ",
-            fmt(y$bandwidth.m), ", ",
-            fmt(y$bandwidth.m), sep="")
+            fmt(y$bandwidth.m), ", ", fmt(y$bandwidth.p), sep="")
 
     cat("\nNumber of effective observations:", fmt(y$eff.obs))
     par <- paste0(tolower(substr(y$Parameter, 1, 1)), substring(y$Parameter, 2))
@@ -348,8 +356,6 @@ print.RDResults <- function(x, digits = getOption("digits"), ...) {
 
     if (inherits(x$na.action, "omit"))
         cat(length(x$na.action), "observations with missing values dropped\n")
-
-
 
     invisible(x)
 }
