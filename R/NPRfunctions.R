@@ -1,10 +1,5 @@
 ## Local polynomial regression/RD at a point, normalized to 0
-## Calculate estimate of a function at a point and its variance given a
-## bandwidth using local polynomial regression of order \code{order}.
-## @param Y,X Outcome variable and regressor
-## @param h Bandwidth
-## @param K Kernel function
-## @param order Order of local regression 1 for linear, 2 for quadratic, etc.
+## Only used by NPReg
 ## @param sigma2 Optionally, supply estimates of \eqn{\sigma^{2}_{i}} (for
 ##     \code{"supplied.var"} \code{se.method})
 LPReg <- function(X, Y, h, K, order=1, se.method=NULL, sigma2, J=3,
@@ -41,9 +36,10 @@ LPReg <- function(X, Y, h, K, order=1, se.method=NULL, sigma2, J=3,
     }
     res <- Y - R %*% beta
     hsigma2 <- switch(se.method, nn=signn(X), EHW=sig(res), supplied.var=sigma2)
+
     ## To compute effective observations, rescale against uniform kernel
-    wgt_unif <- ((weights)*R %*% solve(crossprod(R, weights*R)))[, 1]
-    eff.obs <- length(X)*sum(wgt_unif^2)/sum(wgt^2)
+    wgt_unif <- (weights*R %*% solve(crossprod(R, weights*R)))[, 1]
+    eff.obs <- sum(weights)*sum(wgt_unif^2/weights)/sum(wgt^2/weights)
     ## Variance
     if (is.null(clusterid)) {
         V <- colSums(as.matrix(wgt^2 * hsigma2))
@@ -56,7 +52,7 @@ LPReg <- function(X, Y, h, K, order=1, se.method=NULL, sigma2, J=3,
     }
 
     list(theta=beta[1, ], sigma2=hsigma2, res=res,
-         var=V, w=wgt, eff.obs=eff.obs)
+         var=V, est_w=wgt, eff.obs=eff.obs)
 }
 
 
@@ -71,21 +67,22 @@ NPReg <- function(d, h, kern="triangular", order=1, se.method="nn", J=3) {
     if (!is.function(kern))
         kern <- EqKern(kern, boundary=FALSE, order=0)
     ## Keep only positive kernel weights
-    W <- if (h<=0) 0*d$X else kern(d$X/h) # kernel weights
+    W <- if (h<=0) 0*d$X else kern(d$X/h)*d$w # kernel weights
     if (!is.null(d$sigma2)) d$sigma2 <- as.matrix(d$sigma2)
     r <- LPReg(d$X[W>0], as.matrix(d$Y)[W>0, ], h, kern, order, se.method,
-               d$sigma2[W>0, ], J, weights=d$w[W>0], RD = (d$class!="IP"),
+               d$sigma2[W>0, ], J, weights=d$w[W>0], RD = (class(d) != "IP"),
                d$rho, d$clusterid[W>0])
     sigma2 <- matrix(NA, nrow=length(W), ncol=NCOL(d$Y)^2)
     sigma2[W>0, ] <- r$sigma2
     res <- matrix(NA, nrow=length(W), ncol=NCOL(d$Y))
-    res[W>0] <- r$res # residuals
-    W[W>0] <- r$w
+    res[W>0, ] <- r$res # residuals
+    W[W>0] <- r$est_w
 
-    ret <- list(estimate=r$theta[1], se=sqrt(r$var[1]), w=W, res=drop(res),
+    ret <- list(estimate=r$theta[1], se=sqrt(r$var[1]),
+                est_w=W, res=drop(res), w=d$w,
                 sigma2=drop(sigma2), eff.obs=r$eff.obs, fs=NA)
 
-    if (d$class=="FRD") {
+    if (class(d)=="FRD") {
         ret$fs <- r$theta[2]
         ret$estimate <- r$theta[1]/r$theta[2]
         ret$se <- sqrt(sum(c(1, -ret$estimate, -ret$estimate,
@@ -101,17 +98,18 @@ NPReg <- function(d, h, kern="triangular", order=1, se.method="nn", J=3) {
 ## for inference under under second order Hölder class. For RD, use a separate
 ## regression on either side of the cutoff
 MROT <- function(d) {
-    if (d$class=="SRD") {
-        max(MROT(NPRData(data.frame(Y=d$Y[d$p], X=d$X[d$p]), 0, "IP")),
-            MROT(NPRData(data.frame(Y=d$Y[d$m], X=d$X[d$m]), 0, "IP")))
-    } else if (d$class=="FRD") {
-        c(M1=max(MROT(NPRData(data.frame(Y=d$Y[d$p, 1], X=d$X[d$p]), 0, "IP")),
-                 MROT(NPRData(data.frame(Y=d$Y[d$m, 1], X=d$X[d$m]), 0, "IP"))),
-          M2=max(MROT(NPRData(data.frame(Y=d$Y[d$p, 2], X=d$X[d$p]), 0, "IP")),
-                 MROT(NPRData(data.frame(Y=d$Y[d$m, 2], X=d$X[d$m]), 0, "IP"))))
-    } else if (d$class=="IP") {
+    if (class(d)=="SRD") {
+        max(MROT(data.frame(Y=d$Y[d$p], X=d$X[d$p], w=d$w[d$p])),
+            MROT(data.frame(Y=d$Y[d$m], X=d$X[d$m], w=d$w[d$m])))
+    } else if (class(d)=="FRD") {
+        c(MY=max(MROT(data.frame(Y=d$Y[d$p, 1], X=d$X[d$p], w=d$w[d$p])),
+                 MROT(data.frame(Y=d$Y[d$m, 1], X=d$X[d$m], w=d$w[d$m]))),
+          MD=max(MROT(data.frame(Y=d$Y[d$p, 2], X=d$X[d$p], w=d$w[d$p])),
+                 MROT(data.frame(Y=d$Y[d$m, 2], X=d$X[d$m], w=d$w[d$m]))))
+    } else if (class(d)=="IP" || class(d) == "data.frame") {
         ## STEP 1: Estimate global polynomial regression
-        r1 <- unname(stats::lm(d$Y ~ 0 + outer(d$X, 0:4, "^"))$coefficients)
+        r1 <- unname(stats::lm(d$Y ~ 0 + outer(d$X, 0:4, "^"),
+                               weights=d$w)$coefficients)
         f2 <- function(x) abs(2*r1[3]+6*x*r1[4]+12*x^2*r1[5])
         ## maximum occurs either at endpoints, or else at the extremum,
         ## -r1[4]/(4*r1[5]), if the extremum is in the support

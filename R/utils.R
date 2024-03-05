@@ -14,8 +14,8 @@ NPRData <- function(d, cutoff, class) {
         d <- d[sort(unAsIs(d[[Xindex]]), index.return=TRUE)$ix, ]
     Y <- if (class=="FRD") cbind(d[[1]], d[[2]]) else d[[1]]
 
-    df <- list(Y=Y, X=d[[Xindex]] - cutoff, orig.cutoff=cutoff,
-               class=class, var.names=names(d)[1:Xindex])
+    df <- structure(list(Y=Y, X=d[[Xindex]] - cutoff, orig.cutoff=cutoff,
+                         var.names=names(d)[1:Xindex]), class=class)
     df$p <- df$X>=0
     df$m <- df$X<0
     df$sigma2 <- d$"(sigma2)"

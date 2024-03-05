@@ -30,7 +30,7 @@
 #'     (local polynomial estimators only).}
 #'
 #'    \item{"supplied.var"}{Use conditional variance supplied by \code{sigma2}
-#'         or \code{d} instead of computing residuals}
+#'         instead of computing residuals}
 #'
 #' }
 #' @param J Number of nearest neighbors, if "nn" is specified in
@@ -129,8 +129,6 @@
 #'
 #' }
 #' @examples
-#'
-#' # Lee dataset
 #' RDHonest(voteshare ~ margin, data = lee08, kern = "uniform", M = 0.1, h = 10)
 #' RDHonest(cn~retired | elig_year, data=rcp, cutoff=0, M=c(4, 0.4),
 #'           kern="triangular", opt.criterion="MSE", T0=0, h=3)
@@ -141,7 +139,6 @@ RDHonest <- function(formula, data, subset, weights, cutoff=0, M,
                      kern="triangular", na.action, opt.criterion="MSE", h,
                      se.method="nn", alpha=0.05, beta=0.8, J=3, sclass="H",
                      T0=0, point.inference=FALSE, sigma2, clusterid) {
-
     ## construct model frame
     cl <- mf <- match.call(expand.dots = FALSE)
     m <- match(c("formula", "data", "subset", "weights", "na.action", "sigma2",
@@ -153,23 +150,23 @@ RDHonest <- function(formula, data, subset, weights, cutoff=0, M,
     mf$formula <- formula
 
     ## http://madrury.github.io/jekyll/update/statistics/2016/07/20/lm-in-R.html
-
     mf[[1L]] <- quote(stats::model.frame)
     mf <- eval(mf, parent.frame())
 
     if (point.inference) {
-        d <- NPRData(mf, cutoff, "IP")
+        method <- "IP"
     } else if (length(formula)[2]==2) {
-        d <- NPRData(mf, cutoff, "FRD")
+        method <- "FRD"
     } else {
-        d <- NPRData(mf, cutoff, "SRD")
+        method <- "SRD"
     }
+    d <- NPRData(mf, cutoff, method)
 
     if (missing(M)) {
         M <- MROT(d)
         message("Using Armstong & Kolesar (2020) ROT for smoothness constant M")
     }
-    if (kern=="optimal") {
+    if (kern=="optimal" && method=="SRD") {
         ret <- RDTOpt(d, M, opt.criterion, alpha, beta, se.method, J)
     } else if (!missing(h)) {
         ret <- NPRHonest(d, M, kern, h, alpha=alpha, se.method=se.method, J=J,
@@ -206,9 +203,9 @@ NPRHonest <- function(d, M, kern="triangular", h, opt.criterion, alpha=0.05,
         h <- OptBW(d, M, kern, opt.criterion, alpha, beta, sclass, T0)
     r1 <- NPReg(d, h, kern, order=1, se.method, J)
 
-    wt <- r1$w[r1$w!=0]
-    xx <- d$X[r1$w!=0]
-    if (d$class=="IP") {
+    wt <- r1$est_w[r1$est_w!=0]
+    xx <- d$X[r1$est_w!=0]
+    if (class(d)=="IP") {
         nobs <- length(wt)
         ## Are we at a boundary?
         bd <- length(unique(d$X>=0))==1
@@ -217,11 +214,11 @@ NPRHonest <- function(d, M, kern="triangular", h, opt.criterion, alpha=0.05,
         bd <- TRUE
     }
 
-    if (T0bias && d$class=="FRD") {
+    if (T0bias && class(d)=="FRD") {
         ## multiply bias and sd by r1$fs to make if free of first stage
         r1$se <- r1$se*abs(r1$fs)
         M <- unname(c((M[1]+M[2]*abs(T0)), M))
-    } else if (!T0bias && d$class=="FRD") {
+    } else if (!T0bias && class(d)=="FRD") {
         M <- unname(c((M[1]+M[2]*abs(r1$estimate)) / abs(r1$fs), M))
     } else {
         M[2:3] <- c(NA, NA)
@@ -245,17 +242,18 @@ NPRHonest <- function(d, M, kern="triangular", h, opt.criterion, alpha=0.05,
         bm <- stats::integrate(function(s) vapply(s, w2m, numeric(1)), -h, 0)
         bias <- M[1] * (bp$value+bm$value)
     }
-    term <- switch(d$class, IP="Value of conditional mean",
+    term <- switch(class(d), IP="Value of conditional mean",
                    SRD="Sharp RD Parameter", "Fuzzy RD Parameter")
     method <- switch(sclass, H="Holder", "Taylor")
 
-    d$est_w <- r1$w
+    d$est_w <- r1$est_w
     d$sigma2 <- r1$sigma2
     kernel <- if (!is.function(kern)) kern else "user-supplied"
     co <- data.frame(term=term, estimate=r1$estimate, std.error=r1$se,
                      maximum.bias=bias, conf.low=NA, conf.high=NA,
                      conf.low.onesided=NA, conf.high.onesided=NA, bandwidth=h,
-                     eff.obs=r1$eff.obs, leverage=max(r1$w^2)/sum(r1$w^2),
+                     eff.obs=r1$eff.obs,
+                     leverage=max(r1$est_w^2/r1$w^2)/sum(r1$est_w^2/r1$w),
                      cv=NA, alpha=alpha, method=method, M=M[1], M.rf=M[2],
                      M.fs=M[3], first.stage=r1$fs, kernel=kernel, p.value=NA)
     structure(list(coefficients=fill_coefs(co), data=d), class="RDResults")
@@ -294,7 +292,7 @@ OptBW <- function(d, M, kern="triangular", opt.criterion, alpha=0.05, beta=0.8,
                MSE=r$maximum.bias^2+r$std.error^2,
                FLCI=r$conf.high-r$conf.low)
     }
-    if (d$class=="IP") {
+    if (class(d)=="IP") {
         hmin <- sort(unique(abs(d$X)))[2]
     } else {
         hmin <- max(unique(d$X[d$p])[2], sort(unique(abs(d$X[d$m])))[2])

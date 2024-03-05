@@ -33,7 +33,7 @@ PrelimVar <- function(d, se.initial="EHW") {
     ## IK) for uniform kernel making sure this results in enough distinct values
     ## on either side of threshold so we don't have perfect fit
 
-    if (d$class=="IP") {
+    if (class(d)=="IP") {
         hmin <- max(sort(unique(abs(d$X)))[2], sort(abs(d$X))[4])
     } else {
         hmin <- max(sort(unique(d$X[d$p]))[3], sort(abs(unique(d$X[d$m])))[3],
@@ -41,44 +41,44 @@ PrelimVar <- function(d, se.initial="EHW") {
     }
     ## Use reduced form for FRD bandwidth selector
     drf <- d
-    if (d$class=="FRD") {
+    if (class(d)=="FRD") {
         drf$Y <- drf$Y[, 1]
-        drf$class <- "SRD"
+        class(drf) <- "SRD"
     }
 
     if (se.initial == "EHW") {
-        h1 <- if (d$class=="IP") ROTBW(drf) else IKBW(drf)
+        h1 <- if (class(d)=="IP") ROTBW(drf) else IKBW(drf)
         if (is.nan(h1)) {
             warning("Preliminary bandwidth is NaN, setting it to Inf")
             h1 <- Inf
         }
         r1 <- NPReg(d, max(h1, hmin), se.method="EHW")
-    } else if (d$class == "SRD" && se.initial == "Silverman") {
+    } else if (class(d) == "SRD" && se.initial == "Silverman") {
         ## Silverman only for RD/IK
         h1 <- max(1.84*stats::sd(d$X)/sum(length(d$X))^(1/5), hmin)
         r1 <- NPReg(d, h1, "uniform", order=0, se.method="EHW")
         ## Variance adjustment for backward compatibility
-        lp <- length(r1$sigma2[d$p & r1$w != 0])
-        lm <- length(r1$sigma2[d$m & r1$w != 0])
-        r1$sigma2[d$p] <- r1$sigma2[d$p]*lp / (lp-1)
-        r1$sigma2[d$m] <- r1$sigma2[d$m]*lm / (lm-1)
+        lp <- length(r1$sigma2[d$p & r1$est_w != 0])
+        lm <- length(r1$sigma2[d$m & r1$est_w != 0])
+        r1$sigma2[d$p] <- r1$sigma2[d$p] * lp / (lp-1)
+        r1$sigma2[d$m] <- r1$sigma2[d$m] * lm / (lm-1)
     } else {
         stop("This method for preliminary variance estimation not supported")
     }
     if (!is.null(d$clusterid))
         d$rho <- Moulton(r1$res, d)
 
-    if (d$class == "IP") {
-        d$sigma2 <- rep(mean(r1$sigma2[r1$w != 0]), length(d$X))
-    } else if (d$class=="SRD") {
+    if (class(d) == "IP") {
+        d$sigma2 <- rep(mean(r1$sigma2[r1$est_w != 0]), length(d$X))
+    } else if (class(d)=="SRD") {
         d$sigma2 <- rep(NA, length(d$X))
-        d$sigma2[d$p] <- mean(r1$sigma2[d$p & r1$w != 0])
-        d$sigma2[d$m] <- mean(r1$sigma2[d$m & r1$w != 0])
+        d$sigma2[d$p] <- mean(r1$sigma2[d$p & r1$est_w != 0])
+        d$sigma2[d$m] <- mean(r1$sigma2[d$m & r1$est_w != 0])
     } else {
         d$sigma2 <- matrix(NA, nrow=length(d$X), ncol=4)
-        d$sigma2[d$p, ] <- matrix(rep(colMeans(r1$sigma2[d$p & r1$w != 0, ]),
+        d$sigma2[d$p, ] <- matrix(rep(colMeans(r1$sigma2[d$p & r1$est_w != 0, ]),
                                       each=sum(d$p)), nrow=sum(d$p))
-        d$sigma2[d$m, ] <- matrix(rep(colMeans(r1$sigma2[d$m & r1$w != 0, ]),
+        d$sigma2[d$m, ] <- matrix(rep(colMeans(r1$sigma2[d$m & r1$est_w != 0, ]),
                                       each=sum(d$m)), nrow=sum(d$m))
     }
     d
@@ -102,8 +102,7 @@ Moulton <- function(u, d) {
 }
 
 
-## Rule of thumb bandwidth for inference at a point. Only used by
-## PrelimVar
+## Rule of thumb bandwidth for inference at a point. Only used by PrelimVar
 ##
 ## Calculate bandwidth for inference at a point with local linear regression
 ## using method in Fan and Gijbels (1996, Chapter 4.2).
