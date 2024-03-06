@@ -137,6 +137,6 @@ RDHonestBME <- function(formula, data, subset, cutoff=0, na.action,
                        eff.obs=length(x), cv=NA, alpha=alpha, method="BME",
                        kernel="uniform")
     structure(list(coefficients=coef, call=cl,
-                          na.action=attr(mf, "na.action")),
-                     class="RDResults")
+                   na.action=attr(mf, "na.action")),
+              class="RDResults")
 }

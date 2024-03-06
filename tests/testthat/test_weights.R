@@ -1,84 +1,56 @@
 context("Test weighted RD")
 
 test_that("Test weighting using cghs", {
-    s0 <- RDHonest(log(earnings)~yearat14, cutoff=1947, h=5, data=cghs, M=1)
-    d <- s0$data
-
-    ## Make 10 groups
-    d$mod <- floor(10 * (d$Y - floor(d$Y)))
+    ## Make 10 groups, estimate within-group variance
+    set.seed(42)
     ## Make cells by group and year
-    d$cell <- d$mod/10+d$X
+    cghs$cell <- 0.1*sample((1:10), size=NROW(cghs), replace=TRUE) +
+        cghs$yearat14
+
     dd <- data.frame()
-    for (j in unique(d$cell)) {
-        ix <- d$cell==j
-        df <- data.frame(y=mean(d$Y[ix]), x=mean(d$X[ix]),
-                         weights=length(d$X[ix]),
-                         sigma2=mean(d$sigma2[ix])/length(d$X[ix]))
+    for (j in sort(unique(cghs$cell))) {
+        ix <- cghs$cell==j
+        xj <- cghs$yearat14[which.max(ix)]
+        df <- data.frame(y=mean(log(cghs$earnings[ix])), x=xj-1947,
+                         weights=sum(ix),
+                         sigma2=var(log(cghs$earnings[cghs$yearat14==xj]))/sum(ix))
         dd <- rbind(dd, df)
     }
-    names(dd)[3:4] <- c("(weights)", "(sigma2)")
+    s0 <- RDHonest(log(earnings)~yearat14, cutoff=1947, h=5, data=cghs,
+                   M=1)$coefficients
+    s1 <- RDHonest(y~x, h=5, data=dd, M=1, weights=weights, sigma2=sigma2,
+                   se.method="supplied.var")$coefficients
+    expect_equal(s0, s1)
 
-    d1 <- NPRData(dd, cutoff=0, "SRD")
-    d2 <- NPRData(data.frame(y=log(cghs$earnings), x=cghs$yearat14),
-                  cutoff= 1947, "SRD")
-    ## Initial estimates
-    r2 <- NPReg(d2, 5, "triangular")
-    r1 <- NPReg(d1, 5, "triangular")
-
-    ## Checks weights match
-    wp1 <- vapply(unique(d1$X[d1$p]), function(j) sum(r1$w[d1$X==j]),
-                  numeric(1))
-    wp2 <- vapply(unique(d2$X[d2$p]), function(j) sum(r2$w[d2$X==j]),
-                  numeric(1))
-    wm1 <- vapply(unique(d1$X[d1$m]), function(j) sum(r1$w[d1$X==j]),
-                  numeric(1))
-    wm2 <- vapply(unique(d2$X[d2$m]), function(j) sum(r2$w[d2$X==j]),
-                  numeric(1))
-    expect_equal(wm1, wm2)
-    expect_equal(wp1, wp2)
-    ## Variance by hand
-    np <- vapply(unique(d2$X[d2$p]), function(j) sum(d2$X==j), numeric(1))
-    nm <- vapply(unique(d2$X[d2$m]), function(j) sum(d2$X==j), numeric(1))
-
-    d2$sigma2[d2$p] <- mean(r2$sigma2[r2$w!=0 & d2$p])
-    d2$sigma2[d2$m] <- mean(r2$sigma2[r2$w!=0 & d2$m])
-
-    d1$sigma2[d1$p] <- mean(r2$sigma2[r2$w!=0 & d2$p])/d1$w[d1$p]
-    d1$sigma2[d1$m] <- mean(r2$sigma2[r2$w!=0 & d2$m])/d1$w[d1$m]
-
-    v1 <- sqrt(sum(wp1^2/np)*mean(r2$sigma2[r2$w!=0 & d2$p])+
-                   sum(wm1^2/nm)*mean(r2$sigma2[r2$w!=0 & d2$m]))
-
-    m2 <- NPRHonest(d2, M=1, kern="triangular", h=5,
-                    se.method="supplied.var")$coefficients
-    m1 <- NPRHonest(d1, M=1, kern="triangular", h=5,
-                    se.method="supplied.var")$coefficients
-    expect_equal(v1, m1$std.error)
-    expect_equal(m1[2:6], m2[2:6])
-
-    ## Same thing with RDHonest
-    ss <- dd$"(sigma2)"
-    ww <- dd$"(weights)"
-    s1 <- s0$coefficients
-    s2 <- RDHonest(y~x, cutoff=0, weights=ww, h=5, data=dd, M=1,
-                   sigma2=ss, se.method="supplied.var")$coefficients
-    expect_equal(s1[2:9], s2[2:9])
+    ## Don't supply variance
+    s2 <- RDHonest(y~x, h=5, data=dd, M=1, weights=weights)$coefficients
+    expect_lt(max(abs(s0[c(2, 4, 10, 11)] - s2[c(2, 4, 10, 11)])), 1e-9)
+    ## SE should be close enough
+    expect_lt(max(abs(s2[c(3, 5, 6)]-s0[c(3, 5, 6)])), 3e-3)
+    ## Estimate M
+    s0a <- RDHonest(log(earnings)~yearat14, cutoff=1947, h=5, data=cghs,
+                    kern="uniform")$coefficients
+                    s2a <- RDHonest(y~x, h=5, data=dd, weights=weights,
+                                    kern="uniform")$coefficients
+    expect_lt(max(abs(s0a[c(2, 4, 9:11)]-s2a[c(2, 4, 9:11)])), 1e-8)
+    ## SE should be close enough
+    expect_lt(max(abs(s2a[c(3, 5, 6)] - s0a[c(3, 5, 6)])), 3e-3)
 
     ## LPP Honest
-    t1 <- RDHonest(log(earnings)~yearat14, cutoff=1947, h=5,
+    t0 <- RDHonest(log(earnings)~yearat14, cutoff=1947, h=5,
                    data=cghs[cghs$yearat14>=1947, ], M=1,
                    point.inference=TRUE)$coefficients
+    t1 <- RDHonest(y~x, cutoff=0, h=5, data=dd[dd$x>=0, ], M=1,
+                   weights=weights, point.inference=TRUE,
+                   sigma2=sigma2, se.method="supplied.var")$coefficients
     t2 <- RDHonest(y~x, cutoff=0, h=5, data=dd[dd$x>=0, ], M=1,
-                   weights=ww[dd$x>=0], point.inference=TRUE)$coefficients
-    t3 <- RDHonest(y~x, cutoff=0, h=5, data=dd[dd$x>=0, ], M=1,
-                   weights=ww[dd$x>=0], point.inference=TRUE,
-                   sigma2=ss[dd$x>=0], se.method="supplied.var")$coefficients
-    expect_equal(c(t2$estimate, t2$maximum.bias),
-                 c(t1$estimate, t1$maximum.bias))
-    expect_equal(t1[2:9], t3[2:9])
+                   weights=weights, point.inference=TRUE)$coefficients
+    expect_equal(t0, t1)
+    expect_lt(max(abs(t0[c(2, 4, 9:11)] - t2[c(2, 4, 9:11)])), 1e-9)
+    expect_lt(max(abs(t2[c(3, 5, 6)]-t0[c(3, 5, 6)])), 1.1e-3)
 
-    ## Collapse data
-    s0 <- RDHonest(log(earnings)~yearat14, cutoff=1947, data=cghs)
+    ## Collapse data fully
+    s0 <- RDHonest(log(earnings)~yearat14, cutoff=1947, data=cghs)$coefficients
     dd <- data.frame()
     for (j in unique(cghs$yearat14)) {
         ix <- cghs$yearat14==j
@@ -87,23 +59,19 @@ test_that("Test weighting using cghs", {
                          sigma2=var(log(cghs$earnings[ix]))/sum(ix))
         dd <- rbind(dd, df)
     }
-
-
-
     s1 <- RDHonest(y~x, cutoff=1947, data=dd, weights=weights, sigma2=sigma2,
-                   se.method="supplied.var", h=s0$coefficients$bandwidth)
-    expect_equal(s1$coefficients, s0$coefficients)
-    ## If we use supplie.var for variance estimation, should match approx
+                   se.method="supplied.var", h=s0$bandwidth)
+    expect_equal(s1$coefficients, s0)
+    ## If we use supplied.var for variance estimation, should match approx
     s2 <- RDHonest(y~x, cutoff=1947, data=dd, weights=weights, sigma2=sigma2,
-                   se.method="supplied.var")
-    expect_lt(max(abs(s2$coefficients[2:9]-s0$coefficients[2:9])), 4e-3)
+                   se.method="supplied.var")$coefficients
+    expect_lt(max(abs(s2[2:9]-s0[2:9])), 4e-3)
 
+    ## Test that sigmaNN works when J large
+    s3 <- RDHonest(y~x, cutoff=1947, data=dd, weights=weights, J=10,
+                   h=s0$bandwidth)$coefficients
+    s4 <- RDHonest(y~x, cutoff=1947, data=dd, weights=weights,
+                   J=20, h=s0$bandwidth)$coefficients
+    expect_equal(s3, s4)
 
-
-    ## TODO: should be able to estimate variance if obs not too binned, more-less
-
-
-    ## wts <- sqrt(w)
-    ## z <- .Call(C_Cdqrls, x * wts, y * wts, tol, FALSE)
-    ## z$residuals <- z$residuals/wts
 })

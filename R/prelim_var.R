@@ -5,7 +5,8 @@
 sigmaNN <- function(X, Y, J=3, weights=rep(1L, length(X))) {
     n <- length(X)
     sigma2 <- matrix(nrow=n, ncol=NCOL(Y)^2)
-
+    ## if fewer than J datapoints, use number of datapoints
+    J <- min(J, length(X)-1)
     for (k in seq_along(X)) {
         ## d is distance to Jth neighbor, exluding oneself
         s <- max(k-J, 1):k
@@ -71,15 +72,11 @@ PrelimVar <- function(d, se.initial="EHW") {
     if (inherits(d, "IP")) {
         d$sigma2 <- rep(mean(r1$sigma2[r1$est_w != 0]), length(d$X))
     } else if (inherits(d, "SRD")) {
-        d$sigma2 <- rep(NA, length(d$X))
-        d$sigma2[d$p] <- mean(r1$sigma2[d$p & r1$est_w != 0])
-        d$sigma2[d$m] <- mean(r1$sigma2[d$m & r1$est_w != 0])
+        d$sigma2 <- mean(r1$sigma2[d$p & r1$est_w != 0])*d$p+
+            mean(r1$sigma2[d$m & r1$est_w != 0])*d$m
     } else {
-        d$sigma2 <- matrix(NA, nrow=length(d$X), ncol=4)
-        d$sigma2[d$p, ] <- matrix(rep(colMeans(r1$sigma2[d$p & r1$est_w != 0, ]),
-                                      each=sum(d$p)), nrow=sum(d$p))
-        d$sigma2[d$m, ] <- matrix(rep(colMeans(r1$sigma2[d$m & r1$est_w != 0, ]),
-                                      each=sum(d$m)), nrow=sum(d$m))
+        d$sigma2 <- d$p %o% colMeans(r1$sigma2[d$p & r1$est_w != 0, ])+
+            d$m %o% colMeans(r1$sigma2[d$m & r1$est_w != 0, ])
     }
     d
 }

@@ -153,7 +153,7 @@ RDHonest <- function(formula, data, subset, weights, cutoff=0, M,
     mf[[1L]] <- quote(stats::model.frame)
     mf <- eval(mf, parent.frame())
 
-    ## TODO: what are the supported se methods?
+    ## TODO: what are the supported se methods, weighting + optimal kernel etc
     if (!(se.method %in% c("nn", "EHW", "supplied.var")))
         stop("Unsupported se.method")
 
@@ -281,7 +281,6 @@ fill_coefs <- function(co) {
 ## Optimal bandwidth selection in nonparametric regression
 OptBW <- function(d, M, kern="triangular", opt.criterion, alpha=0.05, beta=0.8,
                   sclass="H", T0=0) {
-
     ## First check if sigma2 is supplied
     if (is.null(d$sigma2))
         d <- PrelimVar(d, se.initial="EHW")
