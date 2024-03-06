@@ -29,7 +29,7 @@
 #'     \item{"EHW"}{Eicker-Huber-White, with residuals from local regression
 #'     (local polynomial estimators only).}
 #'
-#'    \item{"supplied.var"}{Use conditional variance supplied by \code{sigma2}
+#'    \item{"supplied.var"}{Use conditional variance supplied by \code{sigmaY2}
 #'         instead of computing residuals}
 #'
 #' }
@@ -50,7 +50,7 @@
 #'
 #'     }
 #'
-#'     The methods use conditional variance given by \code{sigma2}, if supplied.
+#'     The methods use conditional variance given by \code{sigmaY2}, if supplied.
 #'     Otherwise, for the purpose of estimating the optimal bandwidth,
 #'     conditional variance is estimated using the method specified by
 #'     \code{se.initial}.
@@ -70,7 +70,9 @@
 #'     instead of RD.
 #' @param T0 Initial estimate of the treatment effect for calculating the
 #'     optimal bandwidth. Only relevant for Fuzzy RD.
-#' @param sigma2 Supply variance. Ignored when kernel is optimal.
+#' @param sigmaY2 Supply variance of outcome. Ignored when kernel is optimal.
+#' @param sigmaD2 Supply variance of treatment (fuzzy RD only).
+#' @param sigmaYD Supply covariante of treatment and outcome (fuzzy RD only).
 #' @param clusterid Cluster id for cluster-robust standard errors
 #' @return Returns an object of class \code{"RDResults"}. The function
 #'     \code{print} can be used to obtain and print a summary of the results. An
@@ -138,11 +140,11 @@
 RDHonest <- function(formula, data, subset, weights, cutoff=0, M,
                      kern="triangular", na.action, opt.criterion="MSE", h,
                      se.method="nn", alpha=0.05, beta=0.8, J=3, sclass="H",
-                     T0=0, point.inference=FALSE, sigma2, clusterid) {
+                     T0=0, point.inference=FALSE, sigmaY2, sigmaD2, sigmaYD, clusterid) {
     ## construct model frame
     cl <- mf <- match.call(expand.dots = FALSE)
-    m <- match(c("formula", "data", "subset", "weights", "na.action", "sigma2",
-                 "clusterid"), names(mf), 0L)
+    m <- match(c("formula", "data", "subset", "weights", "na.action", "sigmaY2",
+                 "sigmaD2", "sigmaYD", "clusterid"), names(mf), 0L)
     mf <- mf[c(1L, m)]
     formula <- Formula::as.Formula(formula)
     ## one LHS, at most 2 RHS

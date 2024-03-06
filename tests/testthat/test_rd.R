@@ -281,12 +281,12 @@ test_that("Optimizing bw", {
 test_that("Supplied variance", {
     r <- RDHonest(voteshare ~ margin, data=lee08, M=2*0.00002, h=3)
     r2 <- RDHonest(I(10*voteshare) ~ margin, data=lee08, M=2*0.00002, h=3,
-                   sigma2=r$data$sigma2, se.method="supplied.var")
+                   sigmaY2=r$data$sigma2, se.method="supplied.var")
     expect_equal(r$coefficients$std.error, r2$coefficients$std.error)
     r <- RDHonest(voteshare ~ margin, data=lee08, M=2*0.002, h=4,
                   point.inference=TRUE, cutoff=2)
     r2 <- RDHonest(I(10*voteshare) ~ margin, data=lee08, M=2*0.002, h=4,
-                   sigma2=r$data$sigma2, se.method="supplied.var",
+                   sigmaY2=r$data$sigma2, se.method="supplied.var",
                    point.inference=TRUE, cutoff=2)
     expect_equal(r$coefficients$std.error, r2$coefficients$std.error)
 
@@ -294,8 +294,8 @@ test_that("Supplied variance", {
                   M=c(0.002, 0.005), T0=0, h=7, kern="uniform")
     ## Data not in order
     r2 <- RDHonest(r$data$Y[, 1]~r$data$Y[, 2] | r$data$X, data=rcp[1:100, ],
-                   cutoff=0, M=c(0.002, 0.005), T0=0, h=7, sigma2=r$data$sigma2,
-                   kern="uniform")
+                   cutoff=0, M=c(0.002, 0.005), T0=0, h=7,
+                   sigmaY2=r$data$sigma2, kern="uniform")
     expect_equal(r$coefficients$std.error, r2$coefficients$std.error)
 
 

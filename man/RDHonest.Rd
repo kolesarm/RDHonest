@@ -22,7 +22,9 @@ RDHonest(
   sclass = "H",
   T0 = 0,
   point.inference = FALSE,
-  sigma2,
+  sigmaY2,
+  sigmaD2,
+  sigmaYD,
   clusterid
 )
 }
@@ -75,7 +77,7 @@ contain \code{NA}s. The default is set by the \code{na.action} setting of
 
     }
 
-    The methods use conditional variance given by \code{sigma2}, if supplied.
+    The methods use conditional variance given by \code{sigmaY2}, if supplied.
     Otherwise, for the purpose of estimating the optimal bandwidth,
     conditional variance is estimated using the method specified by
     \code{se.initial}.}
@@ -93,7 +95,7 @@ computed according to criterion given by \code{opt.criterion}.}
     \item{"EHW"}{Eicker-Huber-White, with residuals from local regression
     (local polynomial estimators only).}
 
-   \item{"supplied.var"}{Use conditional variance supplied by \code{sigma2}
+   \item{"supplied.var"}{Use conditional variance supplied by \code{sigmaY2}
         instead of computing residuals}
 
 }}
@@ -117,7 +119,11 @@ optimal bandwidth. Only relevant for Fuzzy RD.}
 \item{point.inference}{Do inference at a point determined by \code{cutoff}
 instead of RD.}
 
-\item{sigma2}{Supply variance. Ignored when kernel is optimal.}
+\item{sigmaY2}{Supply variance of outcome. Ignored when kernel is optimal.}
+
+\item{sigmaD2}{Supply variance of treatment (fuzzy RD only).}
+
+\item{sigmaYD}{Supply covariante of treatment and outcome (fuzzy RD only).}
 
 \item{clusterid}{Cluster id for cluster-robust standard errors}
 }
