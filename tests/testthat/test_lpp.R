@@ -14,7 +14,7 @@ test_that("Inference at point agrees with RD", {
 
     p2 <- RDHonest(voteshare~margin, data=lee08, subset=margin>=0, h=5, M=2,
                    point.inference=TRUE)
-    expect_equal(p0$coefficients, p2$coefficients)
+    expect_equal(p0$coefficients[-1], p2$coefficients[-1])
     r <- NPRHonest(d, h=7, M=2)$coefficients
     rm <- NPRHonest(dp, h=7, M=2)$coefficients
     rp <- NPRHonest(dm, h=7, M=2)$coefficients

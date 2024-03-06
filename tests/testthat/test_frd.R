@@ -96,12 +96,12 @@ test_that("FRD interface", {
                    T0=p1$coefficients$estimate)
     expect_equal(r2$coefficients$estimate, p2$coefficients$estimate)
     ## codecov.io check
-    expect_equal(capture.output(print(r2)),
-                 capture.output(print(p2))[7:18])
+    expect_equal(capture.output(print(r2))[c(5:7, 9:12)],
+                 capture.output(print(p2))[c(11:13, 15:18)])
     expect_equal(capture.output(print(p2, digits=4))[15],
                  "First stage estimate: 0.3418 ")
-    expect_equal(capture.output(print(r2, digits=4))[8],
-                 "Maximal leverage for fuzzy RD Parameter: 0.00361")
+    expect_equal(capture.output(print(p2, digits=4))[14],
+                 "Maximal leverage for fuzzy RD parameter: 0.00361")
 
     r3 <- NPRHonest(d, M, kern="triangular", h=7, T0=r1$coefficients$estimate)
     p3 <- RDHonest(log(cn)~retired | elig_year, data=rcp1, cutoff=0, M=M,

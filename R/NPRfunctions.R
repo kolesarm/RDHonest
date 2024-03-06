@@ -70,7 +70,7 @@ NPReg <- function(d, h, kern="triangular", order=1, se.method="nn", J=3) {
     W <- if (h<=0) 0*d$X else kern(d$X/h)*d$w # kernel weights
     if (!is.null(d$sigma2)) d$sigma2 <- as.matrix(d$sigma2)
     r <- LPReg(d$X[W>0], as.matrix(d$Y)[W>0, ], h, kern, order, se.method,
-               d$sigma2[W>0, ], J, weights=d$w[W>0], RD = (class(d) != "IP"),
+               d$sigma2[W>0, ], J, weights=d$w[W>0], RD = !inherits(d, "IP"),
                d$rho, d$clusterid[W>0])
     sigma2 <- matrix(NA, nrow=length(W), ncol=NCOL(d$Y)^2)
     sigma2[W>0, ] <- r$sigma2
@@ -82,7 +82,7 @@ NPReg <- function(d, h, kern="triangular", order=1, se.method="nn", J=3) {
                 est_w=W, res=drop(res), w=d$w,
                 sigma2=drop(sigma2), eff.obs=r$eff.obs, fs=NA)
 
-    if (class(d)=="FRD") {
+    if (inherits(d, "FRD")) {
         ret$fs <- r$theta[2]
         ret$estimate <- r$theta[1]/r$theta[2]
         ret$se <- sqrt(sum(c(1, -ret$estimate, -ret$estimate,
@@ -98,15 +98,15 @@ NPReg <- function(d, h, kern="triangular", order=1, se.method="nn", J=3) {
 ## for inference under under second order Hölder class. For RD, use a separate
 ## regression on either side of the cutoff
 MROT <- function(d) {
-    if (class(d)=="SRD") {
+    if (inherits(d, "SRD")) {
         max(MROT(data.frame(Y=d$Y[d$p], X=d$X[d$p], w=d$w[d$p])),
             MROT(data.frame(Y=d$Y[d$m], X=d$X[d$m], w=d$w[d$m])))
-    } else if (class(d)=="FRD") {
+    } else if (inherits(d, "FRD")) {
         c(MY=max(MROT(data.frame(Y=d$Y[d$p, 1], X=d$X[d$p], w=d$w[d$p])),
                  MROT(data.frame(Y=d$Y[d$m, 1], X=d$X[d$m], w=d$w[d$m]))),
           MD=max(MROT(data.frame(Y=d$Y[d$p, 2], X=d$X[d$p], w=d$w[d$p])),
                  MROT(data.frame(Y=d$Y[d$m, 2], X=d$X[d$m], w=d$w[d$m]))))
-    } else if (class(d)=="IP" || class(d) == "data.frame") {
+    } else {
         ## STEP 1: Estimate global polynomial regression
         r1 <- unname(stats::lm(d$Y ~ 0 + outer(d$X, 0:4, "^"),
                                weights=d$w)$coefficients)

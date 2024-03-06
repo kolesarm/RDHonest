@@ -87,15 +87,21 @@ test_that("Test weighting using cghs", {
                          sigma2=var(log(cghs$earnings[ix]))/sum(ix))
         dd <- rbind(dd, df)
     }
-    ## Test that se.method should make sense
+
 
 
     s1 <- RDHonest(y~x, cutoff=1947, data=dd, weights=weights, sigma2=sigma2,
                    se.method="supplied.var", h=s0$coefficients$bandwidth)
-    expect_equal(s1$coefficients[1:9], s0$coefficients[1:9])
-    expect_equal(s1$coefficients[12:15], s0$coefficients[12:15])
-    ## TODO eff.obs computation should be different.: s0$coefficients[10]
-##     unname(stats::lm(y ~ 0 + outer(x-1947, 0:4, "^"), data=dd, subset=x-1947>=0, weights=weights)$coefficients)
+    expect_equal(s1$coefficients, s0$coefficients)
+    ## If we use supplie.var for variance estimation, should match approx
+    s2 <- RDHonest(y~x, cutoff=1947, data=dd, weights=weights, sigma2=sigma2,
+                   se.method="supplied.var")
+    expect_lt(max(abs(s2$coefficients[2:9]-s0$coefficients[2:9])), 4e-3)
+
+
+
+    ## TODO: should be able to estimate variance if obs not too binned, more-less
+
 
     ## wts <- sqrt(w)
     ## z <- .Call(C_Cdqrls, x * wts, y * wts, tol, FALSE)

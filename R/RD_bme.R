@@ -136,8 +136,7 @@ RDHonestBME <- function(formula, data, subset, cutoff=0, na.action,
                        conf.high.onesided=max(oci_u), bandwidth=h,
                        eff.obs=length(x), cv=NA, alpha=alpha, method="BME",
                        kernel="uniform")
-    ret <- list(coefficients=coef, call=cl, na.action=attr(mf, "na.action"))
-    class(ret) <- "RDResults"
-
-    ret
+    structure(list(coefficients=coef, call=cl,
+                          na.action=attr(mf, "na.action")),
+                     class="RDResults")
 }

@@ -86,7 +86,7 @@ test_that("Honest inference in Lee and LM data",  {
     expect_equal(r1$coefficients$estimate, -1.1982581306)
     expect_equal(c(r1$coefficients$std.error, r2$coefficients$std.error),
                  c(0.6608206598, 0.6955768728))
-    m1 <- paste0(" Sharp RD Parameter   -1.198     ",
+    m1 <- paste0(" Sharp RD parameter   -1.198     ",
                  "0.6608        4.796     (-7.081, 4.684)")
     expect_equal(r1o[8], m1)
     expect_equal(r1o[10], "Onesided CIs:  (-Inf, 4.684), (-7.081, Inf)")

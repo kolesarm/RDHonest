@@ -33,7 +33,7 @@ PrelimVar <- function(d, se.initial="EHW") {
     ## IK) for uniform kernel making sure this results in enough distinct values
     ## on either side of threshold so we don't have perfect fit
 
-    if (class(d)=="IP") {
+    if (inherits(d, "IP")) {
         hmin <- max(sort(unique(abs(d$X)))[2], sort(abs(d$X))[4])
     } else {
         hmin <- max(sort(unique(d$X[d$p]))[3], sort(abs(unique(d$X[d$m])))[3],
@@ -41,19 +41,19 @@ PrelimVar <- function(d, se.initial="EHW") {
     }
     ## Use reduced form for FRD bandwidth selector
     drf <- d
-    if (class(d)=="FRD") {
+    if (inherits(d, "FRD")) {
         drf$Y <- drf$Y[, 1]
         class(drf) <- "SRD"
     }
 
     if (se.initial == "EHW") {
-        h1 <- if (class(d)=="IP") ROTBW(drf) else IKBW(drf)
+        h1 <- if (inherits(d, "IP")) ROTBW(drf) else IKBW(drf)
         if (is.nan(h1)) {
             warning("Preliminary bandwidth is NaN, setting it to Inf")
             h1 <- Inf
         }
         r1 <- NPReg(d, max(h1, hmin), se.method="EHW")
-    } else if (class(d) == "SRD" && se.initial == "Silverman") {
+    } else if (inherits(d, "SRD") && se.initial == "Silverman") {
         ## Silverman only for RD/IK
         h1 <- max(1.84*stats::sd(d$X)/sum(length(d$X))^(1/5), hmin)
         r1 <- NPReg(d, h1, "uniform", order=0, se.method="EHW")
@@ -68,9 +68,9 @@ PrelimVar <- function(d, se.initial="EHW") {
     if (!is.null(d$clusterid))
         d$rho <- Moulton(r1$res, d)
 
-    if (class(d) == "IP") {
+    if (inherits(d, "IP")) {
         d$sigma2 <- rep(mean(r1$sigma2[r1$est_w != 0]), length(d$X))
-    } else if (class(d)=="SRD") {
+    } else if (inherits(d, "SRD")) {
         d$sigma2 <- rep(NA, length(d$X))
         d$sigma2[d$p] <- mean(r1$sigma2[d$p & r1$est_w != 0])
         d$sigma2[d$m] <- mean(r1$sigma2[d$m & r1$est_w != 0])

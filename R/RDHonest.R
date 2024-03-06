@@ -153,6 +153,10 @@ RDHonest <- function(formula, data, subset, weights, cutoff=0, M,
     mf[[1L]] <- quote(stats::model.frame)
     mf <- eval(mf, parent.frame())
 
+    ## TODO: what are the supported se methods?
+    if (!(se.method %in% c("nn", "EHW", "supplied.var")))
+        stop("Unsupported se.method")
+
     if (point.inference) {
         method <- "IP"
     } else if (length(formula)[2]==2) {
@@ -184,7 +188,9 @@ RDHonest <- function(formula, data, subset, weights, cutoff=0, M,
                        round(ret$coefficients$leverage, 2),
                        ".\nInference may be inaccurate. ",
                        "Consider using bigger bandwidth."))
-
+    ret$coefficients$term <- switch(method, IP="Value of conditional mean",
+                                    SRD="Sharp RD parameter",
+                                    "Fuzzy RD parameter")
     ret
 }
 
@@ -205,7 +211,7 @@ NPRHonest <- function(d, M, kern="triangular", h, opt.criterion, alpha=0.05,
 
     wt <- r1$est_w[r1$est_w!=0]
     xx <- d$X[r1$est_w!=0]
-    if (class(d)=="IP") {
+    if (inherits(d, "IP")) {
         nobs <- length(wt)
         ## Are we at a boundary?
         bd <- length(unique(d$X>=0))==1
@@ -214,11 +220,11 @@ NPRHonest <- function(d, M, kern="triangular", h, opt.criterion, alpha=0.05,
         bd <- TRUE
     }
 
-    if (T0bias && class(d)=="FRD") {
+    if (T0bias && inherits(d, "FRD")) {
         ## multiply bias and sd by r1$fs to make if free of first stage
         r1$se <- r1$se*abs(r1$fs)
         M <- unname(c((M[1]+M[2]*abs(T0)), M))
-    } else if (!T0bias && class(d)=="FRD") {
+    } else if (!T0bias && inherits(d, "FRD")) {
         M <- unname(c((M[1]+M[2]*abs(r1$estimate)) / abs(r1$fs), M))
     } else {
         M[2:3] <- c(NA, NA)
@@ -242,14 +248,12 @@ NPRHonest <- function(d, M, kern="triangular", h, opt.criterion, alpha=0.05,
         bm <- stats::integrate(function(s) vapply(s, w2m, numeric(1)), -h, 0)
         bias <- M[1] * (bp$value+bm$value)
     }
-    term <- switch(class(d), IP="Value of conditional mean",
-                   SRD="Sharp RD Parameter", "Fuzzy RD Parameter")
     method <- switch(sclass, H="Holder", "Taylor")
 
     d$est_w <- r1$est_w
     d$sigma2 <- r1$sigma2
     kernel <- if (!is.function(kern)) kern else "user-supplied"
-    co <- data.frame(term=term, estimate=r1$estimate, std.error=r1$se,
+    co <- data.frame(term=NA, estimate=r1$estimate, std.error=r1$se,
                      maximum.bias=bias, conf.low=NA, conf.high=NA,
                      conf.low.onesided=NA, conf.high.onesided=NA, bandwidth=h,
                      eff.obs=r1$eff.obs,
@@ -292,7 +296,7 @@ OptBW <- function(d, M, kern="triangular", opt.criterion, alpha=0.05, beta=0.8,
                MSE=r$maximum.bias^2+r$std.error^2,
                FLCI=r$conf.high-r$conf.low)
     }
-    if (class(d)=="IP") {
+    if (inherits(d, "IP")) {
         hmin <- sort(unique(abs(d$X)))[2]
     } else {
         hmin <- max(unique(d$X[d$p])[2], sort(unique(abs(d$X[d$m])))[2])

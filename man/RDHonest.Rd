@@ -94,7 +94,7 @@ computed according to criterion given by \code{opt.criterion}.}
     (local polynomial estimators only).}
 
    \item{"supplied.var"}{Use conditional variance supplied by \code{sigma2}
-        or \code{d} instead of computing residuals}
+        instead of computing residuals}
 
 }}
 
@@ -178,8 +178,6 @@ that is first in \code{data} and then in the environment of \code{formula}.
 }
 
 \examples{
-
-# Lee dataset
 RDHonest(voteshare ~ margin, data = lee08, kern = "uniform", M = 0.1, h = 10)
 RDHonest(cn~retired | elig_year, data=rcp, cutoff=0, M=c(4, 0.4),
           kern="triangular", opt.criterion="MSE", T0=0, h=3)
