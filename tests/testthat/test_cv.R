@@ -1,5 +1,3 @@
-context("Test bounded normal mean")
-
 test_that("Sanity check for CVb for big and small values", {
 
     alpha <- 0.07

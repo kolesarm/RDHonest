@@ -1,5 +1,3 @@
-context("Equivalent kernels")
-
 test_that("Numeric and analytical equivalent kernels agree", {
     us <- matrix(c(-2, seq(-0.9, 0.9, by=0.05), 0, 2), nrow = 4)
 

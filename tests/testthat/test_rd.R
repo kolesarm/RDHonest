@@ -1,21 +1,4 @@
-context("Test RD")
-
-test_that("Test class constructor sorting", {
-    d0 <- NPRData(rcp[, c(6, 3, 2)], cutoff=3, "FRD")
-    d1 <- NPRData(rcp[sort(rcp$elig_year,
-                           index.return=TRUE)$ix, c(6, 3, 2)], cutoff=3, "FRD")
-    expect_identical(d1, d0)
-
-    d0 <- NPRData(rcp[, c(6, 2)], cutoff=3, "SRD")
-    d1 <- NPRData(rcp[sort(rcp$elig_year,
-                           index.return=TRUE)$ix, c(6, 2)], cutoff=3, "SRD")
-    expect_identical(d1, d0)
-
-    d0 <- NPRData(rcp[, c(6, 2)], cutoff=-3, "IP")
-    d1 <- NPRData(rcp[sort(rcp$elig_year,
-                           index.return=TRUE)$ix, c(6, 2)], cutoff=-3, "IP")
-    expect_identical(d1, d0)
-
+test_that("Test I() in formulas", {
     ## Now test that I() works
     expect_equal(RDHonest(voteshare ~ margin, data=lee08,
                           M=0, h=2)$coefficients$estimate,
@@ -29,23 +12,27 @@ test_that("Test class constructor sorting", {
 
 test_that("IK bandwidth calculations", {
     ## Test IK bandwidth in Lee data, IK Table 1
-    d <- NPRData(lee08, cutoff=0, "SRD")
+    d <- RDHonest(voteshare~margin, data=lee08, h=10, M=0.1)$d
+    d$sigma2 <- NULL
 
     dig <- getOption("digits")
     options(digits=8)
-    r1 <- capture.output(IKBW(d, verbose=TRUE))
+    r1 <- capture.output(h <- IKBW(d, verbose=TRUE))
+    options(digits=dig)
     expect_equal(r1[c(2, 4, 5, 6, 8)],
                  c(" h1:  14.44507 ", " f(0):  0.0089622411 ",
                    " sigma^2_{+}(0):  12.024424 ^2",
                    " sigma^2_{+}(0): 10.472064 ^2 ",
                    " h_{2, +}: 60.513312 h_{2, -}: 60.993358 "))
-    options(digits=dig)
 
     expect_equal(IKBW(d), 29.3872649956)
 
-    r <- NPReg(d, IKBW(d, kern="uniform"), "uniform")
+    d0 <- RDHonest(voteshare~margin, data=lee08, h=h, M=0.1)$d
+    d0$sigma2 <- NULL
+
+    r <- NPReg(d0, IKBW(d0, kern="uniform"), "uniform")
     expect_equal(r$estimate, 8.0770003749)
-    d <- PrelimVar(NPRData(lee08, cutoff=0, "SRD"), se.initial="EHW")
+    d <- PrelimVar(d0, se.initial="EHW")
     expect_equal(sqrt(mean(d$sigma2[d$p])), 12.58183131)
     expect_equal(sqrt(mean(d$sigma2[d$m])), 10.79067278)
 })
@@ -93,8 +80,7 @@ test_that("Honest inference in Lee and LM data",  {
     expect_equal(r2o[10], "Onesided CIs:  (-Inf, 4.742), (-7.138, Inf)")
     expect_equal(r1o[16], "24 observations with missing values dropped")
 
-    d <- NPRData(headst[!is.na(headst$mortHS), c("mortHS", "povrate")],
-                 cutoff=0, "SRD")
+    d <- RDHonest(mortHS~povrate, data=headst, h=10, M=2)$d
     d <- PrelimVar(d, se.initial="Silverman")
     es <- function(kern, se.method) {
         NPRHonest(d, M=0.0076085544, kern=kern, sclass="H", se.method=se.method,
@@ -189,7 +175,8 @@ test_that("Honest inference in Lee and LM data",  {
     ## expect_equal(r3$h, 5.0590753991)
 
     ## Decrease M, these results are not true minima...
-    d <- PrelimVar(NPRData(lee08, cutoff=0, "SRD"), se.initial="Silverman")
+    d <- RDHonest(voteshare~margin, data=lee08, h=1, M=1)$d
+    d <- PrelimVar(d, se.initial="Silverman")
     r1 <- NPRHonest(d, M=0.01, kern="uniform", opt.criterion="MSE", beta=0.8,
                     sclass="T")$coefficients
     r2 <- NPRHonest(d, M=0.01, kern="uniform", opt.criterion="MSE", beta=0.8,
@@ -203,15 +190,16 @@ test_that("Honest inference in Lee and LM data",  {
     ## Missing values
     expect_error(RDHonest(mortHS ~ povrate, data=headst, kern="uniform", h=12,
                           na.action="na.fail"))
-    r1 <- RDHonest(mortHS ~ povrate, data=headst, kern="uniform",
-                   na.action="na.omit")
+    expect_message(r1 <- RDHonest(mortHS ~ povrate, data=headst, kern="uniform",
+                                  na.action="na.omit"))
     r1 <- capture.output(print(r1, digits=6))
     expect_equal(r1[c(11, 12, 16)],
                  c("Bandwidth: 3.98048, Kernel: uniform",
                    "Number of effective observations:     239",
                    "24 observations with missing values dropped"))
-    r2 <- RDHonest(mortHS ~ povrate, data=headst, kern="epanechnikov",
-                   point.inference=TRUE, cutoff=4)
+    expect_message(r2 <- RDHonest(mortHS ~ povrate, data=headst,
+                                  kern="epanechnikov",
+                                  point.inference=TRUE, cutoff=4))
     expect_equal(capture.output(print(r2, digits=6))[c(11, 12, 16)],
                  c("Bandwidth: 9.42625, Kernel: epanechnikov",
                    "Number of effective observations: 373.642",
@@ -290,15 +278,15 @@ test_that("Supplied variance", {
                    point.inference=TRUE, cutoff=2)
     expect_equal(r$coefficients$std.error, r2$coefficients$std.error)
 
-    r <- RDHonest(log(cn)~retired | elig_year, data=rcp[1:100, ], cutoff=0,
-                  M=c(0.002, 0.005), T0=0, h=7, kern="uniform")
+    expect_message(r <- RDHonest(log(cn)~retired | elig_year, data=rcp[1:100, ],
+                                 cutoff=0, M=c(0.002, 0.005), T0=0, h=7,
+                                 kern="uniform"))
     ## Data not in order
-    r2 <- RDHonest(r$data$Y[, 1]~r$data$Y[, 2] | r$data$X, data=rcp[1:100, ],
-                   cutoff=0, M=c(0.002, 0.005), T0=0, h=7,
-                   sigmaY2=r$data$sigma2, kern="uniform")
+    expect_message(r2 <- RDHonest(r$data$Y[, 1]~r$data$Y[, 2] | r$data$X,
+                                  data=rcp[1:100, ], cutoff=0,
+                                  M=c(0.002, 0.005), T0=0, h=7,
+                                  sigmaY2=r$data$sigma2, kern="uniform"))
     expect_equal(r$coefficients$std.error, r2$coefficients$std.error)
-
-
 })
 
 

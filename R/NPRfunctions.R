@@ -12,8 +12,8 @@ LPReg <- function(X, Y, h, K, order=1, se.method=NULL, sigma2, J=3,
     Gamma <- crossprod(R, W*R)
 
     if (h==0 || inherits(try(solve(Gamma), silent=TRUE), "try-error"))
-        return(list(theta=0, sigma2=NA, var=NA, w=0, eff.obs=0))
-
+        return(list(theta=0, sigma2=NA*Y, res=NA*Y,
+                    var=NA*stats::var(Y), est_w=W*NA, eff.obs=0))
     ## weights if we think of the estimator as linear estimator
     wgt <- (W*R %*% solve(Gamma))[, 1]
     beta <- solve(Gamma, crossprod(R, W*Y))

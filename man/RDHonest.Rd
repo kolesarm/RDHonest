@@ -41,8 +41,8 @@ which the function is called.}
 \item{subset}{optional vector specifying a subset of observations to be used
 in the fitting process.}
 
-\item{weights}{Optional vector of weights to weight the observations
-(useful for aggregated data). Disregarded if optimal kernel is used.}
+\item{weights}{Optional vector of weights to weight the observations (useful
+for aggregated data). Disregarded if optimal kernel is used.}
 
 \item{cutoff}{specifies the RD cutoff in the running variable. For inference
 at a point, specifies the point \eqn{x_0} at which to calculate the
@@ -77,8 +77,8 @@ contain \code{NA}s. The default is set by the \code{na.action} setting of
 
     }
 
-    The methods use conditional variance given by \code{sigmaY2}, if supplied.
-    Otherwise, for the purpose of estimating the optimal bandwidth,
+    The methods use conditional variance given by \code{sigmaY2}, if
+    supplied. Otherwise, for the purpose of estimating the optimal bandwidth,
     conditional variance is estimated using the method specified by
     \code{se.initial}.}
 
@@ -110,8 +110,8 @@ intervals; otherwise ignored.}
 \item{J}{Number of nearest neighbors, if "nn" is specified in
 \code{se.method}.}
 
-\item{sclass}{Smoothness class, either \code{"T"} for Taylor or
-\code{"H"} for Hölder class.}
+\item{sclass}{Smoothness class, either \code{"T"} for Taylor or \code{"H"}
+for Hölder class.}
 
 \item{T0}{Initial estimate of the treatment effect for calculating the
 optimal bandwidth. Only relevant for Fuzzy RD.}
@@ -123,7 +123,7 @@ instead of RD.}
 
 \item{sigmaD2}{Supply variance of treatment (fuzzy RD only).}
 
-\item{sigmaYD}{Supply covariante of treatment and outcome (fuzzy RD only).}
+\item{sigmaYD}{Supply covariance of treatment and outcome (fuzzy RD only).}
 
 \item{clusterid}{Cluster id for cluster-robust standard errors}
 }

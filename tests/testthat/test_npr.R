@@ -1,7 +1,8 @@
-context("Test NPR")
-
 test_that("Test NN variance estimator", {
-    d <- NPRData(rcp[1:5000, c(6, 3, 2)], cutoff=0, "FRD")
+    r0 <- RDHonest(cn~retired | elig_year, data=rcp[1:5000, ],
+                   M=c(1, 1), h=10)
+    d <- r0$d
+
     s0 <- sigmaNN(d$X[d$p], d$Y[d$p, ], J=5)
     s1 <- sigmaNN(d$X[d$p], d$Y[d$p, 1], J=5)
     s2 <- sigmaNN(d$X[d$p], d$Y[d$p, 2], J=5)
@@ -10,7 +11,10 @@ test_that("Test NN variance estimator", {
 })
 
 test_that("Test LPreg", {
-    d <- NPRData(rcp[1:5000, c(6, 3, 2)], cutoff=0, "FRD")
+    r0 <- RDHonest(cn~retired | elig_year, data=rcp[1:5000, ],
+                   M=c(1, 1), h=10)
+    d <- r0$d
+    d$sigma2 <- NA
     K <- EqKern("triangular", boundary=FALSE, order=0)
     r0e <- LPReg(d$X[d$m], d$Y[d$m, ], h=10, K, order=2, se.method="EHW")
     r0n <- LPReg(d$X[d$m], d$Y[d$m, ], h=10, K, order=2, se.method="nn", J=4)
@@ -21,11 +25,13 @@ test_that("Test LPreg", {
     expect_lt(max(abs(r0e$theta- c(r1e$theta, r2e$theta))), 1e-10)
     expect_lt(max(abs(r0n$theta- c(r1n$theta, r2n$theta))), 1e-10)
 
-    expect_equal(r0e$sigma2[, c(1, 4)], cbind(r1e$sigma2, r2e$sigma2))
-    expect_equal(r0n$sigma2[, c(1, 4)], cbind(r1n$sigma2, r2n$sigma2))
+    expect_equal(unname(r0e$sigma2[, c(1, 4)]),
+                 cbind(r1e$sigma2, r2e$sigma2))
+    expect_equal(unname(r0n$sigma2[, c(1, 4)]),
+                 cbind(r1n$sigma2, r2n$sigma2))
 
-    expect_equal(r0e$var[c(1, 4)], c(r1e$var, r2e$var))
-    expect_equal(r0n$var[c(1, 4)], c(r1n$var, r2n$var))
+    expect_equal(unname(r0e$var[c(1, 4)]), c(r1e$var, r2e$var))
+    expect_equal(unname(r0n$var[c(1, 4)]), c(r1n$var, r2n$var))
 
     expect_equal(r0e$w, r1e$w)
     expect_equal(r0e$w, r1n$w)
@@ -36,9 +42,11 @@ test_that("Test LPreg", {
 test_that("Test NPReg", {
     ## Replicate Ludwig-Miller
     lumi <- headst[!is.na(headst$mortHS), c("mortHS", "povrate")]
-    mort <- NPRData(lumi, cutoff=0, "SRD")
-    mortm <- NPRData(lumi[lumi$povrate<0, ], cutoff=0, "IP")
-    mortp <- NPRData(lumi[lumi$povrate>=0, ], cutoff=0, "IP")
+    mort <- RDHonest(mortHS~povrate, data=lumi, M=1)$d
+    mortm <- RDHonest(mortHS~povrate, data=lumi, M=1,
+                      subset=povrate<0, point.inference=TRUE)$d
+    mortp <- RDHonest(mortHS~povrate, data=lumi, M=1,
+                      subset=povrate>=0, point.inference=TRUE)$d
     t1 <- data.frame()
     t2 <- data.frame()
     bws <- c(9, 18, 36)
@@ -62,19 +70,19 @@ test_that("Test NPReg", {
     expect_lt(max(abs(t1-t2)), 1e-11)
 
     ## Replicate Battistin et al
-    df <- NPRData(cbind(rcp[, c(3, 2)]), cutoff=0, "SRD")
-    dr <- NPRData(cbind(logcn=log(rcp[, 6]), rcp[, 2, drop=FALSE]),
-                  cutoff=0, "SRD")
-    d <- NPRData(cbind(logcn=log(rcp[, 6]), rcp[, c(3, 2)]), cutoff=0, "FRD")
+    df <- RDHonest(retired~elig_year, data=rcp, M=1, h=6)$d
+    dr <- RDHonest(log(cn)~elig_year, data=rcp, M=1, h=6)$d
+    d <- RDHonest(log(cn)~retired|elig_year, data=rcp, M=c(1, 1), h=6)$d
+
     rf <- NPReg(df, 10, "uniform", order=1, se.method="EHW")
     rr <- NPReg(dr, 10, "uniform", order=1, se.method="EHW")
     expect_equal(unname(c(rf$estimate, round(rf$se, 4))),
                  c(0.43148435, 0.0181))
     expect_equal(unname(c(rr$estimate, round(rr$se, 4))),
-                 c(-0.0355060, 0.0211))
+                 c(-0.03550599496, 0.0211))
     r1 <- NPReg(d, 10, "uniform", order=1, se.method="EHW")
-    expect_equal(c(r1$estimate, r1$se),
-                 c(-0.08228802, 0.0483039))
+    expect_equal(unname(c(r1$estimate, r1$se)),
+                 c(-0.08228802393, 0.04830389419))
     ## Numbers from
     ## dt <- cbind(logcn=log(rcp[, 6]), rcp[, c(3, 2)], Z=rcp$elig_year>=0)
     ## r4 <- AER::ivreg(logcn ~ retired + Z:elig_year + elig_year |
@@ -87,5 +95,6 @@ test_that("Test NPReg", {
     ## r3 <- AER::ivreg(logcn~retired | Z, subset=(abs(elig_year)<=5), data=dt)
     ## summary(r3, vcov = sandwich::sandwich,
     ## diagnostics = TRUE)$coefficients[2, 1:2]
-    expect_equal(c(r2$estimate, r2$se), c(-0.14157767, 0.02562096))
+    expect_equal(unname(c(r2$estimate, r2$se)),
+                 c(-0.14157767658, 0.02562096397))
 })

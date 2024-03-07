@@ -50,8 +50,8 @@
 #'
 #'     }
 #'
-#'     The methods use conditional variance given by \code{sigmaY2}, if supplied.
-#'     Otherwise, for the purpose of estimating the optimal bandwidth,
+#'     The methods use conditional variance given by \code{sigmaY2}, if
+#'     supplied. Otherwise, for the purpose of estimating the optimal bandwidth,
 #'     conditional variance is estimated using the method specified by
 #'     \code{se.initial}.
 #' @param beta Determines quantile of excess length to optimize, if bandwidth
@@ -60,19 +60,19 @@
 #' @param alpha determines confidence level, \code{1-alpha} for
 #'     constructing/optimizing confidence intervals.
 #' @param M Bound on second derivative of the conditional mean function.
-#' @param sclass Smoothness class, either \code{"T"} for Taylor or
-#'     \code{"H"} for Hölder class.
+#' @param sclass Smoothness class, either \code{"T"} for Taylor or \code{"H"}
+#'     for Hölder class.
 #' @param h bandwidth, a scalar parameter. If not supplied, optimal bandwidth is
 #'     computed according to criterion given by \code{opt.criterion}.
-#' @param weights Optional vector of weights to weight the observations
-#'     (useful for aggregated data). Disregarded if optimal kernel is used.
+#' @param weights Optional vector of weights to weight the observations (useful
+#'     for aggregated data). Disregarded if optimal kernel is used.
 #' @param point.inference Do inference at a point determined by \code{cutoff}
 #'     instead of RD.
 #' @param T0 Initial estimate of the treatment effect for calculating the
 #'     optimal bandwidth. Only relevant for Fuzzy RD.
 #' @param sigmaY2 Supply variance of outcome. Ignored when kernel is optimal.
 #' @param sigmaD2 Supply variance of treatment (fuzzy RD only).
-#' @param sigmaYD Supply covariante of treatment and outcome (fuzzy RD only).
+#' @param sigmaYD Supply covariance of treatment and outcome (fuzzy RD only).
 #' @param clusterid Cluster id for cluster-robust standard errors
 #' @return Returns an object of class \code{"RDResults"}. The function
 #'     \code{print} can be used to obtain and print a summary of the results. An
@@ -140,7 +140,8 @@
 RDHonest <- function(formula, data, subset, weights, cutoff=0, M,
                      kern="triangular", na.action, opt.criterion="MSE", h,
                      se.method="nn", alpha=0.05, beta=0.8, J=3, sclass="H",
-                     T0=0, point.inference=FALSE, sigmaY2, sigmaD2, sigmaYD, clusterid) {
+                     T0=0, point.inference=FALSE, sigmaY2, sigmaD2, sigmaYD,
+                     clusterid) {
     ## construct model frame
     cl <- mf <- match.call(expand.dots = FALSE)
     m <- match(c("formula", "data", "subset", "weights", "na.action", "sigmaY2",
@@ -156,44 +157,64 @@ RDHonest <- function(formula, data, subset, weights, cutoff=0, M,
     mf <- eval(mf, parent.frame())
 
     ## TODO: what are the supported se methods, weighting + optimal kernel etc
-    if (!(se.method %in% c("nn", "EHW", "supplied.var")))
-        stop("Unsupported se.method")
-
     if (point.inference) {
-        method <- "IP"
+        method <- c("Value of conditional mean"="IP")
     } else if (length(formula)[2]==2) {
-        method <- "FRD"
+        method <- c("Fuzzy RD parameter"="FRD")
     } else {
-        method <- "SRD"
+        method <- c("Sharp RD parameter"="SRD")
     }
+
     d <- NPRData(mf, cutoff, method)
+    process_options(M, se.method, method, d, kern)
+
+    if (NCOL(d$W)>0 && (missing(M) || missing(h))) {
+        ret <- NPRHonest(d, MROT(d), kern, h, opt.criterion=opt.criterion,
+                         alpha=alpha, beta=beta, se.method=se.method, J=J,
+                         sclass=sclass, T0=T0)
+        return(0) # TODO
+    }
 
     if (missing(M)) {
         M <- MROT(d)
         message("Using Armstong & Kolesar (2020) ROT for smoothness constant M")
     }
-    if (kern=="optimal" && method=="SRD") {
+
+    if (kern=="optimal") {
         ret <- RDTOpt(d, M, opt.criterion, alpha, beta, se.method, J)
-    } else if (!missing(h)) {
-        ret <- NPRHonest(d, M, kern, h, alpha=alpha, se.method=se.method, J=J,
-                         sclass=sclass, T0=T0)
     } else {
-        ret <- NPRHonest(d, M, kern, opt.criterion=opt.criterion, alpha=alpha,
-                         beta=beta, se.method=se.method, J=J, sclass=sclass,
-                         T0=T0)
+        ret <- NPRHonest(d, M, kern, h, opt.criterion=opt.criterion,
+                         alpha=alpha, beta=beta, se.method=se.method, J=J,
+                         sclass=sclass, T0=T0)
     }
+
     ret$call <- cl
     ret$na.action <- attr(mf, "na.action")
 
-    if (is.nan(ret$coefficients$leverage) || ret$coefficients$leverage>0.1)
+    if (!is.finite(ret$coefficients$leverage) || ret$coefficients$leverage>0.1)
         message(paste0("Maximal leverage is large: ",
                        round(ret$coefficients$leverage, 2),
                        ".\nInference may be inaccurate. ",
                        "Consider using bigger bandwidth."))
-    ret$coefficients$term <- switch(method, IP="Value of conditional mean",
-                                    SRD="Sharp RD parameter",
-                                    "Fuzzy RD parameter")
+    ret$coefficients$term <- names(method)
     ret
+}
+
+process_options <- function(M, se.method, method, d, kern) {
+    if (kern=="optimal" && method!="SRD")
+        stop("Optimal kernel requires sharp RD design.")
+
+    if (!missing(M)) {
+        if (method=="FRD" && (length(M)!=2 || !is.numeric(M)))
+            stop("M must be a numeric vector of length 2")
+        if (method!="FRD" && (length(M)!=1 || !is.numeric(M)))
+            stop("M must be a numeric vector of length 1.")
+    }
+    if (!(se.method %in% c("nn", "EHW", "supplied.var"))) {
+        stop("Unsupported se.method")
+    }
+    if (NCOL(d$W)>0 && method=="IP")
+        stop("Covariates not allowed whem method is 'IP'.")
 }
 
 
@@ -233,7 +254,7 @@ NPRHonest <- function(d, M, kern="triangular", h, opt.criterion, alpha=0.05,
     }
 
     ## Determine bias
-    if (nobs==0) {
+    if (nobs==0 || is.na(nobs)) {
         ## If bandwidths too small, big bias / sd
         bias <- r1$se <- sqrt(.Machine$double.xmax/10)
     } else if (sclass=="T")  {
