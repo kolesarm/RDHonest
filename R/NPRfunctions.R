@@ -4,16 +4,16 @@
 ##     \code{"supplied.var"} \code{se.method})
 LPReg <- function(X, Y, h, K, order=1, se.method=NULL, sigma2, J=3,
                   weights=rep(1L, length(X)), RD=FALSE, rho=NULL,
-                  clusterid=NULL) {
+                  clusterid=NULL, covs=matrix(nrow=NROW(X), ncol=0)) {
     R <- outer(X, 0:order, "^")
     if (RD)
-        R <- cbind((X>=0)*R, R)
+        R <- cbind((X>=0)*R, R, covs)
     W <- K(X/h)*weights
     Gamma <- crossprod(R, W*R)
 
     if (h==0 || inherits(try(solve(Gamma), silent=TRUE), "try-error"))
         return(list(theta=0, sigma2=NA*Y, res=NA*Y,
-                    var=NA*stats::var(Y), est_w=W*NA, eff.obs=0))
+                    var=NA*stats::var(Y), est_w=W*0, eff.obs=0))
     ## weights if we think of the estimator as linear estimator
     wgt <- (W*R %*% solve(Gamma))[, 1]
     beta <- solve(Gamma, crossprod(R, W*Y))
@@ -50,9 +50,9 @@ LPReg <- function(X, Y, h, K, order=1, se.method=NULL, sigma2, J=3,
         us <- apply(wgt*res, 2, function(x) tapply(x, clusterid, sum))
         V <- as.vector(crossprod(us))
     }
-
-    list(theta=beta[1, ], sigma2=hsigma2, res=res,
-         var=V, est_w=wgt, eff.obs=eff.obs)
+    list(theta=beta[1, ], sigma2=hsigma2, res=res, var=V, est_w=wgt,
+         eff.obs=eff.obs,
+         gamma=beta[seq_len(NCOL(covs))+NROW(beta)-NCOL(covs), ])
 }
 
 
@@ -110,6 +110,9 @@ MROT <- function(d) {
         ## STEP 1: Estimate global polynomial regression
         r1 <- unname(stats::lm(d$Y ~ 0 + outer(d$X, 0:4, "^"),
                                weights=d$w)$coefficients)
+        if(length(unique(d$X))<4 || any(is.na(r1)))
+            stop(paste0("Insufficient unique values of the running",
+                        " variable to compute rule of thumb for M."))
         f2 <- function(x) abs(2*r1[3]+6*x*r1[4]+12*x^2*r1[5])
         ## maximum occurs either at endpoints, or else at the extremum,
         ## -r1[4]/(4*r1[5]), if the extremum is in the support

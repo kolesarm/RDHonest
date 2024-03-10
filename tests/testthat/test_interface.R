@@ -4,7 +4,13 @@ test_that("Test inputs", {
 
     expect_message(pp <- RDHonest(voteshare~margin, data=lee08,
                                   M=2, h=5, subset=I(margin>0))$coefficients)
-
     expect_equal(as.numeric(pp[c(2, 3, 11)]),
                  c(0L, sqrt(.Machine$double.xmax/10), NA))
+    expect_error(RDHonest(c~elig_year, data=rcp, clusterid=seq_along(rr$c),
+                          point.inference=TRUE))
+    ## Insufficient unique values of the running variable to compute rule of
+    ## thumb for M.
+    expect_error(r2 <- RDHonest(log(cn)~elig_year,
+                                data=rcp[abs(rcp$elig_year)<=3, ]))
+
 })

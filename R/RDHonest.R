@@ -153,10 +153,10 @@ RDHonest <- function(formula, data, subset, weights, cutoff=0, M,
     mf$formula <- formula
 
     ## http://madrury.github.io/jekyll/update/statistics/2016/07/20/lm-in-R.html
+    mf$drop.unused.levels <- TRUE
     mf[[1L]] <- quote(stats::model.frame)
     mf <- eval(mf, parent.frame())
 
-    ## TODO: what are the supported se methods, weighting + optimal kernel etc
     if (point.inference) {
         method <- c("Value of conditional mean"="IP")
     } else if (length(formula)[2]==2) {
@@ -168,11 +168,15 @@ RDHonest <- function(formula, data, subset, weights, cutoff=0, M,
     d <- NPRData(mf, cutoff, method)
     process_options(M, se.method, method, d, kern)
 
-    if (NCOL(d$W)>0 && (missing(M) || missing(h))) {
-        ret <- NPRHonest(d, MROT(d), kern, h, opt.criterion=opt.criterion,
+    if (ncol(d$covs)>0 && (missing(M) || missing(h))) {
+        ## remove covariates and compute bw w/o covariates
+        d0 <- d
+        d0$covs <- d$covs[, 0]
+        ret <- NPRHonest(d0, MROT(d0), kern, h, opt.criterion=opt.criterion,
                          alpha=alpha, beta=beta, se.method=se.method, J=J,
                          sclass=sclass, T0=T0)
-        return(0) # TODO
+        ## Compute covariate-adjusted outcome
+         d <- covariate_adjust(d, kern, ret$coefficients$bandwidth)
     }
 
     if (missing(M)) {
@@ -180,7 +184,7 @@ RDHonest <- function(formula, data, subset, weights, cutoff=0, M,
         message("Using Armstong & Kolesar (2020) ROT for smoothness constant M")
     }
 
-    if (kern=="optimal") {
+    if (kernel_type(kern)=="optimal") {
         ret <- RDTOpt(d, M, opt.criterion, alpha, beta, se.method, J)
     } else {
         ret <- NPRHonest(d, M, kern, h, opt.criterion=opt.criterion,
@@ -200,26 +204,18 @@ RDHonest <- function(formula, data, subset, weights, cutoff=0, M,
     ret
 }
 
-process_options <- function(M, se.method, method, d, kern) {
-    if (kern=="optimal" && method!="SRD")
-        stop("Optimal kernel requires sharp RD design.")
-
-    if (!missing(M)) {
-        if (method=="FRD" && (length(M)!=2 || !is.numeric(M)))
-            stop("M must be a numeric vector of length 2")
-        if (method!="FRD" && (length(M)!=1 || !is.numeric(M)))
-            stop("M must be a numeric vector of length 1.")
-    }
-    if (!(se.method %in% c("nn", "EHW", "supplied.var"))) {
-        stop("Unsupported se.method")
-    }
-    if (NCOL(d$W)>0 && method=="IP")
-        stop("Covariates not allowed whem method is 'IP'.")
+covariate_adjust <- function(d, kern, h) {
+    if (is.null(d$Y_unadj)) d$Y_unadj <- d$Y
+    if (!is.function(kern))
+        kern <- EqKern(kern, boundary=FALSE, order=0)
+    r <- LPReg(d$X, as.matrix(d$Y_unadj), h, kern, order=1, se.method="EHW",
+               weights=d$w, RD = TRUE, covs=d$covs)
+    d$Y <- d$Y_unadj-d$covs %*% r$gamma
+    d$coefs_on_covariates <- r$gamma
+    d
 }
 
 
-## @param d object of class \code{"RDData"}, \code{"FRDData"}, or
-##     \code{"LPPData"}
 ## @param T0 Initial estimate of the treatment effect for calculating the
 ##     optimal bandwidth. Only relevant for Fuzzy RD.
 ## @param T0bias When evaluating the maximum bias of the estimate, use the
@@ -230,17 +226,18 @@ NPRHonest <- function(d, M, kern="triangular", h, opt.criterion, alpha=0.05,
                       T0bias=FALSE) {
     if (missing(h))
         h <- OptBW(d, M, kern, opt.criterion, alpha, beta, sclass, T0)
-    r1 <- NPReg(d, h, kern, order=1, se.method, J)
+    ## If there are covariates, compute new covariate-adjusted outcome
+    if (ncol(d$covs)>0) {
+        d <- covariate_adjust(d, kern, h)
+    }
 
+    r1 <- NPReg(d, h, kern, order=1, se.method, J)
     wt <- r1$est_w[r1$est_w!=0]
     xx <- d$X[r1$est_w!=0]
+    ## Are we at a boundary?
+    bd <- TRUE
     if (inherits(d, "IP")) {
-        nobs <- length(wt)
-        ## Are we at a boundary?
-        bd <- length(unique(d$X>=0))==1
-    } else {
-        nobs <- min(sum(xx>=0), sum(xx<0))
-        bd <- TRUE
+        bd <- length(unique(xx>=0))==1
     }
 
     if (T0bias && inherits(d, "FRD")) {
@@ -254,7 +251,7 @@ NPRHonest <- function(d, M, kern="triangular", h, opt.criterion, alpha=0.05,
     }
 
     ## Determine bias
-    if (nobs==0 || is.na(nobs)) {
+    if (r1$eff.obs==0) {
         ## If bandwidths too small, big bias / sd
         bias <- r1$se <- sqrt(.Machine$double.xmax/10)
     } else if (sclass=="T")  {
@@ -275,14 +272,14 @@ NPRHonest <- function(d, M, kern="triangular", h, opt.criterion, alpha=0.05,
 
     d$est_w <- r1$est_w
     d$sigma2 <- r1$sigma2
-    kernel <- if (!is.function(kern)) kern else "user-supplied"
     co <- data.frame(term=NA, estimate=r1$estimate, std.error=r1$se,
                      maximum.bias=bias, conf.low=NA, conf.high=NA,
                      conf.low.onesided=NA, conf.high.onesided=NA, bandwidth=h,
                      eff.obs=r1$eff.obs,
                      leverage=max(r1$est_w^2/r1$w^2)/sum(r1$est_w^2/r1$w),
                      cv=NA, alpha=alpha, method=method, M=M[1], M.rf=M[2],
-                     M.fs=M[3], first.stage=r1$fs, kernel=kernel, p.value=NA)
+                     M.fs=M[3], first.stage=r1$fs, kernel=kernel_type(kern),
+                     p.value=NA)
     structure(list(coefficients=fill_coefs(co), data=d), class="RDResults")
 }
 
@@ -327,7 +324,7 @@ OptBW <- function(d, M, kern="triangular", opt.criterion, alpha=0.05, beta=0.8,
     ## Optimize piecewise constant function using modification of golden
     ## search. In fact, the criterion may not be unimodal, so proceed with
     ## caution. (For triangular kernel, it appears unimodal)
-    if (kern=="uniform") {
+    if (kernel_type(kern)=="uniform") {
         supp <- sort(unique(abs(d$X)))
         h <- gss(obj, supp[supp>=hmin])
     } else {

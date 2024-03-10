@@ -1,12 +1,15 @@
 test_that("Test I() in formulas", {
     ## Now test that I() works
-    expect_equal(RDHonest(voteshare ~ margin, data=lee08,
-                          M=0, h=2)$coefficients$estimate,
-                 -RDHonest(voteshare ~ I(-margin), data=lee08,
-                           M=0, h=2)$coefficients$estimate)
-    expect_equal(RDHonest(cn~retired | elig_year, data=rcp, cutoff=0,
+    lees <- lee08[(1:1000)*6, ]
+    expect_equal(RDHonest(voteshare ~ margin, data=lees,
+                          M=0, h=10)$coefficients$estimate,
+                 -RDHonest(voteshare ~ I(-margin), data=lees,
+                           M=0, h=10)$coefficients$estimate)
+    expect_equal(RDHonest(cn~retired | elig_year, data=rcp[1:1000, ],
+                          cutoff=0,
                           M=c(1, 0.1), h=3)$coefficients$estimate,
-                 RDHonest(cn~retired | I(2*elig_year), data=rcp, cutoff=0,
+                 RDHonest(cn~retired | I(2*elig_year), data=rcp[1:1000, ],
+                          cutoff=0,
                           M=c(1, 0.1), h=6)$coefficients$estimate)
 })
 

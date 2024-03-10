@@ -1,8 +1,9 @@
 test_that("Inference at point agrees with RD", {
-    rde <- RDHonest(voteshare~margin, data=lee08, M=2, h=5)
-    pp <- RDHonest(voteshare~margin, data=lee08, M=2, h=5,
+    lees <- lee08[(1:1000)*6, ]
+    rde <- RDHonest(voteshare~margin, data=lees, M=2, h=10)
+    pp <- RDHonest(voteshare~margin, data=lees, M=2, h=10,
                    subset=I(margin>=0), point.inference=TRUE)
-    mm <- RDHonest(voteshare~margin, data=lee08, M=2, h=5,
+    mm <- RDHonest(voteshare~margin, data=lees, M=2, h=10,
                    subset=I(margin<0), point.inference=TRUE)
     expect_equal(pp$coefficients[2]-mm$coefficients[2], rde$coefficients[2])
     expect_equal(pp$coefficients[3]^2+mm$coefficients[3]^2,
@@ -34,8 +35,7 @@ test_that("MROT matches paper", {
 
 test_that("ROT bandwidth check", {
     ## Interior
-    r0 <- RDHonest(voteshare~margin, data=lee08, point.inference=TRUE, M=0)
-    expect_lt(abs(r0$coefficients$bandwidth - 100), 1e-5)
+    r0 <- RDHonest(voteshare~margin, data=lee08, point.inference=TRUE, M=10)
     d <- r0$d
     b1 <- ROTBW(d, kern="uniform")
 

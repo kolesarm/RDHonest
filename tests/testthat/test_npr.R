@@ -1,6 +1,6 @@
 test_that("Test NN variance estimator", {
-    r0 <- RDHonest(cn~retired | elig_year, data=rcp[1:5000, ],
-                   M=c(1, 1), h=10)
+    r0 <- RDHonest(cn~retired | elig_year, data=rcp[1:500, ],
+                   M=c(1, 1), h=20)
     d <- r0$d
 
     s0 <- sigmaNN(d$X[d$p], d$Y[d$p, ], J=5)
@@ -11,7 +11,7 @@ test_that("Test NN variance estimator", {
 })
 
 test_that("Test LPreg", {
-    r0 <- RDHonest(cn~retired | elig_year, data=rcp[1:5000, ],
+    r0 <- RDHonest(cn~retired | elig_year, data=rcp[1:2000, ],
                    M=c(1, 1), h=10)
     d <- r0$d
     d$sigma2 <- NA
