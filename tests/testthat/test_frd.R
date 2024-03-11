@@ -1,5 +1,5 @@
 test_that("Selected bw is infinite", {
-    r0 <- RDHonest(log(cn)~retired|elig_year, data=rcp[1:1000, ], M=c(0, 0),
+    r0 <- RDHonest(log(cn)|retired~elig_year, data=rcp[1:1000, ], M=c(0, 0),
                    opt.criterion="OCI")
     ## For triangular kernel, maximum bw is given by end of support, so we
     ## expect to find minimum at boundary
@@ -23,7 +23,7 @@ test_that("Selected bw is infinite", {
 })
 
 test_that("FRD data example check", {
-    expect_message(r1 <- RDHonest(log(cn)~retired|elig_year,
+    expect_message(r1 <- RDHonest(log(cn)|retired~elig_year,
                                   data=rcp[1:5000, ]))
     r1$d$sigma2 <- NULL
     M0 <- c(r1$coefficients$M.rf, r1$coefficients$M.fs)
@@ -41,7 +41,7 @@ test_that("FRD data example check", {
 
 test_that("FRD with almost perfect first stage", {
     lees <- lee08[(1:1000)*6, ]
-    expect_message(r0 <- RDHonest(voteshare~I(margin>0)|margin, data=lees,
+    expect_message(r0 <- RDHonest(voteshare|I(margin>0)~margin, data=lees,
                                   kern="triangular", opt.criterion="FLCI"))
     r0$d$sigma2 <- NULL
     M0 <- c(r0$coefficients$M.rf, r0$coefficients$M.fs)
@@ -55,7 +55,7 @@ test_that("FRD with almost perfect first stage", {
     df <- data.frame(y=lees$voteshare,
                      d=lees$margin+rnorm(n=length(lees$margin), sd=0.1)>0,
                      x=lees$margin)
-    expect_message(r0 <- RDHonest(y~d|x, data=df,
+    expect_message(r0 <- RDHonest(y|d~x, data=df,
                                   kern="triangular", opt.criterion="MSE"))
     r0$d$sigma2 <- NULL
     M0 <- c(r0$coefficients$M.rf, r0$coefficients$M.fs)
@@ -70,19 +70,19 @@ test_that("FRD with almost perfect first stage", {
 
 test_that("FRD interface", {
     rcp1 <- rcp[1:1000, ]
-    expect_message(p1.1 <- RDHonest(log(cn)~retired | elig_year,
+    expect_message(p1.1 <- RDHonest(log(cn)|retired~ elig_year,
                                     data=rcp1, cutoff=0,
                                     kern="triangular", T0=0, h=6))
     expect_lt(abs(p1.1$coefficients$conf.high-0.89111296346), 1e-10)
     expect_lt(abs(p1.1$coefficients$maximum.bias-0.46476927944), 1e-10)
-    expect_message(p1.2 <- RDHonest(log(cn)~retired | elig_year,
+    expect_message(p1.2 <- RDHonest(log(cn)|retired ~ elig_year,
                                     data=rcp1))
     expect_lt(abs(p1.2$coefficients$M.fs-0.0094308598731), 1e-11)
     expect_lt(abs(p1.2$coefficients$M.rf-0.016404318226), 1e-11)
     expect_lt(abs(p1.2$coefficients$conf.high-0.86049015587), 1e-6)
     expect_lt(abs(p1.2$coefficients$estimate+0.49048607575), 1e-6)
 
-    p2 <- RDHonest(log(cn)~retired | elig_year, data=rcp1, cutoff=0,
+    p2 <- RDHonest(log(cn)|retired ~ elig_year, data=rcp1, cutoff=0,
                    M=as.numeric(p1.1$coefficients[16:17]),
                    kern="triangular", opt.criterion="OCI",
                    T0=p1.1$coefficients$estimate)

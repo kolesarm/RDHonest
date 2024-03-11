@@ -5,6 +5,7 @@
 LPReg <- function(X, Y, h, K, order=1, se.method=NULL, sigma2, J=3,
                   weights=rep(1L, length(X)), RD=FALSE, rho=NULL,
                   clusterid=NULL, covs=matrix(nrow=NROW(X), ncol=0)) {
+    X <- drop(X)
     R <- outer(X, 0:order, "^")
     if (RD)
         R <- cbind((X>=0)*R, R, covs)
@@ -108,8 +109,8 @@ MROT <- function(d) {
                  MROT(data.frame(Y=d$Y[d$m, 2], X=d$X[d$m], w=d$w[d$m]))))
     } else {
         ## STEP 1: Estimate global polynomial regression
-        r1 <- unname(stats::lm(d$Y ~ 0 + outer(d$X, 0:4, "^"),
-                               weights=d$w)$coefficients)
+        r1 <- unname(stats::lm.wfit(y=d$Y, x=outer(drop(d$X), 0:4, "^"),
+                                    w=d$w)$coefficients)
         if(length(unique(d$X))<4 || any(is.na(r1)))
             stop(paste0("Insufficient unique values of the running",
                         " variable to compute rule of thumb for M."))

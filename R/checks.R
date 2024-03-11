@@ -30,6 +30,6 @@ process_options <- function(M, se.method, method, d, kern) {
         stop(paste0("'se.method=\"nn\"' not allowed with clustered standard",
                     "  errors.\nUse 'se.method=\"EHW\"'"))
 
-    if (ncol(d$covs)>0 && method=="IP")
+    if (!is.null(d$covs) && method=="IP")
         stop("Covariates not allowed whem method is 'IP'.")
 }

@@ -78,7 +78,7 @@ test_that("Test weighting using cghs", {
 })
 ## Fuzzy RD
 test_that("Test weighting using rcp ", {
-    expect_message(r0 <- RDHonest(log(cn)~retired|elig_year,
+    expect_message(r0 <- RDHonest(log(cn)|retired~elig_year,
                                   data=rcp, T0=0)$coefficients)
     dd <- data.frame(x=sort(unique(rcp$elig_year)), y=NA, d=NA, weights=NA,
                      sig11=NA, sig12=NA, sig21=NA, sig22=NA)
@@ -87,13 +87,13 @@ test_that("Test weighting using rcp ", {
         Y <- cbind(log(rcp$cn[ix]), rcp$retired[ix])
         dd[j, -1] <- c(colMeans(Y), sum(ix), as.vector(var(Y))/sum(ix))
     }
-    expect_message(r1 <- RDHonest(y~d|x, data=dd, weights=weights,
+    expect_message(r1 <- RDHonest(y|d~x, data=dd, weights=weights,
                                   sigmaY2=sig11, T0=0, sigmaYD=sig21,
                                   sigmaD2=sig22, h=r0$bandwidth,
                                   se.method="supplied.var")$coefficients)
     rownames(r0) <- rownames(r1)
     expect_equal(r0, r1)
-    expect_message(r2 <- RDHonest(y~d|x, data=dd, weights=weights, T0=0,
+    expect_message(r2 <- RDHonest(y|d~x, data=dd, weights=weights, T0=0,
                                   sigmaY2=sig11, sigmaYD=sig21, sigmaD2=sig22,
                                   se.method="supplied.var")$coefficients)
     expect_lt(max(abs(r2[2:8]-r0[2:8])), 2e-3)

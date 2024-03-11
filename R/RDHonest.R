@@ -132,7 +132,7 @@
 #' }
 #' @examples
 #' RDHonest(voteshare ~ margin, data = lee08, kern = "uniform", M = 0.1, h = 10)
-#' RDHonest(cn~retired | elig_year, data=rcp, cutoff=0, M=c(4, 0.4),
+#' RDHonest(cn | retired ~ elig_year, data=rcp, cutoff=0, M=c(4, 0.4),
 #'           kern="triangular", opt.criterion="MSE", T0=0, h=3)
 #' RDHonest(voteshare ~ margin, data = lee08, subset = margin>0,
 #'           kern = "uniform", M = 0.1, h = 10, point.inference=TRUE)
@@ -148,35 +148,34 @@ RDHonest <- function(formula, data, subset, weights, cutoff=0, M,
                  "sigmaD2", "sigmaYD", "clusterid"), names(mf), 0L)
     mf <- mf[c(1L, m)]
     formula <- Formula::as.Formula(formula)
-    ## one LHS, at most 2 RHS
-    stopifnot(length(formula)[1] == 1L, length(formula)[2] <= 2)
-    mf$formula <- formula
+    ## at most 2 LHS and at most 2 RHS
+    stopifnot(length(formula)[1] <= 2L, length(formula)[2] <= 2L)
 
+    if (point.inference) {
+        method <- c("Value of conditional mean"="IP")
+    } else if (length(formula)[1]==2) {
+        method <- c("Fuzzy RD parameter"="FRD")
+    } else {
+        method <- c("Sharp RD parameter"="SRD")
+    }
+    mf$formula <- formula
     ## http://madrury.github.io/jekyll/update/statistics/2016/07/20/lm-in-R.html
     mf$drop.unused.levels <- TRUE
     mf[[1L]] <- quote(stats::model.frame)
     mf <- eval(mf, parent.frame())
 
-    if (point.inference) {
-        method <- c("Value of conditional mean"="IP")
-    } else if (length(formula)[2]==2) {
-        method <- c("Fuzzy RD parameter"="FRD")
-    } else {
-        method <- c("Sharp RD parameter"="SRD")
-    }
-
-    d <- NPRData(mf, cutoff, method)
+    d <- NPRData(mf, cutoff, method, formula)
     process_options(M, se.method, method, d, kern)
 
-    if (ncol(d$covs)>0 && (missing(M) || missing(h))) {
+    if (!is.null(d$covs) && (missing(M) || missing(h))) {
         ## remove covariates and compute bw w/o covariates
         d0 <- d
-        d0$covs <- d$covs[, 0]
+        d0$covs <- NULL
         ret <- NPRHonest(d0, MROT(d0), kern, h, opt.criterion=opt.criterion,
                          alpha=alpha, beta=beta, se.method=se.method, J=J,
                          sclass=sclass, T0=T0)
         ## Compute covariate-adjusted outcome
-         d <- covariate_adjust(d, kern, ret$coefficients$bandwidth)
+        d <- covariate_adjust(d, kern, ret$coefficients$bandwidth)
     }
 
     if (missing(M)) {
@@ -227,7 +226,7 @@ NPRHonest <- function(d, M, kern="triangular", h, opt.criterion, alpha=0.05,
     if (missing(h))
         h <- OptBW(d, M, kern, opt.criterion, alpha, beta, sclass, T0)
     ## If there are covariates, compute new covariate-adjusted outcome
-    if (ncol(d$covs)>0) {
+    if (!is.null(d$covs)) {
         d <- covariate_adjust(d, kern, h)
     }
 

@@ -1,5 +1,5 @@
 test_that("Test NN variance estimator", {
-    r0 <- RDHonest(cn~retired | elig_year, data=rcp[1:500, ],
+    r0 <- RDHonest(cn|retired~ elig_year, data=rcp[1:500, ],
                    M=c(1, 1), h=20)
     d <- r0$d
 
@@ -11,7 +11,7 @@ test_that("Test NN variance estimator", {
 })
 
 test_that("Test LPreg", {
-    r0 <- RDHonest(cn~retired | elig_year, data=rcp[1:2000, ],
+    r0 <- RDHonest(cn|retired~ elig_year, data=rcp[1:2000, ],
                    M=c(1, 1), h=10)
     d <- r0$d
     d$sigma2 <- NA
@@ -72,7 +72,7 @@ test_that("Test NPReg", {
     ## Replicate Battistin et al
     df <- RDHonest(retired~elig_year, data=rcp, M=1, h=6)$d
     dr <- RDHonest(log(cn)~elig_year, data=rcp, M=1, h=6)$d
-    d <- RDHonest(log(cn)~retired|elig_year, data=rcp, M=c(1, 1), h=6)$d
+    d <- RDHonest(log(cn)|retired~elig_year, data=rcp, M=c(1, 1), h=6)$d
 
     rf <- NPReg(df, 10, "uniform", order=1, se.method="EHW")
     rr <- NPReg(dr, 10, "uniform", order=1, se.method="EHW")

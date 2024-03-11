@@ -6,9 +6,9 @@ test_that("Test clustering formulas", {
                                    clusterid=seq_along(margin)))
     expect_equal(s0$coefficients, s0c$coefficients)
     rr <- rcp[1:1000, ]
-    expect_message(f0 <- RDHonest(c~retired | elig_year, data=rr,
+    expect_message(f0 <- RDHonest(c|retired ~ elig_year, data=rr,
                                   se.method="EHW"))
-    expect_message(f0c <- RDHonest(c~retired | elig_year, data=rr,
+    expect_message(f0c <- RDHonest(c|retired ~ elig_year, data=rr,
                                    clusterid=seq_along(rr$c), se.method="EHW"))
     expect_equal(f0$coefficients, f0c$coefficients)
     expect_message(p0 <- RDHonest(c~elig_year, data=rr,
@@ -75,10 +75,10 @@ test_that("Test clustering formulas", {
     expect_equal(as.numeric(p2c$coefficients[2:3]),
                  c(unname(m3$coefficients[1]), 919.162944))
 
-    expect_message(f1c <- RDHonest(c~retired | elig_year, data=rr,
+    expect_message(f1c <- RDHonest(c | retired ~ elig_year, data=rr,
                                    clusterid=clusterid, se.method="EHW",
                                    kern="uniform"))
-    expect_message(f2c <- RDHonest(cn~retired | elig_year, data=rr,
+    expect_message(f2c <- RDHonest(cn | retired ~ elig_year, data=rr,
                                    clusterid=clusterid, se.method="EHW",
                                    kern="uniform", h=4))
     ## m3 <- AER::ivreg(c~retired+elig_year+elig_year:I(elig_year>0) |

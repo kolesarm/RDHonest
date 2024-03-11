@@ -489,10 +489,10 @@ estimator of the treatment effect
 
 ```{r}
 ## Initial estimate of treatment effect for optimal bandwidth calculations
-r <- RDHonest(log(cn) ~ retired | elig_year, data=rcp, kern="triangular",
+r <- RDHonest(log(cn) | retired ~ elig_year, data=rcp, kern="triangular",
               M=c(0.001, 0.002), opt.criterion="MSE", sclass="H", T0=0)
 ## Use it to compute optimal bandwidth
-RDHonest(log(cn) ~ retired | elig_year, data=rcp, kern="triangular",
+RDHonest(log(cn) | retired ~ elig_year, data=rcp, kern="triangular",
          M=c(0.001, 0.002), opt.criterion="MSE", sclass="H",
          T0=r$coefficients$estimate)
 ```
@@ -512,7 +512,7 @@ approximation:
 
 ```{r}
 ## Data-driven choice of M
-RDHonest(log(cn) ~ retired | elig_year, data=rcp, kern="triangular",
+RDHonest(log(cn) | retired ~ elig_year, data=rcp, kern="triangular",
          opt.criterion="MSE", sclass="H", T0=r$coefficients$estimate)
 ```
 See @ArKo16honest for a discussion of the restrictions on the

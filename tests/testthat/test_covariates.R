@@ -2,7 +2,7 @@ test_that("Test covariates", {
     ## Sharp design, no M or h
     df <- headst[complete.cases(headst), ]
     covlist <- "urban*black+sch1417"
-    fh1 <- as.formula(paste0("mortHS ~ povrate+", covlist))
+    fh1 <- as.formula(paste0("mortHS ~ povrate|", covlist))
     fh2 <- as.formula(paste0("mortHS~povrate*I(povrate>=0)+", covlist))
     expect_message(r0 <- RDHonest(fh1, data=df))
     ## Doing it manually
@@ -31,6 +31,10 @@ test_that("Test covariates", {
     z$call <- cl
     z$terms <- mt
     z$model <- mf
+
+        fit <- lm(cbind(y1, y2, y3) ~ x1 + x2 + x3, data = dat)
+
+
     }
 
 

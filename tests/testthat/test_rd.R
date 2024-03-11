@@ -5,10 +5,10 @@ test_that("Test I() in formulas", {
                           M=0, h=10)$coefficients$estimate,
                  -RDHonest(voteshare ~ I(-margin), data=lees,
                            M=0, h=10)$coefficients$estimate)
-    expect_equal(RDHonest(cn~retired | elig_year, data=rcp[1:1000, ],
+    expect_equal(RDHonest(cn|retired~ elig_year, data=rcp[1:1000, ],
                           cutoff=0,
                           M=c(1, 0.1), h=3)$coefficients$estimate,
-                 RDHonest(cn~retired | I(2*elig_year), data=rcp[1:1000, ],
+                 RDHonest(cn|retired ~ I(2*elig_year), data=rcp[1:1000, ],
                           cutoff=0,
                           M=c(1, 0.1), h=6)$coefficients$estimate)
 })
@@ -281,11 +281,11 @@ test_that("Supplied variance", {
                    point.inference=TRUE, cutoff=2)
     expect_equal(r$coefficients$std.error, r2$coefficients$std.error)
 
-    expect_message(r <- RDHonest(log(cn)~retired | elig_year, data=rcp[1:100, ],
+    expect_message(r <- RDHonest(log(cn)|retired ~ elig_year, data=rcp[1:100, ],
                                  cutoff=0, M=c(0.002, 0.005), T0=0, h=7,
                                  kern="uniform"))
     ## Data not in order
-    expect_message(r2 <- RDHonest(r$data$Y[, 1]~r$data$Y[, 2] | r$data$X,
+    expect_message(r2 <- RDHonest(r$data$Y[, 1] | r$data$Y[, 2] ~ r$data$X,
                                   data=rcp[1:100, ], cutoff=0,
                                   M=c(0.002, 0.005), T0=0, h=7,
                                   sigmaY2=r$data$sigma2, kern="uniform"))

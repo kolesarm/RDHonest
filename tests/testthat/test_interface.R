@@ -12,5 +12,5 @@ test_that("Test inputs", {
     ## thumb for M.
     expect_error(r2 <- RDHonest(log(cn)~elig_year,
                                 data=rcp[abs(rcp$elig_year)<=3, ]))
-
+    expect_error(RDHonest(cn ~ retired | elig_year, data=rcp))
 })

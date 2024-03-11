@@ -30,8 +30,8 @@ RDScatter <- function(formula, data, subset, cutoff=0, na.action, avg=10,
     mf <- mf[c(1L, m)]
     mf[[1L]] <- quote(stats::model.frame)
     mf <- eval(mf, parent.frame())
-    d <- NPRData(mf, cutoff, "SRD")
-
+    d <- NPRData(mf, cutoff, "SRD", Formula::as.Formula(formula))
+    d$X <- drop(d$X)
     if (avg==Inf) {
         bd <- data.frame(x=unique(d$X),
                          y=unname(stats::coef(stats::lm(d$Y~0+as.factor(d$X)))),

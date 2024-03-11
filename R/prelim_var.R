@@ -104,7 +104,7 @@ Moulton <- function(u, d) {
 ## Calculate bandwidth for inference at a point with local linear regression
 ## using method in Fan and Gijbels (1996, Chapter 4.2).
 ROTBW <- function(d, kern="triangular") {
-    X <- d$X
+    X <- drop(d$X)
     boundary <- if ((min(X)>=0) || (max(X)<=0)) TRUE else FALSE
     N <- length(d$X)
 
