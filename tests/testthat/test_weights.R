@@ -19,6 +19,7 @@ test_that("Test weighting using cghs", {
                    data=cghs, M=1)$coefficients
     s1 <- RDHonest(y~x, h=5, data=dd, M=1, weights=weights,
                    sigmaY2=sigma2, se.method="supplied.var")$coefficients
+    rownames(s0) <- rownames(s1)
     expect_equal(s0, s1)
 
     ## Don't supply variance
@@ -62,6 +63,8 @@ test_that("Test weighting using cghs", {
     expect_message(s1 <- RDHonest(y~x, cutoff=1947, data=dd, weights=weights,
                                   sigmaY2=sigma2, se.method="supplied.var",
                                   h=s0$bandwidth))
+    expect_equal(rownames(s0), "I(yearat14>0)")
+    rownames(s0) <- rownames(s1$coefficients)
     expect_equal(s1$coefficients, s0)
     ## If we use supplied.var for variance estimation, should match approx
     expect_message(s2 <- RDHonest(y~x, cutoff=1947, data=dd,
@@ -91,7 +94,8 @@ test_that("Test weighting using rcp ", {
                                   sigmaY2=sig11, T0=0, sigmaYD=sig21,
                                   sigmaD2=sig22, h=r0$bandwidth,
                                   se.method="supplied.var")$coefficients)
-    rownames(r0) <- rownames(r1)
+    expect_equal(rownames(r0), "retired")
+    rownames(r1) <- rownames(r0)
     expect_equal(r0, r1)
     expect_message(r2 <- RDHonest(y|d~x, data=dd, weights=weights, T0=0,
                                   sigmaY2=sig11, sigmaYD=sig21, sigmaD2=sig22,

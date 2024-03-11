@@ -4,10 +4,10 @@ NPRData <- function(d, cutoff, class, fo) {
     rhs <- function(j) stats::model.matrix(stats::formula(fo, lhs=0, rhs=j), d)
 
     X <- rhs(1)[, -1, drop=FALSE]-cutoff
-    msg <- paste0("Formula syntax:\noutcome ~ running_variable |",
-                  " covariates for sharp RD,\noutcome | treatment ~ ",
-                  "running_variable | covariates for fuzzy RD",
-                  ",\noutcome ~ running_variable for inference at a point.")
+    msg <- paste0("Formula syntax:\n'outcome ~ running_variable |",
+                  " covariates' for sharp RD,\n'outcome | treatment ~ ",
+                  "running_variable | covariates' for fuzzy RD",
+                  ",\n'outcome ~ running_variable' for inference at a point.")
     if (ncol(X) != 1)
         stop(paste0("Single running variable required.\n", msg))
     if (is.unsorted(X)) {

@@ -5,10 +5,12 @@ test_that("Inference at point agrees with RD", {
                    subset=I(margin>=0), point.inference=TRUE)
     mm <- RDHonest(voteshare~margin, data=lees, M=2, h=10,
                    subset=I(margin<0), point.inference=TRUE)
-    expect_equal(pp$coefficients[2]-mm$coefficients[2], rde$coefficients[2])
-    expect_equal(pp$coefficients[3]^2+mm$coefficients[3]^2,
-                 rde$coefficients[3]^2)
-    expect_equal(pp$coefficients[4]+mm$coefficients[4], rde$coefficients[4])
+    expect_equal(pp$coefficients$estimate-mm$coefficients$estimate,
+                 rde$coefficients$estimate)
+    expect_equal(pp$coefficients$std.error^2+mm$coefficients$std.error^2,
+                 rde$coefficients$std.error^2)
+    expect_equal(pp$coefficients[, 4]+mm$coefficients[, 4],
+                 rde$coefficients[, 4])
 
     r <- NPRHonest(rde$d, h=7, M=2)$coefficients
     rm <- NPRHonest(mm$d, h=7, M=2)$coefficients

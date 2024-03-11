@@ -223,8 +223,11 @@ covariate_adjust <- function(d, kern, h) {
 NPRHonest <- function(d, M, kern="triangular", h, opt.criterion, alpha=0.05,
                       beta=0.8, se.method="nn", J=3, sclass="H", T0=0,
                       T0bias=FALSE) {
-    if (missing(h))
-        h <- OptBW(d, M, kern, opt.criterion, alpha, beta, sclass, T0)
+    if (missing(h)) {
+        d0 <- d
+        d0$covs <- NULL
+        h <- OptBW(d0, M, kern, opt.criterion, alpha, beta, sclass, T0)
+    }
     ## If there are covariates, compute new covariate-adjusted outcome
     if (!is.null(d$covs)) {
         d <- covariate_adjust(d, kern, h)
@@ -271,11 +274,13 @@ NPRHonest <- function(d, M, kern="triangular", h, opt.criterion, alpha=0.05,
 
     d$est_w <- r1$est_w
     d$sigma2 <- r1$sigma2
+
     co <- data.frame(term=NA, estimate=r1$estimate, std.error=r1$se,
                      maximum.bias=bias, conf.low=NA, conf.high=NA,
                      conf.low.onesided=NA, conf.high.onesided=NA, bandwidth=h,
                      eff.obs=r1$eff.obs,
-                     leverage=max(r1$est_w^2/r1$w^2)/sum(r1$est_w^2/r1$w),
+                     leverage=max(c(0, wt^2/d$w[r1$est_w!=0]^2))/
+                         sum(wt^2/d$w[r1$est_w!=0]),
                      cv=NA, alpha=alpha, method=method, M=M[1], M.rf=M[2],
                      M.fs=M[3], first.stage=r1$fs, kernel=kernel_type(kern),
                      p.value=NA)

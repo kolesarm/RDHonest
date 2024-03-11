@@ -42,4 +42,6 @@ test_that("Test covariates", {
 
     ## TODO: pass function as kern
 
+    ## TODO: test sort w/ covariates
+
 })

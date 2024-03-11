@@ -33,8 +33,10 @@ test_that("IK bandwidth calculations", {
     d0 <- RDHonest(voteshare~margin, data=lee08, h=h, M=0.1)$d
     d0$sigma2 <- NULL
 
-    r <- NPReg(d0, IKBW(d0, kern="uniform"), "uniform")
-    expect_equal(r$estimate, 8.0770003749)
+    hu <- IKBW(d0, kern="uniform")
+    expect_equal(hu, 23.09848096)
+    r <- NPReg(d0, hu, "uniform")
+    expect_equal(unname(r$estimate), 8.0770003749)
     d <- PrelimVar(d0, se.initial="EHW")
     expect_equal(sqrt(mean(d$sigma2[d$p])), 12.58183131)
     expect_equal(sqrt(mean(d$sigma2[d$m])), 10.79067278)

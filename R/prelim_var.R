@@ -43,7 +43,7 @@ PrelimVar <- function(d, se.initial="EHW") {
     ## Use reduced form for FRD bandwidth selector
     drf <- d
     if (inherits(d, "FRD")) {
-        drf$Y <- drf$Y[, 1]
+        drf$Y <- drf$Y[, 1, drop=FALSE]
         class(drf) <- "SRD"
     }
 
@@ -67,7 +67,8 @@ PrelimVar <- function(d, se.initial="EHW") {
         stop("This method for preliminary variance estimation not supported")
     }
     if (!is.null(d$clusterid))
-        d$rho <- Moulton(r1$res, d)
+        d$rho <- Moulton(as.matrix(r1$lm$residuals)[r1$est_w!=0, , drop=FALSE],
+                         d$clusterid[r1$est_w!=0])
 
     if (inherits(d, "IP")) {
         d$sigma2 <- rep(mean(r1$sigma2[r1$est_w != 0]), length(d$X))
@@ -82,20 +83,14 @@ PrelimVar <- function(d, se.initial="EHW") {
 }
 
 ## Moulton estimate of rho, set rho=0 if no clustering
-Moulton <- function(u, d) {
-    m <- function(u, clusterid) {
-        den <- sum(tapply(u[, 1], clusterid, length)^2)-NROW(u)
-        if (den>0) {
-            us <- apply(u, 2, function(x) tapply(x, clusterid, sum))
-            as.vector(crossprod(us)-crossprod(u)) / den
-        } else {
-            rep(0, NCOL(u)^2)
-        }
+Moulton <- function(u, clusterid) {
+    den <- sum(tapply(u[, 1], clusterid, length)^2)-NROW(u)
+    if (den>0) {
+        us <- apply(u, 2, function(x) tapply(x, clusterid, sum))
+        as.vector(crossprod(us)-crossprod(u)) / den
+    } else {
+        rep(0, NCOL(u)^2)
     }
-    u <- as.matrix(u)
-    ix <- !is.na(u[, 1])
-
-    m(u[ix, , drop=FALSE], d$clusterid[ix])
 }
 
 
