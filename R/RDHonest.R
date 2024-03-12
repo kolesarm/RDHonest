@@ -210,7 +210,7 @@ covariate_adjust <- function(d, kern, h) {
     r <- NPReg(d0, h, kern, order=1, se.method="EHW")
     be <- as.matrix(r$lm$coefficients)
     L <- NCOL(d$covs)
-    d$Y <-d$Y_unadj-d$covs %*% be[seq_len(L)+NROW(be)-L, ]
+    d$Y <-d$Y_unadj-d$covs %*% be[seq_len(L)+NROW(be)-L, , drop=FALSE]
     d
 }
 
@@ -226,7 +226,7 @@ NPRHonest <- function(d, M, kern="triangular", h, opt.criterion, alpha=0.05,
                       T0bias=FALSE) {
     if (missing(h)) {
         d0 <- d
-        d0$covs <- NULL
+        d0$covs <- d0$Y_unadj <- NULL
         h <- OptBW(d0, M, kern, opt.criterion, alpha, beta, sclass, T0)
     }
     if (!is.null(d$Y_unadj)) d$Y <- d$Y_unadj

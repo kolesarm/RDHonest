@@ -15,18 +15,42 @@ test_that("Test covariates", {
     expect_message(r2 <- RDHonest(Y~povrate, data=df))
     h2 <- r2$coefficients$bandwidth
     m3 <- lm(fh2, data=df, weights = pmax(1 - abs(povrate/h2), 0))
-
     expect_lt(abs(r0$coefficients$bandwidth-h2), 1e-5)
-    expect_lt(abs(m3$coefficients[3]-m3$coefficients[3]), 1e-9)
+    dd <- sort(r0$lm$coefficients)-sort(m3$coefficients)
+    expect_lt(max(abs(dd)), 1e-9)
+    ## with h /M
+    r0 <- RDHonest(fh1, data=df, M=2)
+    r2 <- RDHonest(Y~povrate, data=df, M=2)
+    h2 <- r2$coefficients$bandwidth
+    m3 <- lm(fh2, data=df, weights = pmax(1 - abs(povrate/h2), 0))
+    expect_lt(abs(r0$coefficients$bandwidth-h2), 1e-5)
+    dd <- sort(r0$lm$coefficients)-sort(m3$coefficients)
+    expect_lt(max(abs(dd)), 1e-9)
 
-    dd <- c(r0$lm$coefficients[5:8], r0$coefficients$estimate)-
-        c(m3$coefficients[-idx], m3$coefficients[3])
-    expect_lt(max(abs(dd)), 1e-6)
+    ## fuzzy
+    df <- rcp[1:1000, ]
+    expect_message(r0 <- RDHonest(log(c)|retired ~ elig_year|food, data=df,
+                                  weights=survey_year))
+    ## Doing it manually
+    expect_message(r1 <- RDHonest(log(c)|retired ~ elig_year, data=df,
+                                  weights=survey_year))
+    h <- r1$coefficients$bandwidth
+    m2 <- lm(cbind(log(c), retired) ~ elig_year*I(elig_year>0)+food,
+             data=df, weights = pmax(1 - abs(elig_year/h), 0)*survey_year)
+    Y <- cbind(log(df$c), df$retired) - df$food %o% m2$coefficients[4, ]
+    expect_message(r2 <- RDHonest(Y[, 1]|Y[, 2] ~ elig_year, data=df,
+                                  weights=survey_year))
+    h2 <- r2$coefficients$bandwidth
+    expect_lt(abs(r0$coefficients$bandwidth-h2), 1e-5)
+    m3 <- lm(cbind(log(c), retired) ~ elig_year*I(elig_year>0)+food,
+             data=df, weights = pmax(1 - abs(elig_year/h2), 0)*survey_year)
+    dd <- sort(r0$lm$coefficients)-sort(m3$coefficients)
+    expect_lt(max(abs(dd)), 1e-8)
 
-    ## TODO: return lm object, so we can do normal inference.
+    ## TODO: return lm object, so we can do normal inference: print method
+
+    ## TODO: speed up
 
     ## TODO: pass function as kern
-
-    ## TODO: test sort w/ covariates
 
 })

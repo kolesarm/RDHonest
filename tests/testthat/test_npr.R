@@ -19,15 +19,14 @@ test_that("Test LPreg", {
                     point.inference=TRUE, J=4)
     expect_equal(r0p$coefficients$estimate-r0m$coefficients$estimate,
                  r0$coefficients$estimate)
-    expect_equal(range(c(r0m$data$sigma2,r0p$data$sigma2)-r0$data$sigma2),
+    expect_equal(range(c(r0m$data$sigma2, r0p$data$sigma2)-r0$data$sigma2),
                  c(0, 0))
     expect_equal(as.numeric(r0m$coefficients[c(2:10)]),
                  c(20139.543667707,  2097.006669471,     6.641178638,
                    16029.465508831, 24249.621826583, 16683.633463048,
                    23595.453872367,    10L,   125.503763304))
-    NPReg(r0$data, h, kern="triangular", order=2, se.method="nn", J=3)
-    rr <- NPReg(r0$data, h, kern="triangular", order=2, se.method="nn", J=6)
-    expect_equal(as.numeric(rr[1:2]),  c(-5395.040191, 9754.921083))
+    rr <- NPReg(r0$data, h=6, kern="triangular", order=2, se.method="nn", J=6)
+    expect_equal(as.numeric(rr[1:2]),  c(-4052.273935, 7942.849050))
 })
 
 test_that("Test NPReg", {
