@@ -78,12 +78,12 @@ test_that("Honest inference in Lee and LM data",  {
     expect_equal(r1$coefficients$estimate, -1.1982581306)
     expect_equal(c(r1$coefficients$std.error, r2$coefficients$std.error),
                  c(0.6608206598, 0.6955768728))
-    m1 <- paste0(" Sharp RD parameter   -1.198     ",
-                 "0.6608        4.796     (-7.081, 4.684)")
-    expect_equal(r1o[8], m1)
+    expect_equal(r1o[8], paste0("I(povrate>0)   -1.198     0.6608",
+                                "        4.796     (-7.081, 4.684)"))
     expect_equal(r1o[10], "Onesided CIs:  (-Inf, 4.684), (-7.081, Inf)")
+    expect_equal(r1o[11], "Number of effective observations:   954")
     expect_equal(r2o[10], "Onesided CIs:  (-Inf, 4.742), (-7.138, Inf)")
-    expect_equal(r1o[16], "24 observations with missing values dropped")
+    expect_equal(r1o[22], "24 observations with missing values dropped")
 
     d <- RDHonest(mortHS~povrate, data=headst, h=10, M=2)$d
     d <- PrelimVar(d, se.initial="Silverman")
@@ -138,7 +138,7 @@ test_that("Honest inference in Lee and LM data",  {
     r <- RDHonest(voteshare ~ margin, data=lee08, kern="optimal", M=0.04,
                   opt.criterion="FLCI", se.method="supplied.var")
     ro <- capture.output(print(r, digits=8))
-    expect_equal(ro[8], paste0(" Sharp RD parameter 5.8864375  1.4472117",
+    expect_equal(ro[8], paste0("margin 5.8864375  1.4472117",
                                "   0.80247208 (2.6646087, 9.1082664)"))
     ## Try nn
     r1 <- RDHonest(voteshare ~ margin, data=lee08, kern="optimal", M=0.04,
@@ -198,17 +198,20 @@ test_that("Honest inference in Lee and LM data",  {
     expect_message(r1 <- RDHonest(mortHS ~ povrate, data=headst, kern="uniform",
                                   na.action="na.omit"))
     r1 <- capture.output(print(r1, digits=6))
-    expect_equal(r1[c(11, 12, 16)],
-                 c("Bandwidth: 3.98048, Kernel: uniform",
+    expect_equal(r1[c(8, 11, 12, 22)],
+                 c(paste0("I(povrate>0) -3.17121    1.44439",
+                          "     0.759228 (-6.35207, 0.00964571)"),
                    "Number of effective observations:     239",
+                   "Maximal leverage for sharp RD parameter: 0.019615",
                    "24 observations with missing values dropped"))
     expect_message(r2 <- RDHonest(mortHS ~ povrate, data=headst,
                                   kern="epanechnikov",
                                   point.inference=TRUE, cutoff=4))
-    expect_equal(capture.output(print(r2, digits=6))[c(11, 12, 16)],
-                 c("Bandwidth: 9.42625, Kernel: epanechnikov",
+    expect_equal(capture.output(print(r2, digits=6))[c(8, 11, 19)],
+                 c(paste0("(Intercept)  2.63181   0.300132     ",
+                          "0.152587  (1.97505, 3.28856)"),
                    "Number of effective observations: 373.642",
-                   "24 observations with missing values dropped"))
+                   "   2.631805    -0.000162  "))
 })
 
 test_that("BME CIs match paper", {
@@ -237,10 +240,11 @@ test_that("BME CIs match paper", {
     r6 <- RDHonestBME(duration~age, data=rebp, subset = (period==1 & female==0),
                       order=3, h=1, cutoff=50, alpha=0.1)
     r5 <- capture.output(print(r5, digits=5))
-    est <- paste0(" Sharp RD parameter   14.798      ",
-                  "2.234       24.315   (-31.823, 60.724)")
-    expect_equal(r5[8], est)
-    expect_equal(r5[10], "Onesided CIs:  (-Inf, 57.249), (-28.236, Inf)")
+    expect_equal(r5[c(8, 10, 12)],
+                 c(paste0("I(x >= 0)TRUE   14.798      2.234       ",
+                          "24.315   (-31.823, 60.724)"),
+                   "Onesided CIs:  (-Inf, 57.249), (-28.236, Inf)",
+                   "Maximal leverage for sharp RD parameter: 0.00039197"))
     expect_equal(as.numeric(r6$coefficients[c(2:6, 10)]),
                  c(12.206023620, 8.878539149, 17.030704793, -24.727726605,
                    46.856041887, 3030))

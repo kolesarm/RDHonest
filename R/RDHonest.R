@@ -347,36 +347,42 @@ print.RDResults <- function(x, digits = getOption("digits"), ...) {
     }
     fmt <- function(x) format(x, digits=digits, width=digits+1)
     y <- x$coefficients
-    cat("Estimates (using ", y$method, " class):\n", sep="")
-    nm <- c("Parameter", "Estimate", "Std. Error", "Maximum Bias")
-    names(y)[1:4] <- nm
+    cat("Inference for ", y$term, " (using ", y$method,
+        " class), confidence level ", 100*(1-y$alpha), "%:\n", sep="")
+    nm <- c("Estimate", "Std. Error", "Maximum Bias")
+    colnames(y)[2:4] <- nm
     y$"Confidence Interval" <- paste0("(", fmt(y$conf.low), ", ",
                                       fmt(y$conf.high), ")")
     y$OCI <- paste0("(-Inf, ", fmt(y$conf.high.onesided), "), (",
                     fmt(y$conf.low.onesided), ", Inf)")
+
     print.data.frame(y[, c(nm, "Confidence Interval"), ],
-                     digits=digits, row.names=FALSE)
+                     digits=digits)
     cat("\nOnesided CIs: ", y$OCI)
-    if (!is.null(y$bandwidth))
-        cat("\nBandwidth: ", fmt(y$bandwidth), ", Kernel: ", y$kernel, sep="")
-    else
-        cat("\nSmoothing parameters below and above cutoff: ",
-            fmt(y$bandwidth.m), ", ", fmt(y$bandwidth.p), sep="")
 
     cat("\nNumber of effective observations:", fmt(y$eff.obs))
-    par <- paste0(tolower(substr(y$Parameter, 1, 1)), substring(y$Parameter, 2))
+    par <- paste0(tolower(substr(y$term, 1, 1)), substring(y$term, 2))
     cat("\nMaximal leverage for ", par, ": ", fmt(y$leverage),
         sep="")
     if (!is.null(y$first.stage) && !is.na(y$first.stage))
         cat("\nFirst stage estimate:", fmt(y$first.stage),
             "\nFirst stage smoothness constant M:", fmt(y$M.fs),
-            "\nReduced form smoothness constant M:", fmt(y$M.rf),
-            "\n")
-    else
-        cat("\nSmoothness constant M:", fmt(y$M),
-            "\n")
-    cat("P-value:", fmt(y$p.value), "\n")
+            "\nReduced form smoothness constant M:", fmt(y$M.rf))
+    else if (!is.null(y[["M"]])) {
+        cat("\nSmoothness constant M:", fmt(y$M))
+    }
 
+    cat("\nP-value:", fmt(y$p.value), "\n")
+
+    if (!is.null(y$bandwidth)) {
+        cat("\nBased on local regression with bandwidth: ", fmt(y$bandwidth),
+            ", kernel: ", y$kernel, "\nRegression coefficients:\n", sep="")
+        print.default(format(coef(x$lm), digits = max(3L, digits - 3L)),
+                      print.gap = 2L, quote = FALSE)
+    } else {
+        cat("\nSmoothing parameters below and above cutoff: ",
+            fmt(y$bandwidth.m), ", ", fmt(y$bandwidth.p), sep="")
+    }
     if (inherits(x$na.action, "omit"))
         cat(length(x$na.action), "observations with missing values dropped\n")
 

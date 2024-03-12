@@ -86,10 +86,12 @@ test_that("FRD interface", {
                    M=as.numeric(p1.1$coefficients[16:17]),
                    kern="triangular", opt.criterion="OCI",
                    T0=p1.1$coefficients$estimate)
-    eo <- c(paste0(" Fuzzy RD parameter  -0.5536",
-                   "      0.674       0.4361     (-2.109, 1.002)"),
+    eo <- c(paste0("retired  -0.5536      0.674       0.4361",
+                   "     (-2.109, 1.002)"),
+            "Number of effective observations:   175",
             "Maximal leverage for fuzzy RD parameter: 0.03235",
-            "First stage estimate: 0.2562 ")
-    expect_equal(capture.output(print(p2, digits=4))[c(9, 14:15)],
+            "First stage estimate: 0.2562 ", "P-value: 0.5018 ",
+            "elig_year                 -0.0125   0.0403")
+    expect_equal(capture.output(print(p2, digits=4))[c(9, 12:14, 17, 25)],
                  eo)
 })

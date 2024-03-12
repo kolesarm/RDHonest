@@ -125,18 +125,22 @@ RDHonestBME <- function(formula, data, subset, cutoff=0, na.action,
     oci_l <- stats::coef(m1)[order+2]+dev-stats::qnorm(1-alpha)*se #
     oci_u <- stats::coef(m1)[order+2]+dev+stats::qnorm(1-alpha)*se
 
+    wt <- solve(qr.R(m1$qr), t(qr.Q(m1$qr)))[order+2, ]
+
     l <- which.min(ci_l)
     u <- which.max(ci_u)
-    coef <- data.frame(term="Sharp RD parameter",
-                       estimate=unname(m1$coefficients[order +2]),
-                       std.error=sqrt(vdt["e2", "e2"]),
-                       maximum.bias=max(abs(c(dev[u], dev[l]))),
-                       conf.low=ci_l[l], conf.high=ci_u[u],
-                       conf.low.onesided=min(oci_l),
-                       conf.high.onesided=max(oci_u), bandwidth=h,
-                       eff.obs=length(x), cv=NA, alpha=alpha, method="BME",
-                       kernel="uniform")
-    structure(list(coefficients=coef, call=cl,
+    co <- data.frame(term="Sharp RD parameter",
+                     estimate=m1$coefficients[order +2],
+                     std.error=sqrt(vdt["e2", "e2"]),
+                     maximum.bias=max(abs(c(dev[u], dev[l]))), conf.low=ci_l[l],
+                     conf.high=ci_u[u], conf.low.onesided=min(oci_l),
+                     conf.high.onesided=max(oci_u), bandwidth=h,
+                     eff.obs=length(x), leverage=max(wt^2)/sum(wt^2),
+                     cv=NA, alpha=alpha,
+                     method="BME", kernel="uniform")
+    co$p.value <- stats::pnorm(co$maximum.bias-abs(co$estimate/co$std.error))+
+        stats::pnorm(-co$maximum.bias-abs(co$estimate/co$std.error))
+    structure(list(coefficients=co, call=cl, lm=m1,
                    na.action=attr(mf, "na.action")),
               class="RDResults")
 }

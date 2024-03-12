@@ -88,8 +88,13 @@ test_that("Optimal bandwidth calculations", {
 
     r1 <- RDHonest(voteshare~margin, data=lee08, subset=margin>0, M=2*Mh,
                    opt.criterion="MSE", point.inference=TRUE)
-    r <- capture.output(print(r1, digits=4))
-    expect_equal(r[11], "Bandwidth: 13.41, Kernel: triangular")
+    r <- capture.output(print(r1, digits=6))
+    expect_equal(r[c(8, 11, 12)],
+                 c(paste0("(Intercept)  52.3928   0.880413",
+                          "     0.492905  (50.4288, 54.3568)"),
+                   "Number of effective observations: 662.044",
+                   paste0("Maximal leverage for value of",
+                          " conditional mean: 0.00936479")))
 
     re$d$sigma2 <- NULL
     r2 <- OptBW(re$d, M=2*Mh, opt.criterion="MSE")

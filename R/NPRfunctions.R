@@ -9,7 +9,6 @@ NPReg <- function(d, h, kern="triangular", order=1, se.method="nn", J=3) {
     ## Keep only positive kernel weights
     X <- drop(d$X)
     W <- if (h<=0) 0*X else kern(X/h)*d$w # kernel weights
-
     ## if (!is.null(d$sigma2)) d$sigma2 <- as.matrix(d$sigma2)
     Z <- outer(X, 0:order, "^")
     nZ <- c("(Intercept)", colnames(d$X), paste0("I(", colnames(d$X), "^",
@@ -24,18 +23,18 @@ NPReg <- function(d, h, kern="triangular", order=1, se.method="nn", J=3) {
     }
     r0 <- stats::lm.wfit(x=Z, y=d$Y, w=W)
     class(r0) <- c(if (ncol(d$Y)>1) "mlm", "lm")
-
     if (any(is.na(r0$coefficients))) {
-        return(list(estimate=0, se=NA, est_w=W*0,
-                    sigma2=NA*d$Y, eff.obs=0, fs=NA, lm=r0))
+        return(list(estimate=0, se=NA, est_w=W*0, sigma2=NA*d$Y, eff.obs=0,
+                    fs=NA, lm=r0))
     }
     wgt <- W*0
     ok <- W!=0
     wgt[ok] <- solve(qr.R(r0$qr), t(sqrt(W[W>0])*qr.Q(r0$qr)))[1, ]
     ## To compute effective observations, rescale against uniform kernel
-    q_u <- qr(sqrt(d$w * (abs(X)<=h)) * Z)
-    wgt_u <- solve(qr.R(q_u), t(sqrt(d$w * (abs(X)<=h)) * qr.Q(q_u)))[1, ]
-    eff.obs <- sum((abs(X)<=h)*d$w)*sum(wgt_u^2/d$w)/sum(wgt^2/d$w)
+    Wu <- d$w * (abs(X)<=h)
+    q_u <- qr(sqrt(Wu) * Z)
+    wgt_u <- solve(qr.R(q_u), t(sqrt(Wu) * qr.Q(q_u)))[1, ]
+    eff.obs <- sum(Wu)*sum(wgt_u^2/d$w)/sum(wgt^2/d$w)
 
     ny <- NCOL(r0$residuals)
     ## Squared residuals, allowing for multivariate Y
@@ -56,8 +55,8 @@ NPReg <- function(d, h, kern="triangular", order=1, se.method="nn", J=3) {
         res
     }
 
-    hsigma2 <- switch(se.method, nn=NN(X),
-                      EHW=HC(as.matrix(r0$residuals)), supplied.var=d$sigma2)
+    hsigma2 <- switch(se.method, nn=NN(X), EHW=HC(as.matrix(r0$residuals)),
+                      supplied.var=as.matrix(d$sigma2))
 
     ## Variance
     if (is.null(d$clusterid)) {
@@ -72,7 +71,6 @@ NPReg <- function(d, h, kern="triangular", order=1, se.method="nn", J=3) {
     }
     ret <- list(estimate=r0$coefficients[1], se=sqrt(V[1]), est_w=wgt,
                 sigma2=hsigma2, eff.obs=eff.obs, fs=NA, lm=r0)
-    ## gamma=beta[seq_len(NCOL(d$covs))+NROW(r0$coefficients)-NCOL(d$covs), ])
 
     if (inherits(d, "FRD")) {
         ret$fs <- r0$coefficients[1, 2]

@@ -78,6 +78,7 @@ RDTEstimator <- function(d, f, alpha, se.method, J) {
     r.u <- NPReg(d, max(abs(d$X[W!=0])), kern="uniform")
     eff.obs <- r.u$eff.obs*sum(r.u$w^2)/sum(W^2)
     d$est_w <- W
+    names(Lhat) <- colnames(d$X)
     co <- data.frame(term="Sharp RD parameter", estimate=Lhat, std.error=sd,
                      maximum.bias=maxbias, conf.low=NA, conf.high=NA,
                      conf.low.onesided=NA, conf.high.onesided=NA,
