@@ -11,32 +11,23 @@ test_that("Test NN variance estimator", {
 })
 
 test_that("Test LPreg", {
-    r0 <- RDHonest(cn|retired~ elig_year, data=rcp[1:2000, ],
-                   M=c(1, 1), h=10)
-    d <- r0$d
-    d$sigma2 <- NA
-    K <- EqKern("triangular", boundary=FALSE, order=0)
-    r0e <- LPReg(d$X[d$m], d$Y[d$m, ], h=10, K, order=2, se.method="EHW")
-    r0n <- LPReg(d$X[d$m], d$Y[d$m, ], h=10, K, order=2, se.method="nn", J=4)
-    r1e <- LPReg(d$X[d$m], d$Y[d$m, 1], h=10, K, order=2, "EHW")
-    r1n <- LPReg(d$X[d$m], d$Y[d$m, 1], h=10, K, order=2, "nn", J=4)
-    r2e <- LPReg(d$X[d$m], d$Y[d$m, 2], h=10, K, order=2, se.method="EHW")
-    r2n <- LPReg(d$X[d$m], d$Y[d$m, 2], h=10, K, order=2, se.method="nn", J=4)
-    expect_lt(max(abs(r0e$theta- c(r1e$theta, r2e$theta))), 1e-10)
-    expect_lt(max(abs(r0n$theta- c(r1n$theta, r2n$theta))), 1e-10)
-
-    expect_equal(unname(r0e$sigma2[, c(1, 4)]),
-                 cbind(r1e$sigma2, r2e$sigma2))
-    expect_equal(unname(r0n$sigma2[, c(1, 4)]),
-                 cbind(r1n$sigma2, r2n$sigma2))
-
-    expect_equal(unname(r0e$var[c(1, 4)]), c(r1e$var, r2e$var))
-    expect_equal(unname(r0n$var[c(1, 4)]), c(r1n$var, r2n$var))
-
-    expect_equal(r0e$w, r1e$w)
-    expect_equal(r0e$w, r1n$w)
-
-    expect_identical(r0e$eff.obs, r1e$eff.obs)
+    d <- rcp[1:1000, ]
+    r0 <- RDHonest(cn ~ elig_year, data=d, M=1, h=10, J=4)
+    r0m <- RDHonest(cn ~ elig_year, data=d, M=1, h=10, subset=elig_year<0,
+                    point.inference=TRUE, J=4)
+    r0p <- RDHonest(cn ~ elig_year, data=d, M=1, h=10, subset=elig_year>=0,
+                    point.inference=TRUE, J=4)
+    expect_equal(r0p$coefficients$estimate-r0m$coefficients$estimate,
+                 r0$coefficients$estimate)
+    expect_equal(range(c(r0m$data$sigma2,r0p$data$sigma2)-r0$data$sigma2),
+                 c(0, 0))
+    expect_equal(as.numeric(r0m$coefficients[c(2:10)]),
+                 c(20139.543667707,  2097.006669471,     6.641178638,
+                   16029.465508831, 24249.621826583, 16683.633463048,
+                   23595.453872367,    10L,   125.503763304))
+    NPReg(r0$data, h, kern="triangular", order=2, se.method="nn", J=3)
+    rr <- NPReg(r0$data, h, kern="triangular", order=2, se.method="nn", J=6)
+    expect_equal(as.numeric(rr[1:2]),  c(-5395.040191, 9754.921083))
 })
 
 test_that("Test NPReg", {

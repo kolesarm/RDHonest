@@ -191,7 +191,7 @@ RDHonest <- function(formula, data, subset, weights, cutoff=0, M,
                          sclass=sclass, T0=T0)
     }
 
-    ret$call <- cl
+    ret$call <- ret$lm$call <- cl
     ret$na.action <- attr(mf, "na.action")
 
     if (!is.finite(ret$coefficients$leverage) || ret$coefficients$leverage>0.1)
@@ -205,14 +205,15 @@ RDHonest <- function(formula, data, subset, weights, cutoff=0, M,
 
 covariate_adjust <- function(d, kern, h) {
     if (is.null(d$Y_unadj)) d$Y_unadj <- d$Y
-    if (!is.function(kern))
-        kern <- EqKern(kern, boundary=FALSE, order=0)
-    r <- LPReg(d$X, as.matrix(d$Y_unadj), h, kern, order=1, se.method="EHW",
-               weights=d$w, RD = TRUE, covs=d$covs)
-    d$Y <- d$Y_unadj-d$covs %*% r$gamma
-    d$coefs_on_covariates <- r$gamma
+    d0 <- d
+    d0$Y <- d0$Y_unadj
+    r <- NPReg(d0, h, kern, order=1, se.method="EHW")
+    be <- as.matrix(r$lm$coefficients)
+    L <- NCOL(d$covs)
+    d$Y <-d$Y_unadj-d$covs %*% be[seq_len(L)+NROW(be)-L, ]
     d
 }
+
 
 
 ## @param T0 Initial estimate of the treatment effect for calculating the
@@ -228,10 +229,7 @@ NPRHonest <- function(d, M, kern="triangular", h, opt.criterion, alpha=0.05,
         d0$covs <- NULL
         h <- OptBW(d0, M, kern, opt.criterion, alpha, beta, sclass, T0)
     }
-    ## If there are covariates, compute new covariate-adjusted outcome
-    if (!is.null(d$covs)) {
-        d <- covariate_adjust(d, kern, h)
-    }
+    if (!is.null(d$Y_unadj)) d$Y <- d$Y_unadj
 
     r1 <- NPReg(d, h, kern, order=1, se.method, J)
     wt <- r1$est_w[r1$est_w!=0]
@@ -274,7 +272,6 @@ NPRHonest <- function(d, M, kern="triangular", h, opt.criterion, alpha=0.05,
 
     d$est_w <- r1$est_w
     d$sigma2 <- r1$sigma2
-
     co <- data.frame(term=NA, estimate=r1$estimate, std.error=r1$se,
                      maximum.bias=bias, conf.low=NA, conf.high=NA,
                      conf.low.onesided=NA, conf.high.onesided=NA, bandwidth=h,
@@ -284,7 +281,8 @@ NPRHonest <- function(d, M, kern="triangular", h, opt.criterion, alpha=0.05,
                      cv=NA, alpha=alpha, method=method, M=M[1], M.rf=M[2],
                      M.fs=M[3], first.stage=r1$fs, kernel=kernel_type(kern),
                      p.value=NA)
-    structure(list(coefficients=fill_coefs(co), data=d), class="RDResults")
+    structure(list(coefficients=fill_coefs(co), data=d,
+                   lm=r1$lm), class="RDResults")
 }
 
 ## Same for RDTOpt and RD

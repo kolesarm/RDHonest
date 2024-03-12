@@ -17,28 +17,13 @@ test_that("Test covariates", {
     m3 <- lm(fh2, data=df, weights = pmax(1 - abs(povrate/h2), 0))
 
     expect_lt(abs(r0$coefficients$bandwidth-h2), 1e-5)
-    dd <- c(r0$d$coefs_on_covariates, r0$coefficients$estimate)-
+    expect_lt(abs(m3$coefficients[3]-m3$coefficients[3]), 1e-9)
+
+    dd <- c(r0$lm$coefficients[5:8], r0$coefficients$estimate)-
         c(m3$coefficients[-idx], m3$coefficients[3])
     expect_lt(max(abs(dd)), 1e-6)
 
     ## TODO: return lm object, so we can do normal inference.
-
-    if(FALSE) {
-    z <- lm.wfit(fh2, data=df, weights = pmax(1 - abs(povrate/h), 0))
-    z$na.action <- attr(mf, "na.action")
-    z$contrasts <- attr(x, "contrasts")
-    z$xlevels <- .getXlevels(mt, mf)
-    z$call <- cl
-    z$terms <- mt
-    z$model <- mf
-
-        fit <- lm(cbind(y1, y2, y3) ~ x1 + x2 + x3, data = dat)
-
-
-    }
-
-
-
 
     ## TODO: pass function as kern
 

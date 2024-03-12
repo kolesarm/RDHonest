@@ -33,8 +33,8 @@ NPReg <- function(d, h, kern="triangular", order=1, se.method="nn", J=3) {
     ok <- W!=0
     wgt[ok] <- solve(qr.R(r0$qr), t(sqrt(W[W>0])*qr.Q(r0$qr)))[1, ]
     ## To compute effective observations, rescale against uniform kernel
-    q_u <- qr(sqrt(d$w*(abs(X)<=h))*Z)
-    wgt_u <- solve(qr.R(q_u), t(sqrt(d$w*(abs(X)<=h))*qr.Q(q_u)))[1, ]
+    q_u <- qr(sqrt(d$w * (abs(X)<=h)) * Z)
+    wgt_u <- solve(qr.R(q_u), t(sqrt(d$w * (abs(X)<=h)) * qr.Q(q_u)))[1, ]
     eff.obs <- sum((abs(X)<=h)*d$w)*sum(wgt_u^2/d$w)/sum(wgt^2/d$w)
 
     ny <- NCOL(r0$residuals)
@@ -46,11 +46,13 @@ NPReg <- function(d, h, kern="triangular", order=1, se.method="nn", J=3) {
     NN <- function(X) {
         res <- matrix(0, nrow=length(X), ncol=ny^2)
         res[ok] <-
-        if (!inherits(d, "IP"))
-            rbind(as.matrix(sigmaNN(X[d$m & ok], d$Y[d$m & ok, ], J, d$w[d$m & ok])),
-                  as.matrix(sigmaNN(X[d$p & ok], d$Y[d$p & ok, ], J, d$w[d$p & ok])))
-        else
-            sigmaNN(X[ok], d$Y[ok, ], J, d$w[ok])
+            if (!inherits(d, "IP"))
+                rbind(as.matrix(sigmaNN(X[d$m & ok], d$Y[d$m & ok, ], J,
+                                        d$w[d$m & ok])),
+                      as.matrix(sigmaNN(X[d$p & ok], d$Y[d$p & ok, ], J,
+                                        d$w[d$p & ok])))
+            else
+                sigmaNN(X[ok], d$Y[ok, ], J, d$w[ok])
         res
     }
 
@@ -64,8 +66,8 @@ NPReg <- function(d, h, kern="triangular", order=1, se.method="nn", J=3) {
         V <- colSums(as.matrix(wgt^2 * hsigma2))+
             d$rho * (sum(tapply(wgt, d$clusterid, sum)^2)-sum(wgt^2))
     } else {
-        us <- apply(as.matrix(wgt*r0$residuals), 2,
-                    function(x) tapply(x, d$clusterid, sum))
+        us <- apply(as.matrix(wgt*r0$residuals)[ok, , drop=FALSE], 2,
+                    function(x) tapply(x, d$clusterid[ok], sum))
         V <- as.vector(crossprod(us))
     }
     ret <- list(estimate=r0$coefficients[1], se=sqrt(V[1]), est_w=wgt,
@@ -101,7 +103,7 @@ MROT <- function(d) {
         ## STEP 1: Estimate global polynomial regression
         r1 <- unname(stats::lm.wfit(y=d$Y, x=outer(drop(d$X), 0:4, "^"),
                                     w=d$w)$coefficients)
-        if(length(unique(d$X))<4 || any(is.na(r1)))
+        if (length(unique(d$X))<4 || any(is.na(r1)))
             stop(paste0("Insufficient unique values of the running",
                         " variable to compute rule of thumb for M."))
         f2 <- function(x) abs(2*r1[3]+6*x*r1[4]+12*x^2*r1[5])
