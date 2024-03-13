@@ -157,7 +157,8 @@ RDTOpt <- function(d, M, opt.criterion, alpha, beta, se.method, J) {
 #'
 #' }
 #' @examples
-#' r <- RDHonest(voteshare ~ margin, data=lee08, M=0.1, h=2)
+#' r <- RDHonest(voteshare ~ margin, data=lee08,
+#'               subset=abs(margin)<10, M=0.1, h=2)
 #' RDTEfficiencyBound(r, opt.criterion="OCI")
 #' @export
 RDTEfficiencyBound <- function(object, opt.criterion="FLCI", beta=0.5) {

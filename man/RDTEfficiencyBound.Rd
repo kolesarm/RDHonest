@@ -25,7 +25,8 @@ efficiency of two-sided fixed-length CIs at constant functions under
 second-order Taylor smoothness class.
 }
 \examples{
-r <- RDHonest(voteshare ~ margin, data=lee08, M=0.1, h=2)
+r <- RDHonest(voteshare ~ margin, data=lee08,
+              subset=abs(margin)<10, M=0.1, h=2)
 RDTEfficiencyBound(r, opt.criterion="OCI")
 }
 \references{

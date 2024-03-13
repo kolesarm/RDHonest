@@ -70,8 +70,8 @@
 #' @param h bandwidth, a scalar parameter. If not supplied, optimal bandwidth is
 #'     computed according to criterion given by \code{opt.criterion}.
 #' @param weights Optional vector of weights to weight the observations (useful
-#'     for aggregated data). The weights are intepreted as the number of
-#'     observations that each aggregated datapoint averages over. Disregarded if
+#'     for aggregated data). The weights are interpreted as the number of
+#'     observations that each aggregated data point averages over. Disregarded if
 #'     optimal kernel is used.
 #' @param point.inference Do inference at a point determined by \code{cutoff}
 #'     instead of RD.
@@ -106,7 +106,7 @@
 #'
 #'     \item{\code{bandwidth}}{bandwidth used. If \code{kern="optimal"}, the
 #'       smoothing parameters \code{bandwidth.m} and \code{bandwidth.p} on
-#'       either side of the cutoff are reported intead}
+#'       either side of the cutoff are reported instead}
 #'
 #'     \item{\code{eff.obs}}{number of effective observations}
 #'
