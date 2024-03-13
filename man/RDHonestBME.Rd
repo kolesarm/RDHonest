@@ -63,17 +63,20 @@ An object of class \code{"RDResults"}. This is a list with at least
 
    \item{\code{"call"}}{The matched call.}
 
+   \item{\code{"lm"}}{An \code{"lm"} object containing the fitted
+   regression.}
+
    \item{\code{"na.action"}}{(If relevant) information on the special
    handling of \code{NA}s.}
 
 }
 }
 \description{
-Computes honest CIs for local polynomial regression with uniform kernel under
-the assumption that the conditional mean lies in the bounded misspecification
-error (BME) class of functions, as considered in Kolesár and Rothe (2018).
-This class formalizes the notion that the fit of the chosen model is no worse
-at the cutoff than elsewhere in the estimation window.
+Computes honest CIs for local polynomial regression with uniform kernel in
+sharp RD under the assumption that the conditional mean lies in the bounded
+misspecification error (BME) class of functions, as considered in Kolesár and
+Rothe (2018). This class formalizes the notion that the fit of the chosen
+model is no worse at the cutoff than elsewhere in the estimation window.
 }
 \section{Note}{
 

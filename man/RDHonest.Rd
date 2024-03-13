@@ -29,8 +29,13 @@ RDHonest(
 )
 }
 \arguments{
-\item{formula}{object of class \code{"formula"} (or one that can be coerced
-to that class) of the form \code{outcome ~ running_variable}}
+\item{formula}{an object of class \code{"formula"} (or one that can be
+coerced to that class). The formula syntax is \code{outcome ~
+running_variable} for inference at a point. For sharp RD, it is
+\code{outcome ~ running_variable} if there are no covariates, or
+\code{outcome ~ running_variable | covariates} if covariates are present.
+For fuzzy RD, it is \code{outcome | treatment ~ running_variable |
+covariates}, with \code{covariates} optional.}
 
 \item{data}{optional data frame, list or environment (or object coercible by
 \code{as.data.frame} to a data frame) containing the outcome and running
@@ -42,27 +47,33 @@ which the function is called.}
 in the fitting process.}
 
 \item{weights}{Optional vector of weights to weight the observations (useful
-for aggregated data). Disregarded if optimal kernel is used.}
+for aggregated data). The weights are intepreted as the number of
+observations that each aggregated datapoint averages over. Disregarded if
+optimal kernel is used.}
 
 \item{cutoff}{specifies the RD cutoff in the running variable. For inference
 at a point, specifies the point \eqn{x_0} at which to calculate the
 conditional mean.}
 
-\item{M}{Bound on second derivative of the conditional mean function.}
+\item{M}{Bound on second derivative of the conditional mean function, a
+numeric vector of length one. For fuzzy RD, \code{M} needs to be a
+numeric vector of length two, specifying the smoothness of the
+conditional mean for the outcome and treatment, respectively.}
 
-\item{kern}{specifies kernel function used in the local regression. It can
-either be a string equal to \code{"triangular"} (\eqn{k(u)=(1-|u|)_{+}}),
-\code{"epanechnikov"} (\eqn{k(u)=(3/4)(1-u^2)_{+}}), or \code{"uniform"}
-(\eqn{k(u)= (|u|<1)/2}), or else a kernel function. If equal to
-\code{"optimal"}, use the finite-sample optimal linear estimator under
-Taylor smoothness class, instead of a local linear estimator.}
+\item{kern}{specifies the kernel function used in the local regression. It
+can either be a string equal to \code{"triangular"}
+(\eqn{k(u)=(1-|u|)_{+}}), \code{"epanechnikov"}
+(\eqn{k(u)=(3/4)(1-u^2)_{+}}), or \code{"uniform"} (\eqn{k(u)=
+(|u|<1)/2}), or else a kernel function. If equal to \code{"optimal"}, use
+the finite-sample optimal linear estimator under Taylor smoothness class,
+instead of a local linear estimator.}
 
 \item{na.action}{function which indicates what should happen when the data
 contain \code{NA}s. The default is set by the \code{na.action} setting of
 \code{options} (usually \code{na.omit}). Another possible value is
 \code{na.fail}}
 
-\item{opt.criterion}{Optimality criterion that bandwidth is designed to
+\item{opt.criterion}{Optimality criterion that the bandwidth is designed to
     optimize. The options are:
 
    \describe{
@@ -78,16 +89,16 @@ contain \code{NA}s. The default is set by the \code{na.action} setting of
     }
 
     The methods use conditional variance given by \code{sigmaY2}, if
-    supplied. Otherwise, for the purpose of estimating the optimal bandwidth,
-    conditional variance is estimated using the method specified by
-    \code{se.initial}.}
+    supplied. For fuzzy RD, \code{sigmaD2} and \code{sigmaYD} also need to be
+    supplied in this case. Otherwise, the methods use preliminary variance
+    estimates based on assuming homoskedasticity on either side of the
+    cutoff.}
 
 \item{h}{bandwidth, a scalar parameter. If not supplied, optimal bandwidth is
 computed according to criterion given by \code{opt.criterion}.}
 
-\item{se.method}{Vector with methods for estimating standard error of
-    estimate. If \code{NULL}, standard errors are not computed. The elements
-    of the vector can consist of the following methods:
+\item{se.method}{method for estimating standard error of the estimate, one
+    of:
 
 \describe{
     \item{"nn"}{Nearest neighbor method}
@@ -96,7 +107,8 @@ computed according to criterion given by \code{opt.criterion}.}
     (local polynomial estimators only).}
 
    \item{"supplied.var"}{Use conditional variance supplied by \code{sigmaY2}
-        instead of computing residuals}
+        instead of computing residuals. For fuzzy RD, \code{sigmaD2} and
+        \code{sigmaYD} also need to be supplied in this case.}
 
 }}
 
@@ -105,16 +117,16 @@ constructing/optimizing confidence intervals.}
 
 \item{beta}{Determines quantile of excess length to optimize, if bandwidth
 optimizes given quantile of excess length of one-sided confidence
-intervals; otherwise ignored.}
+intervals (\code{opt.criterion="OCI"}); otherwise ignored.}
 
-\item{J}{Number of nearest neighbors, if "nn" is specified in
-\code{se.method}.}
+\item{J}{Number of nearest neighbors, if \code{se.method="nn"} is specified.
+Otherwise ignored.}
 
 \item{sclass}{Smoothness class, either \code{"T"} for Taylor or \code{"H"}
 for Hölder class.}
 
 \item{T0}{Initial estimate of the treatment effect for calculating the
-optimal bandwidth. Only relevant for Fuzzy RD.}
+optimal bandwidth. Only relevant for fuzzy RD.}
 
 \item{point.inference}{Do inference at a point determined by \code{cutoff}
 instead of RD.}
@@ -125,46 +137,71 @@ instead of RD.}
 
 \item{sigmaYD}{Supply covariance of treatment and outcome (fuzzy RD only).}
 
-\item{clusterid}{Cluster id for cluster-robust standard errors}
+\item{clusterid}{Vector specifying cluster membership. If supplied,
+\code{se.method="EHW"} is required, and standard errors use
+cluster-robust variance formulas.}
 }
 \value{
 Returns an object of class \code{"RDResults"}. The function
     \code{print} can be used to obtain and print a summary of the results. An
-    object of class \code{"RDResults"} is a list containing the following
-    components
+    object of class \code{"RDResults"} is a list containing four components.
+    First, a data frame \code{"coefficients"} containing the following
+    columns:
 
     \describe{
-  \item{\code{estimate}}{Point estimate. This estimate is MSE-optimal if
-                  \code{opt.criterion="MSE"}}
+    \item{\code{term}}{type of parameter being estimated}
 
-  \item{\code{lff}}{Least favorable function, only relevant for optimal
-             estimator under Taylor class.}
+    \item{\code{estimate}}{point estimate}
 
-  \item{\code{maxbias}}{Maximum bias of \code{estimate}}
+    \item{\code{std.error}}{standard error of \code{estimate}}
 
-  \item{\code{sd}}{Standard deviation of estimate}
+    \item{\code{maximum.bias}}{maximum bias of \code{estimate}}
 
-  \item{\code{lower}, \code{upper}}{Lower (upper) end-point of a one-sided CI
-        based on \code{estimate}. This CI is optimal if
-        \code{opt.criterion=="OCI"}}
+    \item{\code{conf.low}, \code{conf.high}}{lower (upper) end-point of a
+    two-sided CI based on \code{estimate}}
 
-  \item{\code{hl}}{Half-length of a two-sided CI based on \code{estimate}, so
-            that the CI is given by \code{c(estimate-hl, estimate+hl)}. The
-            CI is optimal if \code{opt.criterion="FLCI"}}
+    \item{\code{conf.low.onesided}, \code{conf.high.onesided}}{lower (upper)
+        end-point of a one-sided CIs based on \code{estimate}}
 
-  \item{\code{eff.obs}}{Effective number of observations used by
-            \code{estimate}}
+    \item{\code{bandwidth}}{bandwidth used. If \code{kern="optimal"}, the
+      smoothing parameters \code{bandwidth.m} and \code{bandwidth.p} on
+      either side of the cutoff are reported intead}
 
-  \item{\code{h}}{Bandwidth used}
+    \item{\code{eff.obs}}{number of effective observations}
 
-  \item{\code{naive}}{Coverage of CI that ignores bias and uses
-               \code{qnorm(1-alpha/2)} as critical value}
+    \item{\code{leverage}}{maximal leverage of \code{estimate}}
 
-  \item{\code{call}}{the matched call}
+    \item{\code{cv}}{critical value used to compute two-sided CIs}
 
-  \item{\code{fs}}{Estimate of the first-stage coefficient (sharp RD only)}
+    \item{\code{alpha}}{coverage level, as specified by option \code{alpha}}
 
-}
+    \item{\code{method}}{\code{sclass} is used}
+
+     \item{\code{M}}{curvature bound used for worst-case bias
+        calculations. For fuzzy RD, equals
+        \code{(abs(estimate)*M.fs+M.rf)/first.stage}}
+
+     \item{\code{M.rf}, \code{M.fs}}{curvature bound for the outcome (i.e.
+     reduced-form) and first-stage regressions. Fuzzy RD only.}
+
+      \item{\code{first.stage}}{estimate of the first-stage coefficient.
+      Fuzzy RD only.}
+
+      \item{\code{kernel}}{kernel used}
+
+       \item{\code{p.value}}{p-value for testing the null of no effect}
+     }
+
+    Second, a list called \code{"data"} containing the data used for
+    estimation. This is useful mostly for internal calculations. Third, an
+    object of class \code{"lm"} containing the local linear regression
+    estimates. Finally, a \code{call} object containing the matched call
+    called \code{"call"}.
+
+    If \code{kern="optimal"}, the \code{"lm"} object is empty, and the
+    numeric vectors \code{"delta"} and \code{"omega"} are returned in
+    addition. These correspond to the parameters in the modulus problem used
+    to compute the optimal estimation weights.
 }
 \description{
 Calculate estimators and bias-aware CIs for the sharp or fuzzy RD parameter,
@@ -200,10 +237,6 @@ of regression models. Econometrica, 86(2):655–683, March 2018.
 \cite{Timothy B. Armstrong and Michal Kolesár. Simple and honest confidence
 intervals in nonparametric regression. Quantitative Economics, 11(1):1–39,
 January 2020. \doi{10.3982/QE1199}}
-
-\cite{Guido W. Imbens and Karthik Kalyanaraman. Optimal bandwidth choice for
-the regression discontinuity estimator. The Review of Economic Studies,
-79(3):933–959, July 2012. \doi{10.1093/restud/rdr043}}
 
 \cite{Michal Kolesár and Christoph Rothe. Inference in regression
 discontinuity designs with a discrete running variable. American Economic

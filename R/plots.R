@@ -4,7 +4,7 @@
 #' average.
 #'
 #' @param cutoff specifies the RD cutoff for the running variable.
-#' @template RDFormula
+#' @template RDFormulaSimple
 #' @param avg Number of observations to average over. If set to \code{Inf}, then
 #'     take averages for each possible value of the running variable (convenient
 #'     when the running variable is discrete).

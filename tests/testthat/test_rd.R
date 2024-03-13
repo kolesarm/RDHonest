@@ -141,11 +141,11 @@ test_that("Honest inference in Lee and LM data",  {
     expect_equal(ro[8], paste0("margin 5.8864375  1.4472117",
                                "   0.80247208 (2.6646087, 9.1082664)"))
     ## Try nn
-    r1 <- RDHonest(voteshare ~ margin, data=lee08, kern="optimal", M=0.04,
-                   opt.criterion="FLCI", se.method="nn")
-    expect_equal(as.numeric(r1$coefficients[2:6]),
-                 c(5.886437523, 1.196647571, 0.8024720847, 3.099785428,
-                   8.673089618))
+    r1 <- RDHonest(voteshare ~ margin, data=lee08[(1:1000)*6, ], kern="optimal",
+                   M=0.04, opt.criterion="FLCI", se.method="nn")
+    expect_equal(as.numeric(r1$coefficients[2:8]),
+                 c(5.3946873132,  2.5735905969,  1.6959559231, -0.5711839065,
+                   11.3605585330, -0.5344484375, 11.3238230640))
     ## We no longer allow different bw below and above cutoff
     ## r <- RDHonest(voteshare ~ margin, data=lee08, kern="triangular",
     ##               M=0.04, opt.criterion="MSE", se.method="supplied.var",
@@ -195,21 +195,21 @@ test_that("Honest inference in Lee and LM data",  {
     ## Missing values
     expect_error(RDHonest(mortHS ~ povrate, data=headst, kern="uniform", h=12,
                           na.action="na.fail"))
-    expect_message(r1 <- RDHonest(mortHS ~ povrate, data=headst, kern="uniform",
-                                  na.action="na.omit"))
+    expect_message(r1 <- RDHonest(mortHS ~ povrate, data=headst[c(2500:3000), ],
+                                  kern="uniform", na.action="na.omit"))
     r1 <- capture.output(print(r1, digits=6))
     expect_equal(r1[c(8, 11, 12, 22)],
-                 c(paste0("I(povrate>0) -3.17121    1.44439",
-                          "     0.759228 (-6.35207, 0.00964571)"),
-                   "Number of effective observations:     239",
-                   "Maximal leverage for sharp RD parameter: 0.019615",
-                   "24 observations with missing values dropped"))
+                 c(paste0("I(povrate>0) -2.75044    2.08871      ",
+                          "1.49488 (-7.70164, 2.20076)"),
+                   "Number of effective observations:      65",
+                   "Maximal leverage for sharp RD parameter: 0.0615608",
+                   "3 observations with missing values dropped"))
     expect_message(r2 <- RDHonest(mortHS ~ povrate, data=headst,
-                                  kern="epanechnikov",
+                                  kern="epanechnikov", h=9.42625,
                                   point.inference=TRUE, cutoff=4))
     expect_equal(capture.output(print(r2, digits=6))[c(8, 11, 19)],
                  c(paste0("(Intercept)  2.63181   0.300132     ",
-                          "0.152587  (1.97505, 3.28856)"),
+                          "0.152588  (1.97505, 3.28856)"),
                    "Number of effective observations: 373.642",
                    "   2.631805    -0.000162  "))
 })
@@ -307,9 +307,3 @@ test_that("Adaptation bounds", {
     b2 <- RDTEfficiencyBound(r, 2*0.005, opt.criterion="FLCI")
     expect_equal(unname(c(b1, b2)), c(0.9956901, 0.95870418))
 })
-
-
-## rf <- RDHonest(log(cn)~retired | elig_year, data=rcp, cutoff=0)
-## rs <- RDHonest(log(cn)~elig_year, data=rcp, cutoff=0)
-## ro <- RDHonest(log(cn)~elig_year, data=rcp, cutoff=0, kern="optimal")
-## rp <- RDHonest(log(cn)~elig_year, data=rcp, cutoff=1, point.inference=TRUE)

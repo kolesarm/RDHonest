@@ -11,11 +11,12 @@ test_that("Test clustering formulas", {
     expect_message(f0c <- RDHonest(c|retired ~ elig_year, data=rr,
                                    clusterid=seq_along(rr$c), se.method="EHW"))
     expect_equal(f0$coefficients, f0c$coefficients)
-    expect_message(p0 <- RDHonest(c~elig_year, data=rr,
+
+    expect_message(p0 <- RDHonest(c~elig_year, data=rr[1:100, ], h=10,
                                   se.method="EHW", point.inference=TRUE))
-    expect_message(p0c <- RDHonest(c~elig_year, data=rr,
-                                   clusterid=seq_along(rr$c), se.method="EHW",
-                                   point.inference=TRUE))
+    expect_message(p0c <- RDHonest(c~elig_year, data=rr[1:100, ], h=10,
+                                   clusterid=seq_along(rr$c[1:100]),
+                                   se.method="EHW", point.inference=TRUE))
     expect_equal(p0$coefficients, p0c$coefficients)
 
     ## Check we match sandwich::vcovCL: uniform + triangular

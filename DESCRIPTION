@@ -1,6 +1,6 @@
 Package: RDHonest
 Title: Honest Inference in Regression Discontinuity Designs
-Version: 0.5.0
+Version: 0.9.0
 Authors@R:
     c(person(given = "Michal",
             family = "Kolesár",
@@ -13,7 +13,7 @@ Authors@R:
              email = "timothy.armstrong@usc.edu"))
 Description: Honest and nearly-optimal confidence intervals in fuzzy and sharp
     regression discontinuity designs and for inference at a point based on local
-    linear regression.
+    linear regression. Supports covariates, clustering, and weighting.
 Depends: R (>= 4.3.0)
 License: GPL-3
 Encoding: UTF-8

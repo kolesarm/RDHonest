@@ -3,21 +3,21 @@ output:
   pdf_document:
     latex_engine: pdflatex
     citation_package: natbib
-    template: mk_Rpackage_template.tex
     toc: true
     toc_depth: 2
     includes:
         in_header: vignette_head.tex
     keep_tex: true
+    number_sections: true
 title: "Honest inference in Regression Discontinuity Designs"
 author: "Michal Kolesár"
 date: "`r format(Sys.time(), '%B %d, %Y')`"
 geometry: margin=1in
 fontfamily: mathpazo
-fontsize: 10pt
+fontsize: 11pt
 bibliography: np-testing-library.bib
 vignette: >
-  %\VignetteIndexEntry{Honest inference in Sharp Regression Discontinuity}
+  %\VignetteIndexEntry{RDHonest}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---
@@ -31,53 +31,57 @@ knitr::opts_chunk$set(tidy = TRUE, collapse=TRUE, comment = "#>",
 
 # Introduction
 
-The package `RDHonest` implements confidence intervals for the regression
-discontinuity parameter considered in @ArKo16optimal, @ArKo16honest, and
-@KoRo16. In this vignette, we demonstrate the implementation of these confidence
-intervals using datasets from @lee08, @oreopoulos06, and @battistin09, which are
-included in the package as a data frame `lee08`, `cghs`, and `rcp`. The datasets
-from @lalive08 and @LuMi07 that are used in @ArKo16honest, and @KoRo16 are also
-included in the package as data frames `rebp` and `headst`.
+The package `RDHonest` implements bias-aware inference methods in regression
+discontinuity (RD) designs developed in @ArKo18optimal, @ArKo20, and
+@KoRo16. In this vignette, we demonstrate the implementation of these methods
+using datasets from @lee08, @oreopoulos06, and @battistin09 and @LuMi07, which
+are included in the package as a data frame `lee08`, `cghs`, `rcp` and `headst`.
+The dataset from @lalive08 used in @KoRo16 is also included in the package as
+data frame `rebp`.
 
 # Sharp RD
 
 ## Model
 
-In the sharp regression discontinuity model, we observe units $i=1,\dotsc,n$,
-with the outcome $y_i$ for the $i$th unit given by $$ y_i = f(x_i) + u_i, $$
-where $f(x_i)$ is the expectation of $y_i$ conditional on the running variable
-$x_i$ and $u_i$ is the regression error. A unit is treated if and only if the
-running variable $x_{i}$ lies weakly above a known cutoff $x_{i}\geq c_{0}$. The
-parameter of interest is given by the jump of $f$ at the cutoff, $$
-\beta=\lim_{x\downarrow c_{0}}f(x)-\lim_{x\uparrow c_{0}}f(x).$$ Let
-$\sigma^2(x_i)$ denote the conditional variance of $u_i$.
+We observe units $i=1,\dotsc, n$, with the outcome $Y_i$ for the $i$th unit given
+by
+\begin{equation}
+Y_i = f_Y(x_i) + u_{Y, i}
+\end{equation}
+where $f_Y(x_i)$ is the expectation of $Y_i$
+conditional on the running variable $x_i$ and $u_{Y, i}$ is the regression error that
+is conditionally mean zero by definition.
 
-In the @lee08 dataset, the running variable corresponds to the margin of victory of
+A unit is assigned to treatment if and only if the running variable $x_{i}$ lies
+weakly above a known cutoff. We denote the assignment indicator by
+$Z_{i}=I\{x_{i}\geq c_{0}\}$. In a sharp RD design, all units comply with the
+assigned treatment, so that the observed treatment coincides with treatment
+assignment, $D_{i}=Z_{i}$. The parameter of interest is given by the jump of $f$
+at the cutoff, $$ \tau_Y=\lim_{x\downarrow c_{0}}f_Y(x)-\lim_{x\uparrow
+c_{0}}f_Y(x).$$ Under mild continuity conditions, $\tau_{Y}$ can
+be interpreted as the effect of the treatment for units at the threshold
+(@htv01). Let $\sigma_Y^2(x_i)$ denote the conditional variance of $Y_i$.
+
+In the @lee08 dataset `lee08`, the running variable corresponds to the margin of victory of
 a Democratic candidate in a US House election, and the treatment corresponds to
 winning the election. Therefore, the cutoff is zero. The outcome of interest is
 the Democratic vote share in the following election.
 
-The Oreopoulos dataset consists of a subsample of British workers, and it
-exploits a change in minimum school leaving age in the UK from 14 to 15, which
-occurred in 1947. The running variable is the year in which the individual turned
-14, with the cutoff equal to 1947 so that the "treatment" is being subject to a
-higher minimum school-leaving age. The outcome is log earnings in 1998.
-
-Some of the functions in the package require the data to be transformed into a
-custom `RDData` format. This can be accomplished with the `RDData` function:
-
-```{r}
-library("RDHonest")
-```
+The `cghs` dataset from @oreopoulos06 consists of a subsample of British
+workers. The RD design exploits a change in minimum school-leaving age in the UK
+from 14 to 15, which occurred in 1947. The running variable is the year in which
+the individual turned 14, with the cutoff equal to 1947 so that the "treatment"
+is being subject to a higher minimum school-leaving age. The outcome is log
+earnings in 1998.
 
 ## Plots
 
 The package provides a function `RDScatter` to plot the raw data. To remove
-some noise, the function plots averages over `avg` number of observations. The
-function takes an `RDData` object as an argument
+some noise, the function plots averages over `avg` number of observations.
 
 ```{r, fig.width=4.5, fig.height=3.5, fig.cap="Lee (2008) data"}
-## plot 25-bin averages in for observations 50 at most points
+library("RDHonest")
+## plot 50-bin averages in for observations 50 at most points
 ## away from the cutoff. See Figure 1.
 RDScatter(voteshare~margin, data=lee08, subset=abs(lee08$margin)<=50,
           avg=50, propdotsize=FALSE, xlab="Margin of victory",
@@ -86,13 +90,13 @@ RDScatter(voteshare~margin, data=lee08, subset=abs(lee08$margin)<=50,
 
 The running variable in the Oreopoulos dataset is discrete. It is therefore
 natural to plot the average outcome by each value of the running variable, which
-is achieved using by setting `avg=Inf`. The option `dotsize="count"` makes the
+is achieved using by setting `avg=Inf`. The option `propdotsize=TRUE` makes the
 size of the points proportional to the number of observations that the point
 averages over.
 
 ```{r, fig.width=4.5, fig.height=3.5, fig.cap="Oreopoulos (2006) data"}
 ## see Figure 2
-f2 <- RDScatter(I(log(earnings))~yearat14, data=cghs, cutoff=1947,
+f2 <- RDScatter(log(earnings)~yearat14, data=cghs, cutoff=1947,
                 avg=Inf, xlab="Year aged 14", ylab="Log earnings",
                 propdotsize=TRUE)
 ## Adjust size of dots if they are too big
@@ -102,53 +106,110 @@ f2 + ggplot2::scale_size_area(max_size = 4)
 ## Inference based on local polynomial estimates
 
 The function `RDHonest` constructs one- and two-sided confidence intervals (CIs)
-around local linear and local quadratic estimators using either a user-supplied
-bandwidth (which is allowed to differ on either side of the cutoff), or
+around local linear estimators using either a user-supplied bandwidth, or
 bandwidth that is optimized for a given performance criterion. The sense of
 honesty is that, if the regression errors are normally distributed with known
 variance, the CIs are guaranteed to achieve correct coverage _in finite
 samples_, and achieve correct coverage asymptotically uniformly over the
 parameter space otherwise. Furthermore, because the CIs explicitly take into
-account the possible bias of the estimators, the asymptotic approximation
-doesn't rely on the bandwidth to shrink to zero at a particular rate.
+account the possible bias of the estimators, the asymptotic approximation does
+not rely on the bandwidth to shrinking to zero at a particular rate---in fact,
+the CIs are valid even if the bandwidth is fixed as $n\to\infty$.
 
-To describe the form of the CIs, let $\hat{\beta}_{h_{+},h_{-}}$ denote a a
-local polynomial estimator with bandwidth equal to $h_{+}$ above the cutoff and
-equal to $h_{-}$ below the cutoff. Let $\beta_{h_{+},h_{-}}(f)$ denote its
-expectation conditional on the covariates when the regression function equals
-$f$. Then the bias of the estimator is given by $\beta_{h_{+},h_{-}}(f)-\beta$.
-Let $$
-B(\hat{\beta}_{h_{+},h_{-}})=\sup_{f\in\mathcal{F}}|\beta_{h_{+},h_{-}}(f)-\beta|
-$$ denote the worst-case bias over the parameter space $\mathcal{F}$. Then the
-lower limit of a one-sided CI is given by $$\hat{\beta}_{h_{+},h_{-}}-
-B(\hat{\beta}_{h_{+},h_{-}})-z_{1-\alpha}\widehat{se}(\hat{\beta}_{h_{+},h_{-}}),
-$$ where $z_{1-\alpha}$ is the $1-\alpha$ quantile of a standard normal
-distribution, and $\widehat{se}(\hat{\beta}_{h_{+},h_{-}})$ is the standard
-error (an estimate of the standard deviation of the estimator). Subtracting the
-worst-case bias in addition to the usual critical value times standard error
-ensures correct coverage at all points in the parameter space.
+We first estimate $\tau_{Y}$ using local linear regression: instead of using all
+available observations, we only use observations within a narrow estimation
+window around the cutoff, determined by a bandwidth $h$. Within this estimation
+window, we may choose to give more weight to observations closer to the
+cutoff---this weighing is determined a kernel $K$. The local linear regression
+is just a weighted least squares (WLS) regression of $Y_{i}$ onto the treatment
+indicator, the running variable, and their interaction, weighting each
+observation using kernel weights $K(x_{i}/h)$. The local linear regression
+estimator $\hat{\tau}_{Y, h}$ or $\tau_{Y}$ is given by the first element of the
+vector of regression coefficients from this regression,
+$$\hat{\beta}_{Y, h}=
+  \left(\sum_{i=1}^{n}K(x_{i}/h)m(x_{i})m(x_{i})'\right)^{-1}
+  \sum_{i=1}^{n}K(x_{i}/h)m(x_{i})Y_{i},$$
+where $m(x)=(I\{x\geq 0\}, I\{x\geq 0\}x, 1, x)'$ collects all the regressors, and we normalize the cutoff to zero.
+When the kernel is uniform, $K(u)=I\{\abs{u}\leq 1\}$, $\hat{\tau}_{Y, h}$ is
+simply the treatment coefficient from an OLS regression of $Y_{i}$ onto
+$m(x_{i})$ for observations that are within distance $h$ of the cutoff. Other
+kernel choices may weight observations within the estimation window $[-h, h]$
+differently, giving more weight to observations that are relatively closer to
+the cutoff.
 
-A two-sided CI is given by $$ \hat{\beta}_{h_{+},h_{-}} \pm
-cv_{1-\alpha}(B(\hat{\beta}_{h_{+},h_{-}})/\widehat{se}(\hat{\beta}_{h_{+},h_{-}}))\times
-\widehat{se}(\hat{\beta}_{h_{+},h_{-}}),$$ where the critical value function
-$cv_{1-\alpha}(b)$ corresponds to the $1-\alpha$ quantile of the $|N(b,1)|$
-distribution. To see why using this critical value ensures honesty, decompose
-the $t$-statistic as $$
-\frac{\hat{\beta}_{h_{+},h_{-}}-\beta}{\widehat{se}(\hat{\beta}_{h_{+},h_{-}})}
-=
-\frac{\hat{\beta}_{h_{+},h_{-}}-\beta_{h_{+},h_{-}}(f)}{\widehat{se}(\hat{\beta}_{h_{+},h_{-}})}
-+\frac{\beta_{h_{+},h_{-}}(f)-\beta}{\widehat{se}(\hat{\beta}_{h_{+},h_{-}})} $$
-By a central limit theorem, the first term on the right-hand side will by
-distributed standard normal, irrespective of the bias. The second term is
-bounded in absolute value by
-$B(\hat{\beta}_{h_{+},h_{-}})/\widehat{se}(\hat{\beta}_{h_{+},h_{-}})$, so that,
-in large samples, the $1-\alpha$ quantile of the absolute value of the
-$t$-statistic will be bounded by
-$cv_{1-\alpha}(B(\hat{\beta}_{h_{+},h_{-}})/\widehat{se}(\hat{\beta}_{h_{+},h_{-}}))$.
-This approach gives tighter CIs than simply adding and subtracting
-$B(\hat{\beta}_{h_+,h_-})$ from the point estimate, in addition to adding and subtracting $z_{1-\alpha}\widehat{se}(\hat{\beta}_{h_+,h_-})$
+Equivalently, using the Frisch–Waugh–Lovell theorem, $\hat{\tau}_{Y, h}$ may
+also be computed by first running an auxiliary WLS regression of the
+treatment indicator $D_{i}$ onto the remaining regressors,
+$(I\{x_{i}\geq 0\}x_{i}, 1, x_{i})$ and then running a WLS regression of the
+outcome $Y_{i}$ onto the residuals $\tilde{D}_{i}$ from this auxiliary
+regression,
+$$\hat{\tau}_{Y, h}=\sum_{i=1}^{n}k_{i, h}Y_{i}, \quad k_{i, h}
+  =\frac{K(x_{i}/h)\tilde{D}_{i}}{\sum_{i=1}^{n}K(x_{i}/h)\tilde{D}_{i}^{2}}.$$
+This representation makes it clear that the estimator simply a weighted average
+of the outcomes. By definition of the residual $\tilde{D}_{i}$, the weights sum
+to zero, and satisfy $\sum_{i}k_{i, h}x_{i}=\sum_{i}k_{i, h}x_{i}I\{x_{i}\geq 0\}=0$:
+this ensures that our estimate of the jump at $0$ is unbiased when the
+regression function is piecewise linear inside the estimation window.
 
-The function `CVb` gives these critical values:
+### Bias-aware confidence intervals
+
+The estimator $\hat{\tau}_{Y, h}$ is a regression estimator, so it will be
+asymptotically normal under mild regularity conditions. In particular, if the
+residuals $u_{i}$ are well-behaved, a sufficient condition is that none of the
+weights $k_{i, h}$ are too influential in the sense that the maximal leverage
+goes to zero, as we discuss in the diagnostics section.
+
+Due to the asymptotic normality, the simplest approach to inference is to use
+the usual CI,
+$\hat{\tau}_{Y, h}\pm z_{1-\alpha/2}\hatse(\hat{\tau}_{Y, h})$, where
+$z_{\alpha}$ is the $\alpha$ quantile of the standard normal distribution.
+However, this CI will typically undercover relative to its nominal
+confidence level $1-\alpha$ because it's not correctly centered: unless the
+regression function $f_{Y}$ is exactly linear inside the estimation window, the
+estimator $\hat{\tau}_{Y, h}$ will be biased. If $f_{Y}$ is "close" to linear,
+then this bias will be small, but if it is wiggly, the bias may be substantial,
+leading to severe coverage distortions.
+
+The idea behind bias-aware inference methods is to bound the potential bias of
+the estimator by making an explicit assumption on the smoothness of $f_{Y}$. A
+convenient way of doing this is to bound the curvature of $f_{Y}$ by
+restricting its second derivative. To allow $f_{Y}$ to be discontinuous at zero,
+we assume that it's twice differentiable on either side of the cutoff, with a
+second derivative bounded by a known constant $M$. The choice of the exact
+curvature parameter $M$ is key to implementing bias-aware methods, and we
+discuss it below. Once $M$ is selected, we can work out the potential
+finite-sample bias of the estimator and account for it in the CI construction.
+In particular, it turns out that the absolute value of the bias of
+$\hat{\tau}_{Y, h}$ is maximized at the piecewise quadratic function $x\mapsto
+M x^{2}(I\{x< 0\}-I\{x\geq 0\})/2$, so that $$\abs{E[\hat{\tau}_{Y,
+h}-\tau_{Y}]}\leq B_{M, h}:=-\frac{M}{2}\sum_{i=1}^{n} k_{i,
+h}x_{i}^{2}\operatorname{sign}(x_{i}).$$ Hence, a simple way to ensure that we
+achieve correct coverage regardless of the true shape of the regression function
+$f_{Y}$ (so long as $\abs{f_{Y}''(x)}\leq M$) is to simply enlarge the usual CI
+by this bias bound, leading to the CI $\hat{\tau}_{Y, h}\pm (B_{M,
+h}+z_{1-\alpha/2}\hatse(\hat{\tau}_{Y, h}))$. We can actually to slightly better
+than this, since the bias bound can't simultaneously be binding on both
+endpoints of the CI. In particular, observe that in large samples, the
+$t$-statistic $(\hat{\tau}_{Y, h}-\tau_{Y})/\hatse(\hat{\tau}_{Y, h})$ is
+normally distributed with variance one, and mean that is bounded by $t=B_{M,
+h}/\hatse(\hat{\tau}_{Y, h})$ (ignoring sampling variability in the standard
+error, which is negligible in large samples). To ensure correct coverage, we
+therefore replace the usual critical value $z_{1-\alpha/2}$, with the $1-\alpha$
+quantile of folded normal distribution $\abs{\mathcal{N}(t,1)}$,
+$\cv_{\alpha}(t)$ (note $\cv_{\alpha}(0)=z_{1-\alpha/2}$). This leads to the
+bias-aware CI
+\begin{equation}
+\hat{\tau}_{Y, h} \pm
+\cv_{\alpha}(B_{M, h}/\hatse(\hat{\tau}_{Y, h})) \hatse(\hat{\tau}_{Y, h})
+\end{equation}
+Notice the bias bound $B_{M, h}$ accounts for the exact *finite-sample bias* of the estimator.
+ The only asymptotic approximation we have used in its
+construction is the approximate normality of the estimator $\hat{\tau}_{Y, h}$,
+which obtains without any restrictions on $f_{Y}$---we only need the maximal
+leverage to be close to zero, mirroring a standard leverage condition from
+parametric regression settings.
+
+The function `CVb` gives the critical values $\cv_{\alpha}(t)$:
 
 ```{r, }
 CVb(0, alpha=0.05) ## Usual critical value
@@ -158,83 +219,146 @@ CVb(1/2, alpha=0.05)
 CVb(0:5, alpha=0.1)
 ```
 
-### Parameter space
-
-To implement the honest CIs, one needs to specify the parameter space
-$\mathcal{F}$. The function `RDHonest` computes honest CIs when the parameter
-space $\mathcal{F}$ corresponds to a second-order Taylor or second-order Hölder
-smoothness class, which capture two different types of smoothness restrictions.
-The second-order Taylor class assumes that $f$ lies in the the class of
-functions $$\mathcal{F}_{\text{Taylor}}(M)= \left \{f_{+}-f_{-}\colon
-f_{+}\in\mathcal{F}_{T}(M; [c_{0}
-%] %(
-,\infty)),\;
-f_{-}\in\mathcal{F}_{T}(M;(-\infty, c_{0})) \right\},$$
-
-where $\mathcal{F}_{T}(M;\mathcal{X})$ consists of functions $f$ such that the
-approximation error from second-order Taylor expansion of $f(x)$ about $c_{0}$
-is bounded by $M|x|^{2}/2$, uniformly over $\mathcal{X}$: \begin{align*}
-\mathcal{F}_{T}(M;\mathcal{X}) =\left\{f\colon \left|
-f(x)-f(c_0)-f'(c_0)x\right| \leq M|x|^2/2\text{ all }x\in\mathcal{X}\right\}.
-\end{align*} The class $\mathcal{F}_{T}(M;\mathcal{X})$ formalizes the idea that
-the second derivative of $f$ at zero should be bounded by $M$. See Section 2 in
-@ArKo16optimal (note the constant $C$ in that paper equals $C=M/2$ here). This
-class is doesn't impose smoothness away from boundary, which may be undesirable
-in some empirical applications. The Hölder class addresses this problem by
-bounding the second derivative globally. In particular, it assumes that $f$ lies
-in the class of functions $$\mathcal{F}_{\text{Hölder}}(M)= \left
-\{f_{+}-f_{-}\colon f_{+}\in\mathcal{F}_{H}(M;[c_{0}%] %( ,\infty)),\;
-f_{-}\in\mathcal{F}_{H}(M;(-\infty, c_{0})) \right\},$$
-
-where $$ \mathcal{F}_{H}(M;\mathcal{X})=\{f\colon |f'(x)-f'(y)|\leq M|x-y|
-\;\;x,y\in\mathcal{X}\}.$$
-
-The smoothness class is specified using the option `sclass`. CIs around a local
-linear estimator with bandwidth that equals to 10 on either side of the cutoff
-when the parameter space is given by a Taylor and Hölder smoothness class,
-respectively, with $M=0.1$:
+The function `RDHonest` puts all these steps together. Specifying curvature
+parameter $M=0.1$, bandwidth $h=8$, and a triangular kernel yields:
 
 ```{r}
-RDHonest(voteshare~margin, data=lee08, kern="uniform", M=0.1, h=10, sclass="T")
-RDHonest(voteshare~margin, data=lee08, kern="uniform", M=0.1, h=10, sclass="H")
+r0 <- RDHonest(voteshare~margin, data=lee08, kern="triangular", M=0.1, h=8)
+print(r0)
 ```
 
-The confidence intervals use the nearest-neighbor method to estimate the
-standard error by default (this can be changed using the option `se.method`, see
-help file for `RDHonest`). The package reports two-sided as well one-sided CIs
-(with lower as well as upper limit) by default.
+- The default for calculating the standard errors is to use the nearest neighbor
+  method. Specifying `se.method="EHW"` changes them to the regression-based
+  heteroskedasticity-robust Eicker-Huber-White standard errors. It can be shown
+  that unless the regression function $f_{Y}$ is linear inside the estimation
+  window, the `EHW` standard errors generally overestimate the conditional
+  variance.
+- The default option `sclass="H"` specifies the parameter space as second-order
+  Hölder smoothness class, which formalizes our assumption above that the second
+  derivative of $f_Y$ is bounded by $M$ on either side of the cutoff. The
+  package also allows the user to use a Taylor smoothness class by setting
+  `sclass="T"`. This changes the computation of the worst-case bias, and allows
+  $f_Y$ to correspond to any function such that the approximation error from a
+  second-order Taylor expansion around the cutoff is bounded by $M x^{2}/2$. For
+  more discussion, see Section 2 in @ArKo18optimal (note the constant $C$ in
+  that paper equals $C=M/2$ here).
+- Other options for `kern` are `"uniform"` and `"epanechnikov"`, or the user can
+  also supply their own kernel function.
+- `RDHonest` reports two-sided as well one-sided CIs. One-sided CIs simply
+  subtract off the worst-case bias bound $B_{M, h}$ in addition to subtracting
+  the standard error times the $z_{1-\alpha}$ critical value from the estimate.
+  It also reports the p-value for the hypothesis that $\tau_Y=0$.
+- `RDHonest` also reports the fitted regression coefficients $\hat{\beta}_{Y,
+  h}$, and returns the `lm` object under `r0$lm`. We see from the above that the
+  fitted slopes below and above the cutoff differ by
+  `r round(unname(r0$lm$coefficients[2]), 2)`, for instance.
 
-Instead of specifying a bandwidth, one can just specify the smoothness class and
-smoothness constant $M$, and the bandwidth will be chosen optimally for a given
-optimality criterion:
+## Automatic bandwidth choice
+
+Instead of specifying a bandwidth, one can just specify the curvature parameter
+$M$, and the bandwidth will be chosen optimally for a given optimality
+criterion---minimizing the worst-case MSE of the estimator, or minimizing the
+length the resulting confidence interval. Typically, this makes little difference:
 
 ```{r}
 RDHonest(voteshare ~ margin, data=lee08, kern="triangular",
-         M=0.1, opt.criterion="MSE", sclass="H")
+         M=0.1, opt.criterion="MSE")
 ## Choose bws optimal for length of CI
 RDHonest(voteshare ~ margin, data=lee08, kern="triangular", M=0.1,
-         opt.criterion="FLCI", sclass="H")
+         opt.criterion="FLCI")
 ```
 
-### Inference when running variable is discrete
+To compute the optimal bandwidth, the package assumes homoskedastic variance on
+either side of the cutoff, which it estimates based on a preliminary local
+linear regression using the @ImKa12 bandwidth selector. This homoskedasticity
+assumption is dropped when the final standard errors are computed.
+
+Notice that, when the variance function $\sigma^2_Y(x)$ is known, neither the
+conditional variance of the estimator, $\sd(\hat{\tau}_{Y,
+h})^{2}=\sum_{i=1}^{n}k_{i, h}^{2}\sigma^{2}_{Y}(x_{i})$, nor the bias bound
+$B_{M, h}$ depend on the outcome data. Therefore, the MSE and the length of the
+infeasible CI, $2\cv_{\alpha}(B_{M, h}/\sd(\hat{\tau}_{Y, h}))
+\sd(\hat{\tau}_{Y, h})$, do not depend on the outcome data. To stress this
+property, we refer to this infeasible CI (and, with some abuse of terminology,
+also the feasible version in eq. (2)) as a fixed-length confidence interval
+(FLCI). As a consequence of this property, optimizing the bandwidth for CI
+length does not impact the coverage of the resulting CI.
+
+## Choice of curvature parameter
+
+The curvature parameter $M$ is the most important implementation choice. It
+would be convenient if one could use data-driven methods to automate its
+selection. Unfortunately, if one only assume that the second derivative of
+$f_{Y}$ is bounded by some constant $M$, it is not possible to do that: one
+cannot use data to select $M$ without distorting coverage
+(@low97, @ArKo18optimal). This result is essentially an instance of the general
+issue with using pre-testing or using model selection rules, such as using
+cross-validation or information criteria like AIC or BIC to pick which controls
+to include in a regression: doing so leads to distorted confidence intervals.
+Here the curvature parameter $M$ indexes the size of the model: a large $M$ is
+the analog of saying that all available covariates need to be included in the
+model to purge omitted variables bias; a small $M$ is the analog of saying that
+a small subset of them will do. Just like one needs to use institutional
+knowledge of the problem at hand to decide which covariates to include in a
+regression, ideally one uses problem-specific knowledge to select $M$. Analogous
+to reporting results based on different subsets of controls in columns of a
+table with regression results, one can vary the choice of $M$ by way of
+sensitivity analysis.
+
+Depending on the problem at hand, it may be difficult to translate
+problem-specific intuition about how close we think the regression function is
+to a linear function into a statement about the curvature parameter $M$. In such
+cases, it is convenient to have a rule of thumb for selecting $M$ using the
+data. To do this, we need to impose additional restrictions on $f_{Y}$ besides
+assuming that its second derivative is bounded in order to get around the
+results on impossibility of post-model selection inference discussed above. An
+appealing way of doing this is to relate the assumption about the local
+smoothness of $f_{Y}$ at the cutoff point, which drives the bias of the
+estimator but is difficult to measure in the data, to the global smoothness of
+$f_{Y}$, which is much easier to measure. In our implementation, we measure
+global smoothness by fitting a global quartic polynomial $\check{f}$, separately
+on either side of the cutoff, following @ArKo20. We assume the local second
+derivative of $f_{Y}$, $M$, is no larger than the maximum second derivative of
+the global polynomial approximation $\check{f}$. Under this assumption, we can
+calibrate $M$ by setting
+$$\hat{M}_{ROT}=\sup_{x\in[x_{\min}, x_{\max}]}\abs{\check{f}''(x)}.$$
+There are
+different ways of relating local and global smoothness, which lead to different
+calibrations of $M$. For instance, @ImWa19 propose fitting a global quadratic
+polynomial instead, and then multiplying the maximal curvature of the fitted
+model by a constant such as $2$ or $4$. An important question for future
+research is to figure out whether there is a way of relating local and global
+smoothness that is empirically appealing across a wide range of scenarios. See
+also @NoRo21 for a discussion how to visualize the choice of $M$ to aid with its
+interpretation.
+
+When the user doesn't supply `M`, the package uses the rule of thumb
+$\hat{M}_{ROT}$, and prints a message to inform the user:
+```{r}
+## Data-driven choice of M
+RDHonest(voteshare ~ margin, data=lee08)
+```
+
+
+
+
+
+## Inference when running variable is discrete
 
 The confidence intervals described above can also be used when the running
 variable is discrete, with $G$ support points: their construction makes no
 assumptions on the nature of the running variable (see Section 5.1 in @KoRo16
 for more detailed discussion).
 
-Note that units that lies exactly at the cutoff are considered treated, since
-the definition of treatment is that the running variable
- $x_i\geq c_0$.
+Units that lie exactly at the cutoff are considered treated, since the
+definition of treatment assignment is that the running variable lies weakly
+above the cutoff, $x_i\geq c_0$.
 
 As an example, consider the @oreopoulos06 data, in which the running variable is age in years:
 ```{r}
-## Replicate Table 2, column (10)
+## Replicate Table 2, column (10) in Kolesar and Rothe (2018)
 RDHonest(log(earnings) ~ yearat14, cutoff=1947,
          data=cghs, kern="uniform", M=0.04, opt.criterion="FLCI", sclass="H")
-## Triangular kernel generally gives tigher CIs
-RDHonest(log(earnings) ~ yearat14, cutoff=1947,
-         data=cghs, kern="triangular", M=0.04, opt.criterion="FLCI", sclass="H")
 ```
 
 In addition, the package provides function `RDHonestBME` that calculates honest
@@ -243,14 +367,14 @@ no worse at the cutoff than away from the cutoff as in Section 5.2 in @KoRo16.
 
 ```{r}
 ## Replicate Table 2, column (6), run local linear regression (order=1)
-## with a uniform kernel (other kernels are not yet implemented)
+## with a uniform kernel (other kernels are not implemented for RDHonestBME)
 RDHonestBME(log(earnings) ~ yearat14, cutoff=1947,
             data=cghs, h=3, order=1)
 ```
 
 
 Let us describe the implementation of the variance estimator $\hat{V}(W)$ used
-to construct the CI as described in in Section 5.2 in @KoRo16. Suppose the point
+to construct the CI following Section 5.2 in @KoRo16. Suppose the point
 estimate is given by the first element of the regression of the outcome $y_i$ on
 $m(x_i)$. For instance, local linear regression with uniform kernel and
 bandwidth $h$ corresponds to $m(x)=I(|x|\leq h)\cdot(I(x>c_0),1,x, x\cdot
@@ -267,7 +391,7 @@ $x_g$ is the $g$th support point of $x_i$, is given by the $g$th element of the
 regression estimand $S^{-1}E[w(x_i)y_i]$, where $S=E[w(x_i)w(x_i)']$. Let
 $\hat{\mu}=\hat{S}^{-1}\sum_i w(x_i)y_i$, where $\hat{S}=\sum_i w(x_i)w(x_i)'$
 denote the least squares estimator. Then an estimate of
-$(\delta(x_1),\dotsc,\delta(x_G))'$ is given by $\hat{\delta}$, the vector with
+$(\delta(x_1), \dotsc, \delta(x_G))'$ is given by $\hat{\delta}$, the vector with
 elements $\hat{\mu}_g-x_g\hat{\theta}$.
 
 By standard regression results, the asymptotic distribution of $\hat{\theta}$
@@ -309,7 +433,7 @@ T_i'=\begin{pmatrix}
 Note that the upper left block and lower right block correspond simply to the
 Eicker-Huber-White estimators of the asymptotic variance of $\hat{\theta}$ and
 $\hat{\mu}$. By the delta method, a consistent estimator of the asymptotic
-variance of $(\hat\delta,\hat{\theta}_1)$ is given by
+variance of $(\hat\delta, \hat{\theta}_1)$ is given by
 \begin{equation*}
     \hat{\Sigma}=
 \begin{pmatrix}
@@ -323,67 +447,366 @@ e_1'& 0\\
 where $X$ is a matrix with $g$th row equal to $x_g'$, and $e_1$ is the first
 unit vector.
 
-Recall that in the notation of @KoRo16, $W=(g^-,g^+,s^-,s^+)$, and $g^{+}$ and
+Recall that in the notation of @KoRo16, $W=(g^-, g^+, s^-, s^+)$, and $g^{+}$ and
 $g^{-}$ are such that $x_{g^{-}}< c_0\leq x_{g^{+}}$, and
-$s^{+},s^{-}\in\{-1,1\}$. An upper limit for a right-sided CI for
+$s^{+}, s^{-}\in\{-1,1\}$. An upper limit for a right-sided CI for
 $\theta_1+b(W)$ is then given by
 
 \begin{equation*}
 \hat{\theta}_{1}+s^{+}\hat\delta(x_{g^+})+
 s^{-}\hat\delta(x_{g^-})+z_{1-\alpha}\hat{V}(W),
 \end{equation*}
-
 where $\hat{V}(W)=a(W)'\hat{\Sigma}a(W)$, and $a(W)\in\mathbb{R}^{G_{h}+1}$
 denotes a vector with the $g_{-}$th element equal to $s^{-}$,
 $(G_{h}^{-}+g_{+})$th element equal to $s^{+}$, the last element equal to one,
 and the remaining elements equal to zero. The rest of the construction then
 follows the description in Section 5.2 in @KoRo16.
 
-## Data-driven choice of smoothness constant
 
-Without further restrictions, the smoothness constant $M$ cannot be data-driven:
-to maintain honesty over the whole function class, a researcher must choose
-$M$ a priori, rather than attempting to use a data-driven method. Therefore,
-one should, whenever possible, use problem-specific knowledge to decide what
-choice of $M$ is reasonable a priori.
+# Fuzzy RD
 
-For cases in which this is difficult, the internal function `RDHonest`
-implements the method considered in Section 3.4.1 in @ArKo16honest based on a
-global polynomial approximation:
+## Model
+
+In a fuzzy RD design, the treatment status $D_i$ of a unit does not necessarily
+equate the treatment assignment $Z_i=I\{x_{i}\geq c_{0}\}$. Instead, the
+treatment assignment induces a jump in the treatment probability at the cutoff.
+Correspondingly, we augment the outcome model with a first stage that measures
+the effect of the running variable on the treatment:
+\begin{equation}
+Y_i = f_Y(x_i) + u_{Y, i}, \qquad D_i = f_D(x_i) + u_{Y, i},
+\end{equation}
+where $f_D, f_Y$ are the conditional mean functions.
+
+To account for imperfect compliance the fuzzy RD parameter scales the jump in the
+outcome equation $\tau_Y$ by the jump in the treatment probability at the
+cutoff, $\tau_D=\lim_{x\downarrow c_{0}}f_D(x)-\lim_{x\uparrow c_{0}}f_D(x)$.
+This fuzzy RD parameter, $\theta=\tau_{Y}/\tau_{D}$, measures the local average
+treatment effect for individuals at the threshold who comply with the
+treatment assignment, provided mild continuity conditions and a monotonicity
+condition hold (@htv01). Under perfect compliance, the treatment
+probability jumps all the way from zero to one at the threshold so that
+$\tau_{D}=1$, and the two parameters coincide.
+
+For example, in the @battistin09 dataset, the treatment variable is an indicator
+for retirement, and the running variable is the number of years since being eligible
+to retire. The cutoff is $0$. Individuals exactly at the cutoff are dropped from
+the dataset. If there were individuals exactly at the cutoff, they are assumed
+to receive the treatment assignment (i.e. be eligible for retirement).
+
+## Inference based on local polynomial estimates
+
+A natural estimator for the fuzzy RD parameter $\theta$ is the sample analog
+based on local linear regression,
+\begin{equation*}
+  \hat{\theta}_{h}=\frac{\hat{\tau}_{Y, h}}{\hat{\tau}_{D, h}}.
+\end{equation*}
+
+Unlike in the sharp case, our bias-aware CIs do rely on the consistency of the
+estimator, which generally requires the bandwidth to shrink with the sample
+size. Since this estimator is a ratio of regression coefficients, it follows by
+the delta method that so long as $\tau_{D}\neq 0$, the estimator will be
+asymptotically normal in large samples. In fact, the estimator is equivalent to
+a weighted IV regression of $Y_i$ onto $D_i$, using $Z_i$ as an instrument, and
+$x_i$ and its interaction with $Z_i$ as controls, so the variance formula is
+analogous to the IV variance formula:
+\begin{equation*}
+\sd(\hat{\theta}_h)^2=\frac{\sd(\tau_{Y, h})^2+\theta^2\sd(\tau_{D, h})^2
+-2\cov(\tau_{D, h}, \tau_{Y, h})\theta}{\tau_D^2},
+\end{equation*}
+where $\cov(\tau_{D, h}, \tau_{Y, h})=\sum_i
+k_{i, h}^2\cov(Y_i, D_i\mid x_i)$ is the covariance of the
+estimators.
+
+If the second derivative of $f_Y$ is bounded by $M_Y$ and the second derivative
+of $f_D$ is bounded by $M_D$, a linearization argument from Section 3.2.3 in
+@ArKo20 that the bias can be bounded in large samples by $B_{M, h}$, with
+$M=(M_{Y}+\abs{\theta}M_{D})/\abs{\tau_{D}}$, which now depends on $\theta$
+itself. Therefore, optimal bandwidth calculations will require a preliminary
+estimate of $\abs{\theta}$, which can be passed to `RDHonest` via the option
+`T0`. Like in the sharp case, the optimal bandwidth calculations assume
+homoskedastic covariance of $(u_{Y, i}, u_{D, i})$ on either side of the cutoff,
+which are estimated based on a preliminary local linear regression for both the
+outcome and first stage equation, with bandwidth given by the @ImKa12 bandwidth
+selector applied to the outcome equation.
+
+```{r}
+## Initial estimate of treatment effect for optimal bandwidth calculations
+r <- RDHonest(log(cn) | retired ~ elig_year, data=rcp, kern="triangular",
+              M=c(0.001, 0.002), opt.criterion="MSE", sclass="H", T0=0)
+## Use it to compute optimal bandwidth
+RDHonest(log(cn) | retired ~ elig_year, data=rcp, kern="triangular",
+         M=c(0.001, 0.002), opt.criterion="MSE", sclass="H",
+         T0=r$coefficients$estimate)
+```
+
+## Choice of curvature parameters
+
+Like in the sharp RD case, without further restrictions, the curvature
+parameters $M_Y$ and $M_D$ cannot be data-driven: to maintain honesty over the
+whole function class, a researcher must choose them a priori, rather than
+attempting to use a data-driven method. Therefore, one should, whenever
+possible, use problem-specific knowledge to decide what choices of $M_Y$ and
+$M_D$ are reasonable a priori.
+
+For cases in which this is difficult, the function `RDHonest` implements the
+rule of thumb @ArKo20 described earlier, based on computing the global
+smoothness of both $f_Y$ and $f_D$ using a quartic polynomial. When the user
+doesn't supply the curvature bounds, the package uses the rule of thumb
+$\hat{M}_{ROT}$, and prints a message to inform the user:
 
 ```{r}
 ## Data-driven choice of M
-RDHonest(voteshare ~ margin, data=lee08, kern="uniform", sclass="H",
-         opt.criterion="MSE")
+RDHonest(log(cn) | retired ~ elig_year, data=rcp, kern="triangular",
+         opt.criterion="MSE", sclass="H", T0=r$coefficients$estimate)
 ```
-See @ArKo16honest for a discussion of the restrictions on the
+See @ArKo20 for a discussion of the restrictions on the
 parameter space under which this method yields honest inference.
 
-## Optimal inference
+# Extensions
 
-For the second-order Taylor smoothness class, the function `RDHonest`, with
-`kernel="optimal"`, computes finite-sample optimal estimators and confidence
-intervals, as described in Section 2.2 in @ArKo16optimal. This typically yields
-tighter CIs. Comparing the lengths of two-sided CIs with optimally chosen
-bandwidths, using Silverman's rule of thumb to estimate the preliminary variance
-estimate used to compute optimal bandwidths:
+## Covariates
+
+RD datasets often contain information on a vector of $K$ pre-treatment
+covariates $W_{i}$, such as pre-intervention outcomes, demographic, or
+socioeconomic characteristics of the units. Similar to randomized controlled
+trials, while the presence of covariates doesn't help to weaken the fundamental
+identifying assumptions, augmenting the RD estimator with predetermined
+covariates can increase its precision.
+
+Let us first describe covariate adjustment in the sharp RD case. We implement
+the covariate adjustment studied in @ccft19, namely to include $W_{i}$ as one of
+the regressors in the WLS regression, regressing
+$Y_{i}$ onto $m(x_{i})$ and $W_{i}$. As in the case with no covariates, we weight each observation with the
+kernel weight $K(x_{i}/h)$. This leads to the estimator
+\begin{equation*}
+  \tilde{\tau}_{Y, h}=\tilde{\beta}_{Y, h,1}, \qquad \tilde{\beta}_{Y, h}=\left(\sum_{i=1}^{n}K(x_{i}/h)
+    \tilde{m}(x_{i}, W_{i})\tilde{m}(x_{i}, W_{i})'\right)^{-1}
+  \sum_{i=1}^{n}K(x_{i}/h)\tilde{m}(x_{i}, W_{i})Y_{i},
+\end{equation*}
+where $\tilde{m}(x_{i}, W_{i})=(m(x_{i})', W_{i}')'$. Denote the coefficient on
+$W_{i}$ in this regression by $\tilde{\gamma}_{Y, h}$; this corresponds to the
+last $K$ elements of $\tilde{\beta}_{Y, h}$. As in the case without covariates,
+we first take the bandwidth $h$ as given, and defer bandwidth selection choice
+to the end of this subsection.
+
+To motivate the estimator under our framework, and to derive bias-aware CIs
+that incorporate covariates, we need to formalize the assumption that the
+covariates are predetermined (without any assumptions on the covariates, it is
+optimal to ignore the covariates and use the unadjusted estimator
+$\hat{\tau}_{Y, h}$). Let $f_{W}(x)=E[W_{i}\mid X_{i}=x]$ denote the regression
+function from regressing the covariates on the running variable, and let
+\begin{equation*}
+  \Sigma_{WW}(x)=\operatorname{var}(W_{i}\mid X_{i}=x), \qquad
+  \Sigma_{WY}(x)=\cov(W_{i}, Y_{i}\mid X_{i}=x).
+\end{equation*}
+We assume that the variance and covariance functions are continuous, except
+possibly at zero. Let
+$\gamma_{Y}=(\Sigma_{WW}(0_{+})+\Sigma_{WW}(0_{-}))^{-1}
+(\Sigma_{WY}(0_{+})+\Sigma_{WY}(0_{-}))$ denote the coefficient on $W_{i}$ when
+we regress $Y_{i}$ onto $W_{i}$ for observations at the cutoff. Let
+$\tilde{Y}_{i}:=Y_{i}-W_{i}'\gamma_{Y}$ denote the covariate-adjusted outcome.
+To formalize the assumption that the covariates are pre-determined, we assume
+that $\tau_{W}=\lim_{x\downarrow 0}f_{W}(0)-\lim_{x\uparrow 0}f_{W}(0)=0$, which
+implies that $\tau_{Y}$ can be identified as the jump in the covariate-adjusted
+outcome $\tilde{Y}_{i}$ at $0$. Following Appendix B.1 in
+@ArKo18optimal, we also assume that the covariate-adjusted outcome
+varies smoothly with the running variable (except for a possible jump at the
+cutoff), in that the second derivative of
+\begin{equation*}
+  \tilde{f}(x):=f_{Y}(x)-f_{W}(x)'\gamma_{Y}
+\end{equation*}
+is bounded by a known constant $\tilde{M}$. In addition, we assume $f_{W}$ has
+bounded second derivatives.
+
+Under these assumptions, if $\gamma_{Y}$ was known and hence $\tilde{Y}_{i}$ was
+directly observable, we could estimate $\tau$ as in the case without covariates,
+replacing $M$ with $\tilde{M}$ and $Y_{i}$ with
+$\tilde{Y}_{i}$. Furthermore, as discussed in @ArKo18optimal, such
+approach would be optimal under homoskedasticity assumptions.
+Although $\gamma_{Y}$ is unknown, it turns out that the estimator
+$\tilde{\tau}_{Y, h}$ has the same large sample behavior as the infeasible
+estimator $\hat{\tau}_{\tilde{Y}, h}$. To show this, note that by standard
+regression algebra, $\tilde{\tau}_{Y, h}$ can equivalently be written as
+\begin{equation*}
+  \tilde{\tau}_{Y, h}=\hat{\tau}_{Y-W'\tilde{\gamma}_{Y, h}, h}=
+  \hat{\tau}_{\tilde{Y}, h}-
+  \sum_{k=1}^{K}\hat{\tau}_{W_{k}, h}(\tilde{\gamma}_{Y, h, k}-\gamma_{Y, k}).
+\end{equation*}
+The first equality says that covariate-adjusted estimate is the same as an
+unadjusted estimate that replaces the original outcome $Y_{i}$ with the
+covariate-adjusted outcome $Y_{i}-W_{i}'\tilde{\gamma}_{Y, h}$. The second
+equality uses the decomposition
+$Y_{i}-W_{i}'\tilde{\gamma}_{Y, h}=\tilde{Y}_{i}-W_{i}'
+(\tilde{\gamma}_{Y h}-\gamma_{Y})$
+to write the estimator as a sum of the infeasible estimator and a linear
+combination of "placebo RD estimators" $\hat{\tau}_{W_{k}, h}$, that
+replace $Y_{i}$ in the outcome equation with the $k$th element of $W_{i}$,
+Since $f_{W}$ has bounded second derivatives, these placebo estimators converge
+to zero, with rate that is at least as fast as the rate of convergence of the
+infeasible estimator $\hat{\tau}_{\tilde{Y}, h}$:
+$\hat{\tau}_{W_{k}, h}=O_{p}(B_{\tilde{M}, h}+\sd(\hat{\tau}_{\tilde{Y}, h}))$.
+Furthermore, under regularity conditions, $\tilde{\gamma}_{Y, h}$ converges to
+$\gamma_{Y}$, so that the second term in the previous display is asymptotically
+negligible relative to the first. Consequently, we can form bias-aware CIs
+based on $\tilde{\tau}_{Y, h}$ as in the case without covariates, treating
+the covariate-adjusted outcome $Y_{i}-W_{i}'\tilde{\gamma}_{Y}$ as the outcome,
+\begin{equation*}
+  \tilde{\tau}_{Y, h}\pm
+  \cv_{1-\alpha}(B_{\tilde{M}, h} / \sd(\hat{\tau}_{\tilde{Y}, h}))\sd(\hat{\tau}_{\tilde{Y}, h}), \qquad
+  \sd(\hat{\tau}_{Y, h})=\sum_{i=1}^{n}k_{i, h}^{2}\sigma^{2}_{\tilde{Y}}(x_{i}),
+\end{equation*}
+where
+$\sigma^{2}_{\tilde{Y}}(x_{i})=\sigma^{2}_{Y}(x_{i})+{\gamma}_{Y}'\Sigma_{WW}(x_{i}){\gamma}_{Y}-2{\gamma}_{Y}'\Sigma_{WY}(x_{i})$.
+If the covariates are effective at explaining variation in the outcomes, then
+the quantity
+$\sum_{i}k_{i, h}^{2}\left({\gamma}_{Y}'\Sigma_{WW}(x_{i}){\gamma}_{Y}-2{\gamma}_{Y}'\Sigma_{WY}(x_{i})
+\right)$ will be negative, and
+$\sd(\hat{\tau}_{\tilde{Y}, h})\leq \sd(\hat{\tau}_{Y, h})$. If the smoothness of
+the covariate-adjusted conditional mean function $f_{Y}-f_{W}'\gamma_{Y}$ is
+greater than the smoothness of the unadjusted conditional mean function
+$f_{Y}$, so that $\tilde{M}\leq M$, then using the covariates will help tighten
+the confidence intervals.
+
+Implementation of covariate-adjustment requires a choice of $\tilde{M}$, and
+computing the optimal bandwidth requires a preliminary estimate of the variance
+of the covariate-adjusted outcome. In our implementation, we first estimate the
+model without covariates (using a rule of thumb to calibrate $M$, the bound on
+the second derivative of $f_{Y}$), and compute the bandwidth $\check{h}$ that's
+MSE optimal without covariates. Based on this bandwidth, we compute a
+preliminary estimate $\check{\gamma}_{Y, \check{h}}$ of $\gamma_{Y}$, and use
+this preliminary estimate to compute the covariate-adjusted outcome
+$Y_{i}-W_{i}'\check{\gamma}_{Y, \check{h}}$. If $\tilde{M}$ is not supplied, we
+calibrate $\tilde{M}$ using the rule of thumb, using this covariate-adjusted
+outcome as the outcome. Similarly, we use this covariate-adjusted outcome as the
+outcome to compute a preliminary estimator of the conditional variance
+$\sigma^{2}_{\tilde{Y}}(x_{i})$, for optimal bandwidth calculations, as in the
+case without covariates.
+
+A demonstration using the `headst` data:
+```{r}
+## No covariates
+rn <- RDHonest(mortHS ~ povrate, data=headst)
+## Use Percent attending school aged 14-17, urban, black,
+## and their interaction as covariates.
+rc <- RDHonest(mortHS ~ povrate | urban*black + sch1417, data=headst)
+rn
+rc
+```
+
+We see that the inclusion of covariates leads to a reduction in the
+rule-of-thumb curvature and also smaller standard errors (this would be true
+even if the bandwidth was kept fixed). Correspondingly, the CIs are tighter by
+about 6 percentage points:
+```{r}
+100 * (1 - (rc$coefficients$conf.high-rc$coefficients$conf.low) /
+           (rn$coefficients$conf.high-rn$coefficients$conf.low))
+```
+
+In the fuzzy RD case, we need to covariate-adjust the treatment $D_i$ as well as
+the outcome. The implementation mirrors the sharp case. Define $\gamma_{D}$
+analogously to $\gamma_{Y}$, and assume that the second derivative of
+$f_{Y}(x)-f_{W}(x)'\gamma_{Y}$ is bounded by a known constant $\tilde{M}_{Y}$,
+and that $f_{D}(x)-f_{W}(x)'\gamma_{D}$ is bounded by a known constant
+$\tilde{M}_{D}$. The covariate-adjusted estimator is given by
+$\tilde{\theta}_{h}=\tilde{\tau}_{Y, h}/\tilde{\tau}_{D, h}$, with variances and
+worst-case bias computed as in the case without covariates, replacing the
+treatment and outcome with their covariate-adjusted versions.
+
+
+## Aggregated data and weighted regression
+
+In some cases, data is only observed as cell averages. For instance, suppose
+that instead of observing the original `cghs` data, we only observe averages for
+cells as follows:
 
 ```{r}
-r1 <- RDHonest(voteshare ~ margin, data=lee08, kern="optimal", M=0.1,
-               opt.criterion="FLCI",
-               se.method="nn")$coefficients
-r2 <- RDHonest(voteshare ~ margin, data=lee08, kern="triangular", M=0.1,
-               opt.criterion="FLCI", se.method="nn",
-               sclass="T")$coefficients
-r1$conf.high-r1$conf.low
-r2$conf.high-r2$conf.low
+dd <- data.frame()
+## Collapse data by running variable
+for (j in unique(cghs$yearat14)) {
+    ix <- cghs$yearat14==j
+    df <- data.frame(y=mean(log(cghs$earnings[ix])), x=j,
+                     weights=sum(ix),
+                     sigma2=var(log(cghs$earnings[ix]))/sum(ix))
+    dd <- rbind(dd, df)
+}
 ```
+
+The column `weights` gives the number of observations that each cell averages
+over. In this case, if we weight the observations using `weights`, we can
+recover the original estimates (and the same worst-case bias). If we use the
+estimates of the conditional variance of the outcome, `dd$sigma2`, then we can
+also replicate the standard error calculations:
+
+```{r}
+s0 <- RDHonest(log(earnings)~yearat14, cutoff=1947, data=cghs)
+## keep same bandwidth
+s1 <- RDHonest(y~x, cutoff=1947, data=dd, weights=weights,
+               sigmaY2=sigma2, se.method="supplied.var",
+               h=s0$coefficients$bandwidth)
+## Results are identical:
+s0
+s1
+```
+
+Without supplying the variance estimates and specifying
+`se.method="supplied.var"`, the variance estimates will not match, since the
+collapsed data is not generally not sufficient to learn about the true
+variability of the collapsed outcomes.
+
+The same method works in fuzzy designs, but one has to also save the conditional
+variance of the treatment and its covariance with the outcome:
+```{r}
+r0 <- RDHonest(log(cn)|retired~elig_year, data=rcp, h=7)
+dd <- data.frame(x=sort(unique(rcp$elig_year)), y=NA, d=NA, weights=NA,
+                 sig11=NA, sig12=NA, sig21=NA, sig22=NA)
+for (j in seq_len(NROW(dd))) {
+    ix <- rcp$elig_year==dd$x[j]
+    Y <- cbind(log(rcp$cn[ix]), rcp$retired[ix])
+    dd[j, -1] <- c(colMeans(Y), sum(ix), as.vector(var(Y))/sum(ix))
+}
+r1 <- RDHonest(y|d~x, data=dd, weights=weights,
+               sigmaY2=sig11, T0=0, sigmaYD=sig21,
+               sigmaD2=sig22, h=7,
+               se.method="supplied.var")
+## Outputs match up to numerical precision
+max(abs(r0$coefficients[2:11]-r1$coefficients[2:11]))
+```
+
+## Clustering
+
+In some applications, the data are collected by clustered sampling. In such
+cases, the user can specify a vector `clusterid` signifying cluster membership.
+In this case, preliminary bandwidth calculations assume that the regression
+errors have a Moulton-type structure, with homoskedasticity on either side of
+the cutoff: \begin{equation*} \cov(Y_{i}, Y_{j})=\begin{cases} \sigma^{2}_{+} &
+\text{if $i=j$ and $x_{i}\geq 0$,} \\ \sigma^{2}_{-} & \text{if $i=j$ and
+$x_{i}< 0$,} \\ \rho & \text{if $i\neq j$ and $g(i)=g(j)$,} \\ 0 &
+\text{otherwise,} \end{cases} \end{equation*} where $g(i)\in\{1,\dotsc, G\}$
+denotes cluster membership. Since it appears difficult to generalize the nearest
+neighbor variance estimator to clustering, we use regression-based
+cluster-robust variance formulas to compute estimator variances, so that option
+`se.method="EHW"` is required.
+
+```{r}
+## make fake clusters
+set.seed(42)
+clusterid <- sample(1:50, NROW(lee08), replace=TRUE)
+sc <- RDHonest(voteshare~margin, data=lee08, se.method="EHW",
+               clusterid=clusterid, M=0.14, h=7)
+## Since clusters are unrelated to outcomes, not clustering
+## should yield similar standard errors
+sn <- RDHonest(voteshare~margin, data=lee08, se.method="EHW",
+               M=0.14, h=7)
+sc
+sn
+```
+
 
 ## Specification testing
 
 The package also implements lower-bound estimates for the smoothness constant
 $M$ for the Taylor and Hölder smoothness class, as described in the supplements
-to @KoRo16 and @ArKo16optimal
+to @KoRo16 and @ArKo18optimal
 
 ```{r}
 r1 <- RDHonest(voteshare ~ margin, data=lee08, M=0.1, se.method="nn")
@@ -396,149 +819,86 @@ RDSmoothnessBound(r1, s=100, separate=TRUE, multiple=FALSE, sclass="T")
 RDSmoothnessBound(r1, s=100, separate=FALSE, multiple=TRUE, sclass="H")
 ```
 
-## Weighted regression
+## Optimal weights under Taylor smoothness class
 
-In some cases, data is only observed as cell averages. For instance, suppose
-that instead of observing the original `cghs` data, we only observe averages for
-cells as follows:
-
-```{r}
-d <- cghs
-## Make 20 groups based on observation number
-d$mod <- seq_along(d$yearat14) %% 20
-## Make cells defined as intersection of group and year
-d$cell <- d$mod/100+d$yearat14
-## Data with cell averages
-dd <- data.frame()
-for (j in unique(d$cell)){
-    dd <- rbind(dd, data.frame(y=mean(log(d$earnings)[d$cell==j]),
-                               x=mean(d$yearat14[d$cell==j]),
-                               weights=length(d$yearat14[d$cell==j])))
-}
-```
-
-The column `weights` gives the number of observations that each cell averages
-over. In this case, if we weight the observations using `weights`, we can
-recover the original estimates (and the same worst-case bias):
+For the second-order Taylor smoothness class, the function `RDHonest`, with
+`kernel="optimal"`, computes finite-sample optimal estimators and confidence
+intervals, as described in Section 2.2 in @ArKo18optimal. This typically yields
+tighter CIs:
 
 ```{r}
-RDHonest(log(earnings)~yearat14, cutoff=1947, h=5, data=cghs, M=0.1,
-         se.method="nn")
-RDHonest(y~x, cutoff=1947, weights=weights, h=5, data=dd, M=0.1,
-         se.method="nn")
+r1 <- RDHonest(voteshare ~ margin, data=lee08, kern="optimal", M=0.1,
+               opt.criterion="FLCI",
+               se.method="nn")$coefficients
+r2 <- RDHonest(voteshare ~ margin, data=lee08, kern="triangular", M=0.1,
+               opt.criterion="FLCI", se.method="nn",
+               sclass="T")$coefficients
+r1$conf.high-r1$conf.low
+r2$conf.high-r2$conf.low
 ```
-
-Note the variance estimates don't quite match, since the variance estimator is
-different, but the worst-case bias and the point estimate are identical.
-
-# Initial bandwidth estimation
-
-We use @FaGi96 rule of thumb and @ImKa12 bandwidth selectors for preliminary
-variance estimation.
-
-
-# Fuzzy RD
-
-## Model
-
-In a fuzzy RD design, units are assigned to treatment if their running variable
-$x_{i}$ weakly exceeds a cutoff $x_i\geq c_{0}$. However, the actual treatment
-$d_{i}$ does not perfectly comply with the treatment assignment. Instead, the cutoff
-induces a jump in the treatment probability. The resulting reduced-form and
-first-stage regressions are given by
-\begin{align*}
-  y_{i}&=f_{1}(x_{i})+u_{i1}, &  d_{i}&=f_{2}(d_{i})+u_{i2},
-\end{align*}
-See Section 3.3 in @ArKo16honest for a more detailed description.
-
-In the @battistin09 dataset, the treatment variable is an indicator for
-retirement, and the running variable is number of years since being eligible to
-retire. The cutoff is $0$. Individuals exactly at the cutoff are dropped from
-the dataset. If there were individuals exactly at the cutoff, they are assumed
-to be assigned to the treatment group.
-
-Similarly to the `RDData` function, the `FRDData` function transforms the data
-into an appropriate format:
-
-```{r}
-## Assumes first column in the data frame corresponds to outcome,
-##  second to the treatment variable, and third to the running variable
-## Outcome here is log of non-durables consumption
-## dr <- FRDData(cbind(logf=log(rcp[, 6]), rcp[, c(3, 2)]), cutoff=0)
-```
-
-## Inference based on local polynomial estimates
-
-The function `RDHonest` constructs one- and two-sided confidence intervals
-(CIs) around local linear and local quadratic estimators using either a
-user-supplied bandwidth (which is allowed to differ on either side of the
-cutoff), or bandwidth that is optimized for a given performance criterion.
-
-### Parameter space and initial estimate
-
-To implement the honest CIs, one needs to specify the parameter space
-$\mathcal{F}$ for $f_1$ and $f_2$. The function `RDHonest` computes honest CIs
-when $f_1$ and $f_2$ both lie in a second-order Taylor or second-order Hölder
-smoothness class, $\mathcal{F}_{T}(M_1, M_2)$ and
-$\mathcal{F}_{\text{Hölder}}(M_1, M_2)$, where the smoothness constants $M_1$
-and $M_2$ for the reduced form and the first stage are allowed to differ. Also,
-since the worst-case bias calculation requires an estimate of the treatment
-effect, for optimal bandwidth calculations, the user needs to supply an initial
-estimator of the treatment effect
-
-
-```{r}
-## Initial estimate of treatment effect for optimal bandwidth calculations
-r <- RDHonest(log(cn) | retired ~ elig_year, data=rcp, kern="triangular",
-              M=c(0.001, 0.002), opt.criterion="MSE", sclass="H", T0=0)
-## Use it to compute optimal bandwidth
-RDHonest(log(cn) | retired ~ elig_year, data=rcp, kern="triangular",
-         M=c(0.001, 0.002), opt.criterion="MSE", sclass="H",
-         T0=r$coefficients$estimate)
-```
-
-## Data-driven choice of smoothness constant
-
-Like in the sharp RD case, Without further restrictions, the smoothness
-constants $M_1$ and $M_2$ cannot be data-driven: to maintain honesty over the
-whole function class, a researcher must choose them a priori, rather than
-attempting to use a data-driven method. Therefore, one should, whenever
-possible, use problem-specific knowledge to decide what choices of $M_1$ and
-$M_2$ are reasonable a priori.
-
-For cases in which this is difficult, the function `RDHonest` implements the
-method considered in Section 3.4.1 in @ArKo16honest based on a global polynomial
-approximation:
-
-```{r}
-## Data-driven choice of M
-RDHonest(log(cn) | retired ~ elig_year, data=rcp, kern="triangular",
-         opt.criterion="MSE", sclass="H", T0=r$coefficients$estimate)
-```
-See @ArKo16honest for a discussion of the restrictions on the
-parameter space under which this method yields honest inference.
-
 # Inference at a point
 
-The package can also perform inference at
-a point, and optimal bandwidth selection for inference at a point. Suppose, for example, one
-was interested in the vote share for candidates with margin of victory equal to
-20 points:
+The package can also perform inference at a point, and optimal bandwidth
+selection for inference at a point. Suppose, for example, one was interested in
+the vote share for candidates with margin of victory equal to 20 points:
 ```{r}
-## Transform data, specify we're interested in inference at x0=20,
+## Specify we're interested in inference at x0=20,
 ## and drop observations below cutoff
 RDHonest(voteshare ~ margin, data=lee08, subset=margin>0,
          cutoff=20, kern="uniform",
          opt.criterion="MSE", sclass="H", point.inference=TRUE)
 ```
 
-# Lindeberg weights
+To compute the optimal bandwidth, the package assumes homoskedastic variance on
+either side of the cutoff, which it estimates based on a preliminary local
+linear regression using the @FaGi96 rule of thumb bandwidth selector. This
+homoskedasticity assumption is dropped when the final standard errors are
+computed.
 
-In fuzzy RD, by Theorem B.2 in the appendix to @ArKo16honest, the estimator is asymptotically equivalent to
-\begin{equation*}
-\sum_i w_i (Y_i-D_i\beta)/first stage,
-\end{equation*}
-so the Lindeberg weights are the same as in the sharp case.
+# Diagnostics: leverage and effective observations
 
+The estimators in this package are just weighted regression estimators, or
+ratios of regression estimators in the fuzzy RD case. Regression estimators are
+linear in outcomes, taking the form $\sum_i k_{i, h} Y_i$, where $k_{i, h}$ are
+estimation weights, returned by `data$est_w` part of the `RDHonest` output (see
+expression for $\hat{\tau}_{Y, h}$ above).
+
+For the sampling distribution of the estimator to be well-approximated by a
+normal distribution, it is important that these regression weights not be too
+large: asymptotic normality requires $L_{\max}=\max_j k_{j, h}^2/\sum_i k_{i,
+h}^2\to 0$. If uniform kernel is used, the weights $k_{i, h}$ are just the
+diagonal elements of the partial projection matrix. We therefore refer to
+$L_{\max}$ as maximal (partial) leverage, and it is reported in the `RDHonest`
+output. The package issues a warning if the maximal leverage exceeds $0.1$---in
+such cases using a bigger bandwidth is advised.
+
+In the fuzzy RD case, by Theorem B.2 in the appendix to @ArKo20, the estimator
+is asymptotically equivalent to $\sum_i k_{i, h} (Y_i-D_i\theta)/\tau_D$, where
+$k_{i, h}$ are the weights for $\hat{\tau}_{Y, h}$. The maximal leverage
+calculations are thus analogous to the sharp case.
+
+With local regression methods, it is clear that observations outside the
+estimation window don't contribute to estimation, reducing the effective sample
+size. If the uniform kernel is used, the package therefore reports the number of
+observations inside the estimation window as the "number of effective
+observations".
+
+To make this number comparable across different kernels, observe that, under
+homoskedasticity, the variance of a linear estimator $\sum_{i} k_{i} Y_i$ is
+$\sigma^2\sum_{i} k_i^2$. We expect this to scale in inverse proportion to the
+sample size: with twice as many observations and the same bandwidth, we expect
+the variance to halve. Therefore, if the variance ratio relative to a uniform
+kernel estimator with weights $\sum_i k_{uniform, i}Y_i$ is $\sigma^2\sum_{i}
+k_{uniform, i}^2/\sigma^2\sum_{i} k_i^2=\sum_{i} k_{uniform, i}^2/\sum_{i}
+k_i^2$, the precision of this estimator is the same as if we used a uniform
+kernel, but with $\sum_{i} k_{uniform, i}^2/\sum_{i} k_i^2$ as many
+observations. Correspondingly, we define the number of effective observations
+for other kernels as the number of observations inside the estimation window
+times $\sum_{i} k_{uniform, i}^2/\sum_{i} k_i^2$. With this definition, using a
+triangular kernel typically yields effective samples sizes equal to about 80% of
+the number of observations inside the estimation window.
+
+Finally, to assess which observations are important for pinning down the
+estimate, it can be useful to explicitly plot the estimation weights.
 
 # References

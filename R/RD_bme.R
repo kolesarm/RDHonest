@@ -14,13 +14,13 @@ RDlpformula <- function(order) {
 
 #' Honest CIs in sharp RD with discrete regressors under BME function class
 #'
-#' Computes honest CIs for local polynomial regression with uniform kernel under
-#' the assumption that the conditional mean lies in the bounded misspecification
-#' error (BME) class of functions, as considered in Kolesár and Rothe (2018).
-#' This class formalizes the notion that the fit of the chosen model is no worse
-#' at the cutoff than elsewhere in the estimation window.
+#' Computes honest CIs for local polynomial regression with uniform kernel in
+#' sharp RD under the assumption that the conditional mean lies in the bounded
+#' misspecification error (BME) class of functions, as considered in Kolesár and
+#' Rothe (2018). This class formalizes the notion that the fit of the chosen
+#' model is no worse at the cutoff than elsewhere in the estimation window.
 #'
-#' @template RDFormula
+#' @template RDFormulaSimple
 #' @param cutoff specifies the RD cutoff in the running variable.
 #' @param h bandwidth, a scalar parameter.
 #' @param alpha determines confidence level, \eqn{1-\alpha}{1-alpha}
@@ -43,6 +43,9 @@ RDlpformula <- function(order) {
 #'    observations.}
 #'
 #'    \item{\code{"call"}}{The matched call.}
+#'
+#'    \item{\code{"lm"}}{An \code{"lm"} object containing the fitted
+#'    regression.}
 #'
 #'    \item{\code{"na.action"}}{(If relevant) information on the special
 #'    handling of \code{NA}s.}

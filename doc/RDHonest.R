@@ -4,11 +4,9 @@ knitr::opts_knit$set(self.contained = FALSE)
 knitr::opts_chunk$set(tidy = TRUE, collapse=TRUE, comment = "#>",
                       tidy.opts=list(blank=FALSE, width.cutoff=55))
 
-## -----------------------------------------------------------------------------
-library("RDHonest")
-
 ## ----fig.width=4.5, fig.height=3.5, fig.cap="Lee (2008) data"-----------------
-## plot 25-bin averages in for observations 50 at most points
+library("RDHonest")
+## plot 50-bin averages in for observations 50 at most points
 ## away from the cutoff. See Figure 1.
 RDScatter(voteshare~margin, data=lee08, subset=abs(lee08$margin)<=50,
           avg=50, propdotsize=FALSE, xlab="Margin of victory",
@@ -16,7 +14,7 @@ RDScatter(voteshare~margin, data=lee08, subset=abs(lee08$margin)<=50,
 
 ## ----fig.width=4.5, fig.height=3.5, fig.cap="Oreopoulos (2006) data"----------
 ## see Figure 2
-f2 <- RDScatter(I(log(earnings))~yearat14, data=cghs, cutoff=1947,
+f2 <- RDScatter(log(earnings)~yearat14, data=cghs, cutoff=1947,
                 avg=Inf, xlab="Year aged 14", ylab="Log earnings",
                 propdotsize=TRUE)
 ## Adjust size of dots if they are too big
@@ -30,44 +28,107 @@ CVb(1/2, alpha=0.05)
 CVb(0:5, alpha=0.1)
 
 ## -----------------------------------------------------------------------------
-RDHonest(voteshare~margin, data=lee08, kern="uniform", M=0.1, h=10, sclass="T")
-RDHonest(voteshare~margin, data=lee08, kern="uniform", M=0.1, h=10, sclass="H")
+r0 <- RDHonest(voteshare~margin, data=lee08, kern="triangular", M=0.1, h=8)
+print(r0)
 
 ## -----------------------------------------------------------------------------
 RDHonest(voteshare ~ margin, data=lee08, kern="triangular",
-         M=0.1, opt.criterion="MSE", sclass="H")
+         M=0.1, opt.criterion="MSE")
 ## Choose bws optimal for length of CI
 RDHonest(voteshare ~ margin, data=lee08, kern="triangular", M=0.1,
-         opt.criterion="FLCI", sclass="H")
+         opt.criterion="FLCI")
 
 ## -----------------------------------------------------------------------------
-## Replicate Table 2, column (10)
+## Data-driven choice of M
+RDHonest(voteshare ~ margin, data=lee08)
+
+## -----------------------------------------------------------------------------
+## Replicate Table 2, column (10) in Kolesar and Rothe (2018)
 RDHonest(log(earnings) ~ yearat14, cutoff=1947,
          data=cghs, kern="uniform", M=0.04, opt.criterion="FLCI", sclass="H")
-## Triangular kernel generally gives tigher CIs
-RDHonest(log(earnings) ~ yearat14, cutoff=1947,
-         data=cghs, kern="triangular", M=0.04, opt.criterion="FLCI", sclass="H")
 
 ## -----------------------------------------------------------------------------
 ## Replicate Table 2, column (6), run local linear regression (order=1)
-## with a uniform kernel (other kernels are not yet implemented)
+## with a uniform kernel (other kernels are not implemented for RDHonestBME)
 RDHonestBME(log(earnings) ~ yearat14, cutoff=1947,
             data=cghs, h=3, order=1)
 
 ## -----------------------------------------------------------------------------
-## Data-driven choice of M
-RDHonest(voteshare ~ margin, data=lee08, kern="uniform", sclass="H",
-         opt.criterion="MSE")
+## Initial estimate of treatment effect for optimal bandwidth calculations
+r <- RDHonest(log(cn) | retired ~ elig_year, data=rcp, kern="triangular",
+              M=c(0.001, 0.002), opt.criterion="MSE", sclass="H", T0=0)
+## Use it to compute optimal bandwidth
+RDHonest(log(cn) | retired ~ elig_year, data=rcp, kern="triangular",
+         M=c(0.001, 0.002), opt.criterion="MSE", sclass="H",
+         T0=r$coefficients$estimate)
 
 ## -----------------------------------------------------------------------------
-r1 <- RDHonest(voteshare ~ margin, data=lee08, kern="optimal", M=0.1,
-               opt.criterion="FLCI",
-               se.method="nn")$coefficients
-r2 <- RDHonest(voteshare ~ margin, data=lee08, kern="triangular", M=0.1,
-               opt.criterion="FLCI", se.method="nn",
-               sclass="T")$coefficients
-r1$conf.high-r1$conf.low
-r2$conf.high-r2$conf.low
+## Data-driven choice of M
+RDHonest(log(cn) | retired ~ elig_year, data=rcp, kern="triangular",
+         opt.criterion="MSE", sclass="H", T0=r$coefficients$estimate)
+
+## -----------------------------------------------------------------------------
+## No covariates
+rn <- RDHonest(mortHS ~ povrate, data=headst)
+## Use Percent attending school aged 14-17, urban, black,
+## and their interaction as covariates.
+rc <- RDHonest(mortHS ~ povrate | urban*black + sch1417, data=headst)
+rn
+rc
+
+## -----------------------------------------------------------------------------
+100 * (1 - (rc$coefficients$conf.high-rc$coefficients$conf.low) /
+           (rn$coefficients$conf.high-rn$coefficients$conf.low))
+
+## -----------------------------------------------------------------------------
+dd <- data.frame()
+## Collapse data by running variable
+for (j in unique(cghs$yearat14)) {
+    ix <- cghs$yearat14==j
+    df <- data.frame(y=mean(log(cghs$earnings[ix])), x=j,
+                     weights=sum(ix),
+                     sigma2=var(log(cghs$earnings[ix]))/sum(ix))
+    dd <- rbind(dd, df)
+}
+
+## -----------------------------------------------------------------------------
+s0 <- RDHonest(log(earnings)~yearat14, cutoff=1947, data=cghs)
+## keep same bandwidth
+s1 <- RDHonest(y~x, cutoff=1947, data=dd, weights=weights,
+               sigmaY2=sigma2, se.method="supplied.var",
+               h=s0$coefficients$bandwidth)
+## Results are identical:
+s0
+s1
+
+## -----------------------------------------------------------------------------
+r0 <- RDHonest(log(cn)|retired~elig_year, data=rcp, h=7)
+dd <- data.frame(x=sort(unique(rcp$elig_year)), y=NA, d=NA, weights=NA,
+                 sig11=NA, sig12=NA, sig21=NA, sig22=NA)
+for (j in seq_len(NROW(dd))) {
+    ix <- rcp$elig_year==dd$x[j]
+    Y <- cbind(log(rcp$cn[ix]), rcp$retired[ix])
+    dd[j, -1] <- c(colMeans(Y), sum(ix), as.vector(var(Y))/sum(ix))
+}
+r1 <- RDHonest(y|d~x, data=dd, weights=weights,
+               sigmaY2=sig11, T0=0, sigmaYD=sig21,
+               sigmaD2=sig22, h=7,
+               se.method="supplied.var")
+## Outputs match up to numerical precision
+max(abs(r0$coefficients[2:11]-r1$coefficients[2:11]))
+
+## -----------------------------------------------------------------------------
+## make fake clusters
+set.seed(42)
+clusterid <- sample(1:50, NROW(lee08), replace=TRUE)
+sc <- RDHonest(voteshare~margin, data=lee08, se.method="EHW",
+               clusterid=clusterid, M=0.14, h=7)
+## Since clusters are unrelated to outcomes, not clustering
+## should yield similar standard errors
+sn <- RDHonest(voteshare~margin, data=lee08, se.method="EHW",
+               M=0.14, h=7)
+sc
+sn
 
 ## -----------------------------------------------------------------------------
 r1 <- RDHonest(voteshare ~ margin, data=lee08, M=0.1, se.method="nn")
@@ -80,47 +141,17 @@ RDSmoothnessBound(r1, s=100, separate=TRUE, multiple=FALSE, sclass="T")
 RDSmoothnessBound(r1, s=100, separate=FALSE, multiple=TRUE, sclass="H")
 
 ## -----------------------------------------------------------------------------
-d <- cghs
-## Make 20 groups based on observation number
-d$mod <- seq_along(d$yearat14) %% 20
-## Make cells defined as intersection of group and year
-d$cell <- d$mod/100+d$yearat14
-## Data with cell averages
-dd <- data.frame()
-for (j in unique(d$cell)){
-    dd <- rbind(dd, data.frame(y=mean(log(d$earnings)[d$cell==j]),
-                               x=mean(d$yearat14[d$cell==j]),
-                               weights=length(d$yearat14[d$cell==j])))
-}
+r1 <- RDHonest(voteshare ~ margin, data=lee08, kern="optimal", M=0.1,
+               opt.criterion="FLCI",
+               se.method="nn")$coefficients
+r2 <- RDHonest(voteshare ~ margin, data=lee08, kern="triangular", M=0.1,
+               opt.criterion="FLCI", se.method="nn",
+               sclass="T")$coefficients
+r1$conf.high-r1$conf.low
+r2$conf.high-r2$conf.low
 
 ## -----------------------------------------------------------------------------
-RDHonest(log(earnings)~yearat14, cutoff=1947, h=5, data=cghs, M=0.1,
-         se.method="nn")
-RDHonest(y~x, cutoff=1947, weights=weights, h=5, data=dd, M=0.1,
-         se.method="nn")
-
-## -----------------------------------------------------------------------------
-## Assumes first column in the data frame corresponds to outcome,
-##  second to the treatment variable, and third to the running variable
-## Outcome here is log of non-durables consumption
-## dr <- FRDData(cbind(logf=log(rcp[, 6]), rcp[, c(3, 2)]), cutoff=0)
-
-## -----------------------------------------------------------------------------
-## Initial estimate of treatment effect for optimal bandwidth calculations
-r <- RDHonest(log(cn) ~ retired | elig_year, data=rcp, kern="triangular",
-              M=c(0.001, 0.002), opt.criterion="MSE", sclass="H", T0=0)
-## Use it to compute optimal bandwidth
-RDHonest(log(cn) ~ retired | elig_year, data=rcp, kern="triangular",
-         M=c(0.001, 0.002), opt.criterion="MSE", sclass="H",
-         T0=r$coefficients$estimate)
-
-## -----------------------------------------------------------------------------
-## Data-driven choice of M
-RDHonest(log(cn) ~ retired | elig_year, data=rcp, kern="triangular",
-         opt.criterion="MSE", sclass="H", T0=r$coefficients$estimate)
-
-## -----------------------------------------------------------------------------
-## Transform data, specify we're interested in inference at x0=20,
+## Specify we're interested in inference at x0=20,
 ## and drop observations below cutoff
 RDHonest(voteshare ~ margin, data=lee08, subset=margin>0,
          cutoff=20, kern="uniform",

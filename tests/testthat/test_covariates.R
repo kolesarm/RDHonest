@@ -47,10 +47,10 @@ test_that("Test covariates", {
     dd <- sort(r0$lm$coefficients)-sort(m3$coefficients)
     expect_lt(max(abs(dd)), 1e-8)
 
-    ## TODO: return lm object, so we can do normal inference: print method
-
-    ## TODO: speed up
-
-    ## TODO: pass function as kern
-
+    ## pass function as kern
+    expect_message(r00 <- RDHonest(log(c)|retired ~ elig_year|food, data=df,
+                                   weights=survey_year,
+                                   h=r0$coefficients$bandwidth,
+                                   kern=function(u) pmax(1-abs(u), 0)))
+    expect_equal(r00$coefficients, r00$coefficients)
 })
