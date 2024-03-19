@@ -62,7 +62,7 @@ RDlpformula <- function(order) {
 #' \cite{Michal Kolesár and Christoph Rothe. Inference in regression
 #'       discontinuity designs with a discrete running variable. American
 #'       Economic Review, 108(8):2277—-2304, August 2018.
-#'       \doi{10.1257/aer.20160945.}}
+#'       \doi{10.1257/aer.20160945}}
 #'
 #' }
 #' @export

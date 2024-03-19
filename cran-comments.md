@@ -17,15 +17,22 @@
 There were no ERRORs or WARNINGs.
 There was 1 NOTE:
 
-  Maintainer: ‘Michal Kolesár <kolesarmi@googlemail.com>’
+Maintainer: ‘Michal Kolesár <kolesarmi@googlemail.com>’
 
-  New submission
+New submission
 
 Possibly misspelled words in DESCRIPTION:
-  covariates (16:33)
+  Rothe (17:47)
+  covariates (18:42)
 
-THe misspelled word is correct, it refers to independent variables (covariates)
-in a regression.
+Found the following (possibly) invalid DOIs:
+  DOI: 10.1257/aer.20160945.
+    From: man/RDHonestBME.Rd
+    Status: 404
+    Message: Not Found
+
+The misspelled words are correct, "covariates" refers to independent variables
+in a regression. "Rothe" is a surname.
 
 ## Downstream dependencies
 There are currently no downstream dependencies for this package
