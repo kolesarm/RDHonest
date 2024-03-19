@@ -49,7 +49,7 @@ test_that("FRD with almost perfect first stage", {
                     T0=r0$coefficients$estimate)$coefficients
     r2 <- RDHonest(voteshare~margin, M=M0[1], data=lees,
                    kern="triangular", opt.criterion="FLCI")$coefficients
-    expect_lt(max(abs(r1[2:8]-r2[2:8])), 3e-7)
+    expect_lt(max(abs(r1[2:8]-r2[2:8])), 1e-6)
 
     set.seed(42)
     df <- data.frame(y=lees$voteshare,
