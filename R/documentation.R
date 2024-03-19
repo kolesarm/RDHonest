@@ -80,7 +80,7 @@
 #'   \item{margin}{Democratic margin of victory}
 #'  }
 #' @source Mostly Harmless Econometrics data archive,
-#' \url{https://economics.mit.edu/faculty/angrist/data1/mhe}
+#' \url{https://economics.mit.edu/people/faculty/josh-angrist/mhe-data-archive}
 #' @references{
 #'
 #' \cite{David S. Lee. Randomized experiments from non-random selection in U.S.

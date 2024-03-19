@@ -4,7 +4,7 @@ Version: 1.0.0
 Authors@R:
     c(person(given = "Michal",
             family = "Kolesár",
-            role = c("aut", "cre"),
+            role = c("aut", "cre", "cph"),
             email = "kolesarmi@googlemail.com",
             comment = c(ORCID = "0000-0002-2482-7796")),
       person(given= "Tim",
@@ -13,7 +13,9 @@ Authors@R:
              email = "timothy.armstrong@usc.edu"))
 Description: Honest and nearly-optimal confidence intervals in fuzzy and sharp
     regression discontinuity designs and for inference at a point based on local
-    linear regression. Supports covariates, clustering, and weighting.
+    linear regression. The implementation is based on Armstrong and Kolesár (2018)
+    <doi:10.3982/ECTA14434>, and Kolesár and Rothe (2018)
+    <doi:10.1257/aer.20160945>. Supports covariates, clustering, and weighting.
 Depends: R (>= 4.3.0)
 License: GPL-3
 Encoding: UTF-8

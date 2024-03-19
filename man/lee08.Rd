@@ -13,7 +13,7 @@ A data frame with 6,558 rows and 2 variables:
 }
 \source{
 Mostly Harmless Econometrics data archive,
-\url{https://economics.mit.edu/faculty/angrist/data1/mhe}
+\url{https://economics.mit.edu/people/faculty/josh-angrist/mhe-data-archive}
 }
 \usage{
 lee08
