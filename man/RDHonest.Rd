@@ -48,8 +48,8 @@ in the fitting process.}
 
 \item{weights}{Optional vector of weights to weight the observations (useful
 for aggregated data). The weights are interpreted as the number of
-observations that each aggregated data point averages over. Disregarded if
-optimal kernel is used.}
+observations that each aggregated data point averages over. Disregarded
+if optimal kernel is used.}
 
 \item{cutoff}{specifies the RD cutoff in the running variable. For inference
 at a point, specifies the point \eqn{x_0} at which to calculate the

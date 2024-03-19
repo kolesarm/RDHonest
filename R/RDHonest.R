@@ -71,8 +71,8 @@
 #'     computed according to criterion given by \code{opt.criterion}.
 #' @param weights Optional vector of weights to weight the observations (useful
 #'     for aggregated data). The weights are interpreted as the number of
-#'     observations that each aggregated data point averages over. Disregarded if
-#'     optimal kernel is used.
+#'     observations that each aggregated data point averages over. Disregarded
+#'     if optimal kernel is used.
 #' @param point.inference Do inference at a point determined by \code{cutoff}
 #'     instead of RD.
 #' @param T0 Initial estimate of the treatment effect for calculating the

@@ -40,7 +40,8 @@
 #' }
 #' @examples
 #' ## Subset data to increase speed
-#' r <- RDHonest(log(earnings)~yearat14, data=cghs, subset=abs(yearat14-1947)<10,
+#' r <- RDHonest(log(earnings)~yearat14, data=cghs,
+#'               subset=abs(yearat14-1947)<10,
 #'               cutoff=1947, M=0.04, h=3)
 #' RDSmoothnessBound(r, s=2)
 #' @export

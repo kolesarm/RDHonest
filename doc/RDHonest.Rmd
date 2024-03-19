@@ -637,7 +637,7 @@ unadjusted estimate that replaces the original outcome $Y_{i}$ with the
 covariate-adjusted outcome $Y_{i}-W_{i}'\tilde{\gamma}_{Y, h}$. The second
 equality uses the decomposition
 $Y_{i}-W_{i}'\tilde{\gamma}_{Y, h}=\tilde{Y}_{i}-W_{i}'
-(\tilde{\gamma}_{Y h}-\gamma_{Y})$
+(\tilde{\gamma}_{Y, h}-\gamma_{Y})$
 to write the estimator as a sum of the infeasible estimator and a linear
 combination of "placebo RD estimators" $\hat{\tau}_{W_{k}, h}$, that
 replace $Y_{i}$ in the outcome equation with the $k$th element of $W_{i}$,
@@ -673,14 +673,18 @@ of the covariate-adjusted outcome. In our implementation, we first estimate the
 model without covariates (using a rule of thumb to calibrate $M$, the bound on
 the second derivative of $f_{Y}$), and compute the bandwidth $\check{h}$ that's
 MSE optimal without covariates. Based on this bandwidth, we compute a
-preliminary estimate $\check{\gamma}_{Y, \check{h}}$ of $\gamma_{Y}$, and use
-this preliminary estimate to compute the covariate-adjusted outcome
-$Y_{i}-W_{i}'\check{\gamma}_{Y, \check{h}}$. If $\tilde{M}$ is not supplied, we
-calibrate $\tilde{M}$ using the rule of thumb, using this covariate-adjusted
-outcome as the outcome. Similarly, we use this covariate-adjusted outcome as the
-outcome to compute a preliminary estimator of the conditional variance
-$\sigma^{2}_{\tilde{Y}}(x_{i})$, for optimal bandwidth calculations, as in the
-case without covariates.
+preliminary estimate $\tilde{\gamma}_{Y, \check{h}}$ of $\gamma_{Y}$, and use
+this preliminary estimate to compute a preliminary covariate-adjusted outcome
+$Y_{i}-W_{i}'\tilde{\gamma}_{Y, \check{h}}$. If $\tilde{M}$ is not supplied, we
+calibrate $\tilde{M}$ using the rule of thumb, using this preliminary
+covariate-adjusted outcome as the outcome. Similarly, we use this preliminary
+covariate-adjusted outcome as the outcome to compute a preliminary estimator of
+the conditional variance $\sigma^{2}_{\tilde{Y}}(x_{i})$, for optimal bandwidth
+calculations, as in the case without covariates. With this choice of bandwidth
+$h$, in the second step, we estimate $\tau_Y$ using the estimator
+$\tilde{\tau}_{Y, h}$ defined above.
+
+
 
 A demonstration using the `headst` data:
 ```{r}
