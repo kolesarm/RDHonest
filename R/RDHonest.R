@@ -153,7 +153,7 @@
 #'
 #' \cite{Timothy B. Armstrong and Michal Kolesár. Simple and honest confidence
 #' intervals in nonparametric regression. Quantitative Economics, 11(1):1–39,
-#' January 2020. \url{https://onlinelibrary.wiley.com/doi/full/10.3982/QE1199}}
+#' January 2020.}
 #'
 #' \cite{Michal Kolesár and Christoph Rothe. Inference in regression
 #' discontinuity designs with a discrete running variable. American Economic
