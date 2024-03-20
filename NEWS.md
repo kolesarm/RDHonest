@@ -12,7 +12,7 @@
   covariates under the assumption assumption that the conditional mean lies in
   the "bounded misspecification error" class of functions, as considered in
   [Kolesár and Rothe (2018)](https://doi.org/10.1257/aer.20160945).
-- Suppport for plotting the data is provided by the function `RDScatter`
+- Support for plotting the data is provided by the function `RDScatter`
 - The function `RDSmoothnessBound` computes a lower bound on the smoothness
   constant `M`, used as a parameter by `RDHonest` to calculate the worst-case
   bias of the estimator
