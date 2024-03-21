@@ -10,3 +10,4 @@ notes.org
 ^cran-comments\.md$
 ^CRAN-RELEASE$
 ^\.github$
+^CRAN-SUBMISSION$

@@ -22,7 +22,8 @@ Encoding: UTF-8
 LazyData: true
 Imports:
     stats,
-    Formula
+    Formula,
+    withr
 Suggests:
     spelling,
     ggplot2,

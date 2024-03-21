@@ -1,3 +1,11 @@
+## Resubmission
+This is a resubmission. In this version I have:
+
+* avoided using set.seed() inside a function (in R/Cbound.R). Instead, I use
+  withr::with_seed() to ensure that the results are reproducible without
+  modifying the global environment.
+
+
 ## Test environments
 * local Debian 12 (bookworm) install, R 4.3.1
 * Github actions
@@ -22,12 +30,6 @@ New submission
 Possibly misspelled words in DESCRIPTION:
   Rothe (17:47)
   covariates (18:42)
-
-Found the following (possibly) invalid DOIs:
-  DOI: 10.1257/aer.20160945.
-    From: man/RDHonestBME.Rd
-    Status: 404
-    Message: Not Found
 
 The misspelled words are correct, "covariates" refers to independent variables
 in a regression. "Rothe" is a surname.

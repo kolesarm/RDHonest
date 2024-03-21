@@ -101,31 +101,32 @@ RDSmoothnessBound <- function(object, s, separate=FALSE, multiple=TRUE,
     hatM <- function(D) {
         ts <- abs(D[1, ]/D[2, ]) # sup_t statistic
         maxt <- D[, which.max(ts)]
-        set.seed(42)
+
         Z <- matrix(stats::rnorm(10000*ncol(D)), ncol=ncol(D))
         ## median unbiased point estimate and lower CI
-        hatM <- lower <- 0
+        hatm <- lower <- 0
         if (max(ts) > cv(0, Z, D[2, ], 1/2)) {
-            hatM <- FindZero(function(m) max(ts)-cv(m, Z, D[2, ], 1/2),
+            hatm <- FindZero(function(m) max(ts)-cv(m, Z, D[2, ], 1/2),
                              negative=FALSE)
         }
         if (max(ts) >= cv(0, Z, D[2, ], alpha)) {
             lower <- FindZero(function(m) max(ts)-cv(m, Z, D[2, ], alpha),
                               negative=FALSE)
         }
-        list(estimate=hatM, conf.low=lower,
+        list(estimate=hatm, conf.low=lower,
              diagnostics=c(Delta=maxt[1], sdDelta=maxt[2],
                            y1=maxt[3], y2=maxt[4], y3=maxt[5],
                            I1=maxt[6:7], I2=maxt[8:9], I3=maxt[10:11]))
     }
 
     if (separate) {
-        po <- hatM(Dp)
-        ne <- hatM(Dm)
+        withr::with_seed(42, po <- hatM(Dp))
+        withr::with_seed(42, ne <- hatM(Dm))
         ret <- data.frame(rbind("Below cutoff"=unlist(ne[1:2]),
                                 "Above cutoff"=unlist(po[1:2])))
     } else {
-        ret <- data.frame((hatM(cbind(Dm, Dp))[1:2]))
+        ret <- withr::with_seed(42,
+                                data.frame((hatM(cbind(Dm, Dp))[1:2])))
         rownames(ret) <- c("Pooled")
     }
     ret
