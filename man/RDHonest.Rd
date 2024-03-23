@@ -236,7 +236,7 @@ of regression models. Econometrica, 86(2):655–683, March 2018.
 
 \cite{Timothy B. Armstrong and Michal Kolesár. Simple and honest confidence
 intervals in nonparametric regression. Quantitative Economics, 11(1):1–39,
-January 2020.}
+January 2020. \doi{10.3982/QE1199}}
 
 \cite{Michal Kolesár and Christoph Rothe. Inference in regression
 discontinuity designs with a discrete running variable. American Economic

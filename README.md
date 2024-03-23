@@ -1,4 +1,4 @@
-[![R-CMD-check](https://github.com/kolesarm/RDHonest/workflows/R-CMD-check/badge.svg)](https://github.com/kolesarm/RDHonest/actions) [![Coverage status](https://codecov.io/gh/kolesarm/RDHonest/branch/master/graph/badge.svg)](https://app.codecov.io/github/kolesarm/RDHonest?branch=master)
+[![R-CMD-check](https://github.com/kolesarm/RDHonest/workflows/R-CMD-check/badge.svg)](https://github.com/kolesarm/RDHonest/actions) [![Coverage status](https://codecov.io/gh/kolesarm/RDHonest/branch/master/graph/badge.svg)](https://app.codecov.io/github/kolesarm/RDHonest?branch=master) [![CRAN_Status_Badge](http://www.r-pkg.org/badges/version/RDHonest)](https://cran.r-project.org/package=RDHonest)
 
 # RDHonest
 
@@ -23,7 +23,15 @@ Foundation under grant numbers SES-1628939 (Armstrong) and SES-1628878
 
 ## Installation
 
-you can get the current development version from GitHub:
+You can install the released version of `ebci` from
+[CRAN](https://CRAN.R-project.org/package=RDHonest) with:
+
+``` r
+install.packages("RDHonest")
+```
+
+
+Alternatively, you can get the current development version from GitHub:
 
 ``` r
 if (!requireNamespace("remotes")) {
