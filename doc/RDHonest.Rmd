@@ -653,7 +653,7 @@ the covariate-adjusted outcome $Y_{i}-W_{i}'\tilde{\gamma}_{Y}$ as the outcome,
 \begin{equation*}
   \tilde{\tau}_{Y, h}\pm
   \cv_{1-\alpha}(B_{\tilde{M}, h} / \sd(\hat{\tau}_{\tilde{Y}, h}))\sd(\hat{\tau}_{\tilde{Y}, h}), \qquad
-  \sd(\hat{\tau}_{Y, h})=\sum_{i=1}^{n}k_{i, h}^{2}\sigma^{2}_{\tilde{Y}}(x_{i}),
+  \sd(\hat{\tau}_{\tilde{Y}, h})^2=\sum_{i=1}^{n}k_{i, h}^{2}\sigma^{2}_{\tilde{Y}}(x_{i}),
 \end{equation*}
 where
 $\sigma^{2}_{\tilde{Y}}(x_{i})=\sigma^{2}_{Y}(x_{i})+{\gamma}_{Y}'\Sigma_{WW}(x_{i}){\gamma}_{Y}-2{\gamma}_{Y}'\Sigma_{WY}(x_{i})$.
