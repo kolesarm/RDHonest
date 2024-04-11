@@ -702,8 +702,9 @@ rule-of-thumb curvature and also smaller standard errors (this would be true
 even if the bandwidth was kept fixed). Correspondingly, the CIs are tighter by
 about 6 percentage points:
 ```{r}
-100 * (1 - (rc$coefficients$conf.high-rc$coefficients$conf.low) /
-           (rn$coefficients$conf.high-rn$coefficients$conf.low))
+ci_len <- c(rc$coefficients$conf.high-rc$coefficients$conf.low,
+            rn$coefficients$conf.high-rn$coefficients$conf.low)
+100 * (1 - ci_len[1]/ci_len[2])
 ```
 
 In the fuzzy RD case, we need to covariate-adjust the treatment $D_i$ as well as

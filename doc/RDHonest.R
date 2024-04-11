@@ -77,8 +77,9 @@ rn
 rc
 
 ## -----------------------------------------------------------------------------
-100 * (1 - (rc$coefficients$conf.high-rc$coefficients$conf.low) /
-           (rn$coefficients$conf.high-rn$coefficients$conf.low))
+ci_len <- c(rc$coefficients$conf.high-rc$coefficients$conf.low,
+            rn$coefficients$conf.high-rn$coefficients$conf.low)
+100 * (1 - ci_len[1]/ci_len[2])
 
 ## -----------------------------------------------------------------------------
 dd <- data.frame()
