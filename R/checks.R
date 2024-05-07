@@ -23,6 +23,10 @@ process_options <- function(M, se.method, method, d, kern) {
             stop(paste0("M must be a non-negative numeric vector of length",
                         m_len, "."))
     }
+
+    if (min(sum(d$p), sum(d$m))==0) {
+        stop("No observations on one side of the cutoff")
+    }
     if (!(se.method %in% c("nn", "EHW", "supplied.var"))) {
         stop("Unsupported se.method")
     }

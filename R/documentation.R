@@ -120,6 +120,10 @@
 #'   \item{food}{Total household food expenditure}
 #'   \item{c}{Total household consumption}
 #'   \item{cn}{Total household expenditure on non-durable goods}
+#'   \item{education}{Educational attainment (males), one of: "none",
+#'         "elementary school", "lower secondary", "vocational studies",
+#'         "upper secondary", "college or higher")}
+#'   \item{family_size}{Family size}
 #' }
 #'
 #' @references{

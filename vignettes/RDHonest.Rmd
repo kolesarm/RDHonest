@@ -717,6 +717,29 @@ $\tilde{\theta}_{h}=\tilde{\tau}_{Y, h}/\tilde{\tau}_{D, h}$, with variances and
 worst-case bias computed as in the case without covariates, replacing the
 treatment and outcome with their covariate-adjusted versions.
 
+A demonstration using the `rcp` data, where we add education controls:
+```{r}
+RDHonest(log(cn) | retired ~ elig_year | education, data=rcp,
+         T0=r$coefficients$estimate)
+```
+
+Relative to the previous estimate without covariates, the point estimate is now
+much larger. This is in part due to slightly smaller bandwidth used, and the
+regression function for the reduced form appears noisy below the cutoff,
+potentially due to measurement error: see Figure 3. As a result, the estimates
+are quite sensitive to the bandwidth used. The noise is also responsible for the
+rather large data-driven estimates of the curvature parameters.
+
+```{r, fig.width=4.5, fig.height=3.5, fig.cap="Battistin et al (2009) data"}
+## see Figure 3
+f3 <- RDScatter(log(cn)~elig_year, data=rcp, cutoff=0, avg=Inf,
+                xlab="Years to eligibility",
+                ylab="Log consumption of non-durables", propdotsize=TRUE,
+                subset=abs(elig_year)<15)
+## Adjust size of dots if they are too big
+f3 + ggplot2::scale_size_area(max_size = 5)
+```
+
 
 ## Aggregated data and weighted regression
 
