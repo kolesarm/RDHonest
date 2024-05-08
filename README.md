@@ -23,7 +23,7 @@ Foundation under grant numbers SES-1628939 (Armstrong) and SES-1628878
 
 ## Installation
 
-You can install the released version of `ebci` from
+You can install the released version of `RDHonest` from
 [CRAN](https://CRAN.R-project.org/package=RDHonest) with:
 
 ``` r
