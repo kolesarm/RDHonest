@@ -239,8 +239,12 @@ covariate_adjust <- function(d, kern, h) {
     d0$Y <- d0$Y_unadj
     r <- NPReg(d0, h, kern, order=1, se.method="EHW")
     be <- as.matrix(r$lm$coefficients)
-    L <- NCOL(d$covs)
-    d$Y <-d$Y_unadj-d$covs %*% be[seq_len(L)+NROW(be)-L, , drop=FALSE]
+    if (r$eff.obs==0)
+        stop("Too few effective observations to perform covariate adjustment")
+    ## Original
+    ## L <- NCOL(d$covs)
+    ## d$Y <-d$Y_unadj-d$covs %*% be[seq_len(L)+NROW(be)-L, , drop=FALSE]
+    d$Y <-d$Y_unadj-r$Z[, -(1:4)] %*% be[-(1:4), , drop=FALSE]
     d
 }
 
