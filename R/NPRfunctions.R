@@ -35,7 +35,7 @@ NPReg <- function(d, h, kern="triangular", order=1, se.method="nn", J=3) {
         message("The following covariates are collinear",
                 " and are dropped:\n",
                 paste(names(which(is.na(rowSums(be[-(1:Lz), , drop=FALSE])))),
-                            collapse=", "))
+                      collapse=", "))
         r0 <- stats::lm.wfit(x=Z, y=d$Y, w=W)
     }
 
