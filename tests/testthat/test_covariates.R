@@ -60,21 +60,24 @@ test_that("Test collinear covariates", {
     df <- headst[complete.cases(headst), ]
     covlist <- "urban+black"
     fh1 <- as.formula(paste0("mortHS ~ povrate|", covlist))
-    r0 <- RDHonest(fh1, data=df)
+    expect_message(r0 <- RDHonest(fh1, data=df), "Using Armstrong")
     Z <- cbind(df$urban, df$black, df$urban)
-    expect_message(r1 <- RDHonest(df$mortHS~df$povrate|Z, M=r0$coefficients$M))
+    expect_message(expect_message(r1 <- RDHonest(df$mortHS~df$povrate|Z,
+                                                 M=r0$coefficients$M)))
     expect_lt(max(abs(r1$coefficients[2:13]-r0$coefficients[2:13])), 1e-15)
     Z <- cbind(df$urban, df$urban, df$black, df$black, df$urban+df$black)
-    expect_message(r2 <- RDHonest(df$mortHS~df$povrate|Z))
+    suppressMessages(expect_message(r2 <- RDHonest(df$mortHS~df$povrate|Z)))
     expect_lt(max(abs(r2$coefficients[2:13]-r0$coefficients[2:13])), 1e-15)
-    expect_error(RDHonest(df$mortHS~df$povrate|Z, h=0.05, kern="uniform"))
+    expect_message(expect_message(r <- RDHonest(df$mortHS~df$povrate|Z, h=0.05,
+                                                kern="uniform")), "large")
 
     ## Fuzzy
     df <- rcp[1:1000, ]
     Z <- cbind(df$food, df$food+df$family_size, df$family_size)
-    r0 <- RDHonest(log(c)|retired ~ elig_year|Z[, 1:2], data=df,
-                   weights=survey_year)
-    expect_message(r1 <- RDHonest(log(c)|retired ~ elig_year|Z, data=df,
-                                  weights=survey_year))
+    expect_message(r0 <- RDHonest(log(c)|retired ~ elig_year|Z[, 1:2], data=df,
+                                  weights=survey_year), "Using Armstrong")
+    suppressMessages(expect_message(r1 <- RDHonest(log(c)|retired ~ elig_year|Z,
+                                                   data=df,
+                                                   weights=survey_year)))
     expect_lt(max(abs(r1$coefficients[2:13]-r0$coefficients[2:13])), 1e-15)
 })

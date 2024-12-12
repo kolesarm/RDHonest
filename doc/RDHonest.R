@@ -90,7 +90,7 @@ RDHonest(log(cn) | retired ~ elig_year | education, data=rcp,
 f3 <- RDScatter(log(cn)~elig_year, data=rcp, cutoff=0, avg=Inf,
                 xlab="Years to eligibility",
                 ylab="Log consumption of non-durables", propdotsize=TRUE,
-                subset=abs(elig_year)<10)
+                subset=abs(elig_year)<15)
 ## Adjust size of dots if they are too big
 f3 + ggplot2::scale_size_area(max_size = 5)
 
