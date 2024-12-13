@@ -87,6 +87,7 @@ jobs:
             framed
             mathtools
             etoolbox
+            collection-fontsrecommended
       - uses: r-lib/actions/setup-pandoc@v2
       ## MK: END modification
       - uses: r-hub/actions/checkout@v1
