@@ -5,6 +5,7 @@
 # rhub::rhub_setup()
 #
 # It is unlikely that you need to modify this file manually.
+# MK: modifications below
 
 name: R-hub
 run-name: "${{ github.event.inputs.id }}: ${{ github.event.inputs.name || format('Manually run by {0}', github.triggering_actor) }}"
@@ -65,8 +66,6 @@ jobs:
           token: ${{ secrets.RHUB_TOKEN }}
           job-config: ${{ matrix.config.job-config }}
 
-
-
   other-platforms:
     needs: setup
     if: ${{ needs.setup.outputs.platforms != '[]' }}
@@ -81,8 +80,11 @@ jobs:
       ## MK: added. Pandoc for rmd
       - uses: teatimeguest/setup-texlive-action@v3
         with:
-          packages: scheme-basic
+          packages: |
+            scheme-basic
+            xcolor
       - uses: r-lib/actions/setup-pandoc@v2
+      ## MK: END modification
       - uses: r-hub/actions/checkout@v1
       - uses: r-hub/actions/setup-r@v1
         with:
