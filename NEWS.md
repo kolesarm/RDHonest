@@ -1,3 +1,11 @@
+# RDHonest 1.0.1
+
+## Minor improvements and fixes
+
+- Use covariate-adjusted outcome to compute nearest-neighbor variance estimator
+- Drop collinear covariates automatically instead of throwing an error
+
+
 # RDHonest 1.0.0
 
 ## New Features
