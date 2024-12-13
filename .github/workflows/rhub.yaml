@@ -52,6 +52,19 @@ jobs:
       image: ${{ matrix.config.container }}
 
     steps:
+      ## MK: added. Pandoc for rmd
+      - uses: teatimeguest/setup-texlive-action@v3
+        with:
+          packages: |
+            scheme-basic
+            xcolor
+            fancyvrb
+            framed
+            mathtools
+            etoolbox
+            collection-fontsrecommended
+      - uses: r-lib/actions/setup-pandoc@v2
+      ## MK: END modification
       - uses: r-hub/actions/checkout@v1
       - uses: r-hub/actions/platform-info@v1
         with:
