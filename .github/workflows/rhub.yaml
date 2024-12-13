@@ -84,6 +84,7 @@ jobs:
             scheme-basic
             xcolor
             fancyvrb
+            framed
       - uses: r-lib/actions/setup-pandoc@v2
       ## MK: END modification
       - uses: r-hub/actions/checkout@v1
