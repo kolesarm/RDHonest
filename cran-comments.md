@@ -1,11 +1,3 @@
-## Resubmission
-This is a resubmission. In this version I have:
-
-* avoided using set.seed() inside a function (in R/Cbound.R). Instead, I use
-  withr::with_seed() to ensure that the results are reproducible without
-  modifying the global environment.
-
-
 ## Test environments
 * local Debian 12 (bookworm) install, R 4.3.1
 * Github actions
