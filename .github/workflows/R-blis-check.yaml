@@ -51,7 +51,13 @@ jobs:
             cat("SUCCESS: Matrix multiplication using BLIS completed.\n")
           '
 
-      - name: Install dependencies & check package
+      - name: Install R package dependencies
+        uses: r-lib/actions/setup-r-dependencies@v2
+        with:
+          extra-packages: any::rcmdcheck
+          needs: check
+
+      - name: Check package
         uses: r-lib/actions/check-r-package@v2
         with:
           upload-snapshots: true
