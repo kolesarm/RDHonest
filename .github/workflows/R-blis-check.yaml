@@ -17,10 +17,23 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install -y \
-            build-essential gfortran libreadline-dev libpcre2-dev \
-            libcurl4-openssl-dev libbz2-dev liblzma-dev zlib1g-dev \
-            libicu-dev libpng-dev libjpeg-dev libcairo2-dev libtiff-dev \
-            libblis-serial-dev texinfo pandoc ghostscript
+            build-essential \
+            gfortran \
+            libreadline-dev \
+            libpcre2-dev \
+            libcurl4-openssl-dev \
+            libbz2-dev \
+            liblzma-dev \
+            zlib1g-dev \
+            libicu-dev \
+            libpng-dev \
+            libjpeg-dev \
+            libcairo2-dev \
+            libtiff-dev \
+            libblis-serial-dev \
+            texinfo \
+            pandoc \
+            ghostscript
 
       - name: Set up TinyTeX
         uses: r-lib/actions/setup-tinytex@v2
@@ -28,11 +41,10 @@ jobs:
       - name: Download R-devel
         run: |
           git clone --depth 1 https://github.com/r-devel/r-svn.git R-devel
-          cd R-devel
-          echo "Revision: 87000" > SVN-REVISION
-          echo "Last Changed Date: $(date -I)" >> SVN-REVISION
+          echo "Revision: 87000" > R-devel/SVN-REVISION
+          echo "Last Changed Date: $(date -I)" >> R-devel/SVN-REVISION
 
-      - name: Configure and build R with BLIS
+      - name: Configure R with BLIS
         working-directory: R-devel
         run: |
           ./configure \
@@ -42,6 +54,10 @@ jobs:
             --with-2025blas \
             --without-x \
             --without-recommended-packages
+
+      - name: Build R
+        working-directory: R-devel
+        run: |
           make -j"$(nproc)"
           make install
 

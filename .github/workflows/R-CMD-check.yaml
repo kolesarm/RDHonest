@@ -1,5 +1,6 @@
 # Workflow derived from https://github.com/r-lib/actions/tree/v2/examples
 # Need help debugging build failures? Start at https://github.com/r-lib/actions#where-to-find-help
+# MK: see BEGIN ADD ... END ADD block.
 on:
   push:
     branches: [main, master]
@@ -47,6 +48,7 @@ jobs:
       - name: Install Ghostscript (macOS)
         if: runner.os == 'macOS'
         run: brew install ghostscript
+      # END ADD
 
       - uses: r-lib/actions/setup-r-dependencies@v2
         with:
