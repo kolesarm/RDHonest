@@ -1,10 +1,13 @@
 test_that("Test clustering formulas", {
     ## Everyone in their own cluster
     lees <- lee08[(1:1000)*6, ]
-    expect_message(s0 <- RDHonest(voteshare~margin, data=lees, se.method="EHW"))
-    expect_message(s0c <- RDHonest(voteshare~margin, data=lees, se.method="EHW",
-                                   clusterid=seq_along(margin)))
+    lees$cluster_id <- seq_len(nrow(lees))
+    expect_message(s0 <- RDHonest(voteshare ~ margin, data = lees,
+                                  se.method = "EHW"))
+    expect_message(s0c <-  RDHonest(voteshare ~ margin, data = lees,
+                                    se.method = "EHW", clusterid = cluster_id))
     expect_equal(s0$coefficients, s0c$coefficients)
+
     rr <- rcp[1:1000, ]
     expect_message(f0 <- RDHonest(c|retired ~ elig_year, data=rr,
                                   se.method="EHW"))

@@ -1,10 +1,11 @@
 ## Test environments
-* local Ubuntu 24.04.1 LTS install, R 4.3.3
+* local Debian GNU/Linux 13 (trixie) install, R 4.5.0
 * Github actions
-  - macOS 14.7.1, R 4.4.2
-  - Windows Server 2022, R 4.4.2
-  - Ubuntu 22.04.5 LTS, R 4.4.2
-  - Ubuntu 22.04.5 LTS, R-devel
+  - macOS 26.6.2, 4.6.1
+  - Windows Server 2025, R 4.6.1
+  - Ubuntu 24.04.5 LTS, R 4.6.1
+  - Ubuntu 24.04.5 LTS, R-devel
+  - Ubuntu 24.04.5 LTS, R-oldrel 4.5.3
 * Rhub
   - macOS 13.7.1 R-devel (2024-12-15 r87442)
   - macOS-arm64 14.7.1, R-devel (2024-12-15 r87442)

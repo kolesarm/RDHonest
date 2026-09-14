@@ -46,6 +46,16 @@ jobs:
       - name: Verify BLIS linkage
         run: |
           Rscript -e '
+            cat("=== BLAS Path ===\n")
+            print(extSoftVersion()["BLAS"])
+
+            cat("\n=== LAPACK Path ===\n")
+            print(La_library())
+
+            cat("\n=== R Session Info ===\n")
+            print(sessionInfo())
+
+            cat("\n=== Test Matrix Multiplication ===\n")
             x <- matrix(rnorm(10000), 100, 100)
             stopifnot(is.matrix(x %*% x), all(is.finite(x %*% x)))
             cat("SUCCESS: Matrix multiplication using BLIS completed.\n")
@@ -65,9 +75,7 @@ jobs:
 
       - name: Upload check results
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: blis-check-results
-          path: |
-            *.tar.gz
-            *.Rcheck/
+          path: check
