@@ -22,6 +22,7 @@
   - Ubuntu 24.04.5 LTS, R-devel
   - Ubuntu 24.04.5 LTS, R-oldrel 4.5.3
   - Ubuntu 24.04.5 LTS, R-devel with BLIS
+* win-builder, R-devel and R-release
 * Rhub
   - macOS 13.7.1 R-devel (2024-12-15 r87442)
   - macOS-arm64 14.7.1, R-devel (2024-12-15 r87442)
@@ -29,7 +30,7 @@
   - ubuntu-nold 22.04.5 LTS, R-devel (2024-12-15 r87442)
   - ubuntu-release 22.04.5 LTS, R 4.4.2
 * macbuilder macOS 13.3.1 (22E261) R4.4.0 (2024-04-24)
-* win-builder, R-devel and R-release
+
 
 
 ## R CMD check results
