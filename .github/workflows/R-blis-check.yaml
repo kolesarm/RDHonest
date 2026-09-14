@@ -43,7 +43,7 @@ jobs:
           git clone --depth 1 https://github.com/r-devel/r-svn.git R-devel
           echo "Revision: 87000" > R-devel/SVN-REVISION
           echo "Last Changed Date: $(date -I)" >> R-devel/SVN-REVISION
-          perl -0777 -pi -e 's/svnonly:[\s\S]*?fi/svnonly:\n\t\@echo "Skipping SVN check"/g' R-devel/Makefile.in
+          mkdir -p R-devel/.svn
 
       - name: Configure R with BLIS
         working-directory: R-devel
