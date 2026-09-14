@@ -20,8 +20,8 @@ process_options <- function(M, se.method, method, d, kern) {
     m_len <- if (method=="FRD") 2 else 1
     if (!missing(M)) {
         if (!check_positive(M, m_len))
-            stop(paste0("M must be a non-negative numeric vector of length",
-                        m_len, "."))
+            stop("M must be a non-negative numeric vector of length ", m_len,
+                 ".")
     }
 
     if (method=="IP") {
@@ -35,6 +35,6 @@ process_options <- function(M, se.method, method, d, kern) {
         stop("Unsupported se.method")
     }
     if (se.method=="nn" && !is.null(d$clusterid))
-        stop(paste0("'se.method=\"nn\"' not allowed with clustered standard",
-                    "  errors.\nUse 'se.method=\"EHW\"'"))
+        stop("'se.method=\"nn\"' not allowed with clustered standard",
+             " errors. Use 'se.method=\"EHW\"'")
 }

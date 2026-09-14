@@ -32,10 +32,10 @@ NPReg <- function(d, h, kern="triangular", order=1, se.method="nn", J=3) {
     ## If the collinearity comes from covariates, drop them
     if (anyNA(be[-(1:Lz), ])) {
         Z <- Z[, !is.na(rowSums(be))]
-        message("The following covariates are collinear",
-                " and are dropped:\n",
-                paste(names(which(is.na(rowSums(be[-(1:Lz), , drop=FALSE])))),
-                      collapse=", "))
+
+        betail <- tail(be, -Lz)
+        message("The following covariates are collinear and are dropped:\n",
+                toString(rownames(betail)[is.na(rowSums(betail))]))
         r0 <- stats::lm.wfit(x=Z, y=d$Y, w=W)
     }
     Yadj <- d$Y
