@@ -25,12 +25,12 @@ NPReg <- function(d, h, kern="triangular", order=1, se.method="nn", J=3) {
     }
     r0 <- stats::lm.wfit(x=Z, y=d$Y, w=W)
     be <- as.matrix(r0$coefficients)
-    if (any(is.na(be[1:Lz, ]))) {
+    if (anyNA(be[1:Lz, ])) {
         return(list(estimate=0, se=NA, est_w=W*0, sigma2=NA*d$Y, eff.obs=0,
                     fs=NA, lm=r0, Yadj=d$Y))
     }
     ## If the collinearity comes from covariates, drop them
-    if (any(is.na(be[-(1:Lz), ]))) {
+    if (anyNA(be[-(1:Lz), ])) {
         Z <- Z[, !is.na(rowSums(be))]
         message("The following covariates are collinear",
                 " and are dropped:\n",
@@ -119,7 +119,7 @@ MROT <- function(d) {
         ## STEP 1: Estimate global polynomial regression
         r1 <- unname(stats::lm.wfit(y=d$Y, x=outer(drop(d$X), 0:4, "^"),
                                     w=d$w)$coefficients)
-        if (length(unique(d$X))<4 || any(is.na(r1)))
+        if (length(unique(d$X))<4 || anyNA(r1))
             stop(paste0("Insufficient unique values of the running",
                         " variable to compute rule of thumb for M."))
         f2 <- function(x) abs(2*r1[3]+6*x*r1[4]+12*x^2*r1[5])

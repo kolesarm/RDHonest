@@ -45,7 +45,7 @@ NPRData <- function(d, cutoff, class, fo) {
 ## @param negative logical: should the lower endpoint be \code{1/ival} (if the
 ##     root is guaranteed to be positive), or \code{-ival}?
 FindZero <- function(f, ival=1.1, negative=TRUE) {
-    minval <- function(ival) if (negative==TRUE) -ival else min(1/ival, 1e-3)
+    minval <- function(ival) if (negative) -ival else min(1/ival, 1e-3)
 
     while (sign(f(ival))==sign(f(minval(ival))))
         ival <- 2*ival

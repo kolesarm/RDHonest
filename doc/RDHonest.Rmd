@@ -700,7 +700,7 @@ rc
 We see that the inclusion of covariates leads to a reduction in the
 rule-of-thumb curvature and also smaller standard errors (this would be true
 even if the bandwidth was kept fixed). Correspondingly, the CIs are tighter by
-about 6 percentage points:
+about 9 percentage points:
 ```{r}
 ci_len <- c(rc$coefficients$conf.high-rc$coefficients$conf.low,
             rn$coefficients$conf.high-rn$coefficients$conf.low)

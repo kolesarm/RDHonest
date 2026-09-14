@@ -44,7 +44,8 @@ test_that("Test covariates", {
     expect_lt(abs(r0$coefficients$bandwidth-h2), 1e-5)
     m3 <- lm(cbind(log(c), retired) ~ elig_year*I(elig_year>0)+food,
              data=df, weights = pmax(1 - abs(elig_year/h2), 0)*survey_year)
-    dd <- (sort(r0$lm$coefficients)-sort(m3$coefficients))/sort(r0$lm$coefficients)
+    dd <- (sort(r0$lm$coefficients)-sort(m3$coefficients)) /
+        sort(r0$lm$coefficients)
     expect_lt(max(abs(dd)), 1e-5)
 
     ## pass function as kern

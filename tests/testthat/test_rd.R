@@ -251,7 +251,7 @@ test_that("BME CIs match paper", {
 })
 
 test_that("Optimizing bw", {
-    xprobs <- c(rep(.5/5, 5), rep(.5/4, 4))
+    xprobs <- c(rep(0.5/5, 5), rep(0.5/4, 4))
     xsupp <- sort(c(-(1:5)/5, (1:4)/4))
     set.seed(42)
     x <- sample(xsupp, 100, prob=xprobs, replace=TRUE)
@@ -264,7 +264,7 @@ test_that("Optimizing bw", {
                   opt.criterion="FLCI")
     expect_equal(r$coefficients$bandwidth, 0.8)
 
-    xprobs <- c(rep(.5/4, 4), rep(.5/4, 4))
+    xprobs <- c(rep(0.5/4, 4), rep(0.5/4, 4))
     xsupp <- sort(c(-(1:4)/4, (1:4)/4))
     set.seed(42)
     x <- sample(xsupp, 100, prob=xprobs, replace=TRUE)

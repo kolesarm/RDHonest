@@ -8,8 +8,8 @@ lee08 <- data.frame(voteshare=100*lee$demsharenext[s$ix], margin=100*s$x)
 devtools::use_data(lee08, overwrite=TRUE, internal=FALSE)
 
 ## 2. Oreopoulos data from AER website
-dir2 <- paste0("~/teaching/Datasets/Oreopoulos2006/uk/",
-               "combined general household survey.dta")
+dir2 <- file.path("~/teaching/Datasets/Oreopoulos2006/uk",
+                  "combined general household survey.dta")
 cghs <- readstata13::read.dta13(dir2, generate.factors=TRUE,
                                 nonint.factors=TRUE)
 

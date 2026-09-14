@@ -1,0 +1,123 @@
+name: BLIS check
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  blis:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Install system dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            build-essential \
+            gfortran \
+            libreadline-dev \
+            libpcre2-dev \
+            libcurl4-openssl-dev \
+            libbz2-dev \
+            liblzma-dev \
+            zlib1g-dev \
+            libicu-dev \
+            libpng-dev \
+            libjpeg-dev \
+            libcairo2-dev \
+            libtiff-dev \
+            libblas-dev \
+            liblapack-dev \
+            libblis-serial-dev \
+            texinfo \
+            texlive \
+            texlive-latex-extra \
+            texlive-fonts-recommended \
+            pandoc
+
+      - name: Download R-devel
+        run: |
+          git clone --depth 1 https://github.com/r-devel/r-svn.git R-devel
+
+      - name: Configure R with BLIS
+        working-directory: R-devel
+        run: |
+          ./configure \
+            --prefix="$HOME/R-devel-blis" \
+            --with-blas="-lblis" \
+            --with-lapack \
+            --with-2025blas \
+            --without-recommended-packages
+
+      - name: Build R
+        working-directory: R-devel
+        run: |
+          make -j"$(nproc)"
+          make install
+
+      - name: Verify R and BLIS
+        run: |
+          export PATH="$HOME/R-devel-blis/bin:$PATH"
+
+          echo "=== R version ==="
+          R --version
+
+          echo "=== BLAS configuration ==="
+          R RHOME
+          R -q -e 'sessionInfo()'
+
+          echo "=== R BLAS library ==="
+          ldd "$HOME/R-devel-blis/lib/R/lib/libRblas.so" || true
+
+          echo "=== BLIS libraries ==="
+          ldconfig -p | grep -i blis || true
+
+          echo "=== Check that R is actually linked to BLIS ==="
+          ldd "$HOME/R-devel-blis/lib/R/lib/libRblas.so" | grep -i blis
+
+      - name: Install R package dependencies
+        run: |
+          export PATH="$HOME/R-devel-blis/bin:$PATH"
+
+          Rscript -e '
+            install.packages(
+              c("remotes", "rcmdcheck"),
+              repos = "https://cloud.r-project.org"
+            )
+          '
+
+          Rscript -e '
+            remotes::install_deps(
+              dependencies = TRUE,
+              upgrade = "never"
+            )
+          '
+
+      - name: Build package
+        run: |
+          export PATH="$HOME/R-devel-blis/bin:$PATH"
+          R CMD build .
+
+      - name: Check package
+        run: |
+          export PATH="$HOME/R-devel-blis/bin:$PATH"
+
+          PKG=$(ls -t *.tar.gz | head -1)
+
+          R CMD check \
+            --as-cran \
+            --no-manual \
+            "$PKG"
+
+      - name: Upload check results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: blis-check-results
+          path: |
+            *.tar.gz
+            *.Rcheck/

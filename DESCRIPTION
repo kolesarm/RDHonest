@@ -16,7 +16,7 @@ Description: Honest and nearly-optimal confidence intervals in fuzzy and sharp
     linear regression. The implementation is based on Armstrong and Kolesár (2018)
     <doi:10.3982/ECTA14434>, and Kolesár and Rothe (2018)
     <doi:10.1257/aer.20160945>. Supports covariates, clustering, and weighting.
-Depends: R (>= 4.3.0)
+Depends: R (>= 4.5.0)
 License: GPL-3
 Encoding: UTF-8
 LazyData: true
@@ -35,5 +35,5 @@ Config/testthat/edition: 3
 Language: en-US
 URL: https://github.com/kolesarm/RDHonest
 BugReports: https://github.com/kolesarm/RDHonest/issues
-RoxygenNote: 7.3.2
 VignetteBuilder: knitr
+Config/roxygen2/version: 8.1.0
