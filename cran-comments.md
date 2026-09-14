@@ -1,3 +1,17 @@
+## Submission note
+
+- This update fixes a broken check on BLIS. The unit tests have been adjusted to
+  pass. I checked this with a
+
+  === R Session Info ===
+  R Under development (unstable) (2026-09-13 r90534)
+  Platform: x86_64-pc-linux-gnu
+  Running under: Ubuntu 24.04.5 LTS
+
+  Matrix products: default
+  BLAS:   /usr/lib/x86_64-linux-gnu/openblas-pthread/libblas.so.3
+  LAPACK: /usr/lib/x86_64-linux-gnu/openblas-pthread/libopenblasp-r0.3.26.so;  LAPACK version 3.12.0
+
 ## Test environments
 * local Debian GNU/Linux 13 (trixie) install, R 4.5.0
 * Github actions

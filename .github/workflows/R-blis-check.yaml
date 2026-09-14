@@ -29,9 +29,8 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y libblis-dev ghostscript
 
-      - name: Replace R BLAS with BLIS
+      - name: Force R to use BLIS via LD_PRELOAD
         run: |
-          R_LIB_DIR="$(Rscript -e 'cat(file.path(R.home("lib")))')"
           BLIS_SO="$(find /usr/lib -name "libblis*.so*" | head -n 1)"
 
           if [ -z "${BLIS_SO}" ]; then
@@ -40,8 +39,7 @@ jobs:
           fi
 
           echo "Found BLIS at: ${BLIS_SO}"
-          echo "Linking to: ${R_LIB_DIR}/libRblas.so"
-          sudo ln -sf "${BLIS_SO}" "${R_LIB_DIR}/libRblas.so"
+          echo "LD_PRELOAD=${BLIS_SO}" >> "$GITHUB_ENV"
 
       - name: Verify BLIS linkage
         run: |
@@ -75,7 +73,7 @@ jobs:
 
       - name: Upload check results
         if: always()
-        uses: actions/upload-artifact@v5
+        uses: actions/upload-artifact@v6
         with:
           name: blis-check-results
           path: check
