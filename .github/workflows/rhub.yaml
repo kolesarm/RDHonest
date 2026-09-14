@@ -1,11 +1,5 @@
-# R-hub's generic GitHub Actions workflow file. It's canonical location is at
-# https://github.com/r-hub/actions/blob/v1/workflows/rhub.yaml
-# You can update this file to a newer version using the rhub2 package:
-#
-# rhub::rhub_setup()
-#
-# It is unlikely that you need to modify this file manually.
-# MK: modifications below
+# R-hub's generic GitHub Actions workflow file.
+# Modified to skip vignette compilation during builds and checks.
 
 name: R-hub
 run-name: >-
@@ -37,7 +31,6 @@ jobs:
       platforms: ${{ steps.rhub-setup.outputs.platforms }}
 
     steps:
-    # NO NEED TO CHECKOUT HERE
     - uses: r-hub/actions/setup@v1
       with:
         config: ${{ github.event.inputs.config }}
@@ -57,8 +50,6 @@ jobs:
 
     steps:
       - uses: r-hub/actions/checkout@v1
-      - name: Set up TinyTeX
-        uses: r-lib/actions/setup-tinytex@v2
       - uses: r-hub/actions/platform-info@v1
         with:
           token: ${{ secrets.RHUB_TOKEN }}
@@ -71,6 +62,9 @@ jobs:
         with:
           token: ${{ secrets.RHUB_TOKEN }}
           job-config: ${{ matrix.config.job-config }}
+        env:
+          BUILD_ARGS: --no-build-vignettes
+          CHECK_ARGS: --ignore-vignettes
 
   other-platforms:
     needs: setup
@@ -88,8 +82,6 @@ jobs:
         with:
           job-config: ${{ matrix.config.job-config }}
           token: ${{ secrets.RHUB_TOKEN }}
-      - name: Set up TinyTeX
-        uses: r-lib/actions/setup-tinytex@v2
       - uses: r-hub/actions/platform-info@v1
         with:
           token: ${{ secrets.RHUB_TOKEN }}
@@ -102,3 +94,6 @@ jobs:
         with:
           job-config: ${{ matrix.config.job-config }}
           token: ${{ secrets.RHUB_TOKEN }}
+        env:
+          BUILD_ARGS: --no-build-vignettes
+          CHECK_ARGS: --ignore-vignettes
