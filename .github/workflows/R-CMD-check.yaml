@@ -38,6 +38,17 @@ jobs:
           r-version: ${{ matrix.config.r }}
           http-user-agent: ${{ matrix.config.http-user-agent }}
 
+      # BEGIN ADD
+      - uses: r-lib/actions/setup-tinytex@v2
+      - name: Install Ghostscript
+        run: |
+          if [ "${{ runner.os }}" = "Linux" ]; then
+            sudo apt-get update -y && sudo apt-get install -y ghostscript
+          elif [ "${{ runner.os }}" = "macOS" ]; then
+            brew install ghostscript
+          fi
+      # END ADD
+
       - uses: r-lib/actions/setup-r-dependencies@v2
         with:
           extra-packages: any::rcmdcheck
