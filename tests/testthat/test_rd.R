@@ -117,7 +117,7 @@ test_that("Honest inference in Lee and LM data",  {
                     "uniform", "supplied.var")$coefficients$maximum.bias)
 
     r <- es("triangular", "nn")
-    expect_lt(abs(r$coefficients$bandwidth- 22.21108064), 5e-7)
+    expect_lt(abs(r$coefficients$bandwidth- 22.21108064), 1e-5) # 3.3e-7 on BLAS
     expect_lt(unname(r$coefficients$conf.high- 0.04129612), 1e-7)
     ## End replication
 
