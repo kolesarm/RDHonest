@@ -84,8 +84,8 @@ NPReg <- function(d, h, kern="triangular", order=1, se.method="nn", J=3) {
         V <- colSums(as.matrix(wgt^2 * hsigma2))+
             d$rho * (sum(tapply(wgt, d$clusterid, sum)^2)-sum(wgt^2))
     } else {
-        us <- apply(as.matrix(wgt*r0$residuals)[ok, , drop=FALSE], 2,
-                    function(x) tapply(x, d$clusterid[ok], sum))
+        res_ok <- as.matrix(r0$residuals)[ok, , drop = FALSE]
+        us     <- rowsum(wgt[ok] * res_ok, d$clusterid[ok])
         V <- as.vector(crossprod(us))
     }
     ret <- list(estimate=r0$coefficients[1], se=sqrt(V[1]), est_w=wgt,

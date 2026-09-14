@@ -120,8 +120,8 @@ RDSmoothnessBound <- function(object, s, separate=FALSE, multiple=TRUE,
     }
 
     if (separate) {
-        withr::with_seed(42, po <- hatM(Dp))
-        withr::with_seed(42, ne <- hatM(Dm))
+        po <- withr::with_seed(42, hatM(Dp))
+        ne <- withr::with_seed(42, hatM(Dm))
         ret <- data.frame(rbind("Below cutoff"=unlist(ne[1:2]),
                                 "Above cutoff"=unlist(po[1:2])))
     } else {
