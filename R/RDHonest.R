@@ -210,8 +210,8 @@ RDHonest <- function(formula, data, subset, weights, cutoff=0, M,
 
     if (missing(M)) {
         M <- MROT(d)
-        message(paste0("Using Armstrong & Kolesar (2020) ROT ",
-                       "for smoothness constant M"))
+        message("Using Armstrong & Kolesar (2020) ROT ",
+                "for smoothness constant M.")
     }
 
     if (kernel_type(kern)=="optimal") {
@@ -226,10 +226,10 @@ RDHonest <- function(formula, data, subset, weights, cutoff=0, M,
     ret$na.action <- attr(mf, "na.action")
 
     if (!is.finite(ret$coefficients$leverage) || ret$coefficients$leverage>0.1)
-        message(paste0("Maximal leverage is large: ",
-                       round(ret$coefficients$leverage, 2),
-                       ".\nInference may be inaccurate. ",
-                       "Consider using bigger bandwidth."))
+        message("Maximal leverage is large: ",
+                round(ret$coefficients$leverage, 2),
+                ".\nInference may be inaccurate. ",
+                "Consider using bigger bandwidth.")
     ret$coefficients$term <- names(method)
     ret
 }
@@ -408,7 +408,7 @@ print.RDResults <- function(x, digits = getOption("digits"), ...) {
                       print.gap = 2L, quote = FALSE)
     } else {
         cat("\nSmoothing parameters below and above cutoff: ",
-            fmt(y$bandwidth.m), ", ", fmt(y$bandwidth.p), sep="")
+            fmt(y$bandwidth.m), ", ", fmt(y$bandwidth.p), "\n", sep="")
     }
     if (inherits(x$na.action, "omit"))
         cat(length(x$na.action), "observations with missing values dropped\n")

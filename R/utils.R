@@ -9,7 +9,7 @@ NPRData <- function(d, cutoff, class, fo) {
                   "running_variable | covariates' for fuzzy RD",
                   ",\n'outcome ~ running_variable' for inference at a point.")
     if (ncol(X) != 1)
-        stop(paste0("Single running variable required.\n", msg))
+        stop("Single running variable required.\n", msg)
     if (is.unsorted(X)) {
         idx <- sort(X, index.return=TRUE)$ix
         X <- X[idx, , drop=FALSE]

@@ -121,8 +121,8 @@ MROT <- function(d) {
         r1 <- unname(stats::lm.wfit(y=d$Y, x=outer(drop(d$X), 0:4, "^"),
                                     w=d$w)$coefficients)
         if (length(unique(d$X))<4 || anyNA(r1))
-            stop(paste0("Insufficient unique values of the running",
-                        " variable to compute rule of thumb for M."))
+            stop("Insufficient unique values of the running",
+                 " variable to compute rule of thumb for M.")
         f2 <- function(x) abs(2*r1[3]+6*x*r1[4]+12*x^2*r1[5])
         ## maximum occurs either at endpoints, or else at the extremum,
         ## -r1[4]/(4*r1[5]), if the extremum is in the support

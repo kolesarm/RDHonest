@@ -97,8 +97,8 @@ RDTOpt <- function(d, M, opt.criterion, alpha, beta, se.method, J) {
     if (is.null(d$sigma2))
         d <- PrelimVar(d, se.initial="EHW")
     if (!is.null(d$clusterid))
-        warning(paste0("Optimal kernel can only be used with independent data.",
-                       "Ignoring clusterid"))
+        warning("Optimal kernel can only be used with independent data. ",
+                "Ignoring clusterid.")
 
     C <-  M/2
     ## Find optimal delta, see Supplement to 1511.06028v2

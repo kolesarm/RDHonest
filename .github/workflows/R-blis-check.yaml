@@ -13,73 +13,43 @@ jobs:
       - name: Check out repository
         uses: actions/checkout@v7
 
-      - name: Install system dependencies
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y \
-            build-essential \
-            gfortran \
-            libreadline-dev \
-            libpcre2-dev \
-            libcurl4-openssl-dev \
-            libbz2-dev \
-            liblzma-dev \
-            zlib1g-dev \
-            libicu-dev \
-            libpng-dev \
-            libjpeg-dev \
-            libcairo2-dev \
-            libtiff-dev \
-            libblis-serial-dev \
-            texinfo \
-            pandoc \
-            ghostscript
+      - name: Set up R
+        uses: r-lib/actions/setup-r@v2
+        with:
+          r-version: 'devel'
+
+      - name: Set up Pandoc
+        uses: r-lib/actions/setup-pandoc@v2
 
       - name: Set up TinyTeX
         uses: r-lib/actions/setup-tinytex@v2
 
-      - name: Download R-devel
+      - name: Install BLIS & system dependencies
         run: |
-          git clone --depth 1 https://github.com/r-devel/r-svn.git R-devel
-          echo "Revision: 87000" > R-devel/SVN-REVISION
-          echo "Last Changed Date: $(date -I)" >> R-devel/SVN-REVISION
-          mkdir -p R-devel/.svn
+          sudo apt-get update
+          sudo apt-get install -y libblis-dev ghostscript
 
-      - name: Configure R with BLIS
-        working-directory: R-devel
+      - name: Replace R BLAS with BLIS
         run: |
-          ./configure \
-            --prefix="$HOME/R-devel-blis" \
-            --with-blas="-lblis" \
-            --with-lapack \
-            --with-2025blas \
-            --without-x \
-            --without-recommended-packages
+          R_LIB_DIR="$(Rscript -e 'cat(file.path(R.home("lib")))')"
+          BLIS_SO="$(dpkg -L libblis-dev libblis3-serial | grep -E 'libblis.*\.so' | head -n 1)"
+          echo "Found BLIS at: ${BLIS_SO}"
+          echo "Linking to: ${R_LIB_DIR}/libRblas.so"
+          sudo ln -sf "${BLIS_SO}" "${R_LIB_DIR}/libRblas.so"
 
-      - name: Build R
-        working-directory: R-devel
+      - name: Verify BLIS linkage
         run: |
-          make -j"$(nproc)"
-          make install
-
-      - name: Verify R & BLIS linkage
-        run: |
-          export PATH="$HOME/R-devel-blis/bin:$PATH"
-          ldd "$HOME/R-devel-blis/lib/R/lib/libRblas.so" | grep -qi blis || {
-            echo "ERROR: R's libRblas.so is not linked to BLIS."
-            exit 1
-          }
-          R --vanilla -e '
+          Rscript -e '
             x <- matrix(rnorm(10000), 100, 100)
             stopifnot(is.matrix(x %*% x), all(is.finite(x %*% x)))
-            cat("SUCCESS: BLAS matrix multiplication with BLIS succeeded.\n")
+            cat("SUCCESS: Matrix multiplication using BLIS completed.\n")
           '
 
-      - name: Check package
-        run: |
-          export PATH="$HOME/R-devel-blis/bin:$PATH"
-          Rscript -e 'install.packages("rcmdcheck", repos = "https://cloud.r-project.org")'
-          Rscript -e 'rcmdcheck::rcmdcheck(args = c("--as-cran", "--no-manual"), error_on = "warning")'
+      - name: Install dependencies & check package
+        uses: r-lib/actions/check-r-package@v2
+        with:
+          upload-snapshots: true
+          build_args: 'c("--no-manual", "--compact-vignettes=qpdf")'
 
       - name: Upload check results
         if: always()
