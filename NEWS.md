@@ -1,3 +1,10 @@
+# RDHonest 1.0.2
+
+## Minor improvements and fixes
+
+- Adjust numerical tolerance on some tests so that they don't fail when BLIS
+  implementation of BLAS is used.
+
 # RDHonest 1.0.1
 
 ## Minor improvements and fixes

@@ -1,3 +1,4 @@
+BLIS
 BME
 Battistin
 Brugiavini
@@ -14,7 +15,6 @@ Jens
 Lalive
 Lalive's
 Lovell
-Optimality
 Oreopoulos
 REBP
 Rettore
@@ -24,7 +24,6 @@ Stata
 WLS
 aer
 cdot
-coercible
 collinear
 cov
 cv
@@ -46,19 +45,15 @@ mapsto
 mathbb
 mathcal
 misspecification
-monotonicity
 neq
 operatorname
-optimality
 overset
 pmatrix
 pre
 preprint
-priori
 qquad
 quartic
 sd
 th
-unadjusted
 uparrow
 vStata
