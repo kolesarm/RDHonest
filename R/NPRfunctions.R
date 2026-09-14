@@ -33,7 +33,7 @@ NPReg <- function(d, h, kern="triangular", order=1, se.method="nn", J=3) {
     if (anyNA(be[-(1:Lz), ])) {
         Z <- Z[, !is.na(rowSums(be))]
 
-        betail <- tail(be, -Lz)
+        betail <- utils::tail(be, -Lz)
         message("The following covariates are collinear and are dropped:\n",
                 toString(rownames(betail)[is.na(rowSums(betail))]))
         r0 <- stats::lm.wfit(x=Z, y=d$Y, w=W)

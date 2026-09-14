@@ -21,7 +21,7 @@ test_that("Test LPreg", {
                  r0$coefficients$estimate)
     expect_equal(range(c(r0m$data$sigma2, r0p$data$sigma2)-r0$data$sigma2),
                  c(0, 0))
-    expect_equal(as.numeric(r0m$coefficients[c(2:10)]),
+    expect_equal(as.numeric(r0m$coefficients[2:10]),
                  c(20139.543667707,  2097.006669471,     6.641178638,
                    16029.465508831, 24249.621826583, 16683.633463048,
                    23595.453872367,    10L,   125.503763304))

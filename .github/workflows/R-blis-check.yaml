@@ -26,7 +26,11 @@ jobs:
         uses: r-lib/actions/setup-tinytex@v2
 
       - name: Download R-devel
-        run: git clone --depth 1 https://github.com/r-devel/r-svn.git R-devel
+        run: |
+          git clone --depth 1 https://github.com/r-devel/r-svn.git R-devel
+          cd R-devel
+          echo "Revision: 87000" > SVN-REVISION
+          echo "Last Changed Date: $(date -I)" >> SVN-REVISION
 
       - name: Configure and build R with BLIS
         working-directory: R-devel

@@ -195,7 +195,7 @@ test_that("Honest inference in Lee and LM data",  {
     ## Missing values
     expect_error(RDHonest(mortHS ~ povrate, data=headst, kern="uniform", h=12,
                           na.action="na.fail"))
-    expect_message(r1 <- RDHonest(mortHS ~ povrate, data=headst[c(2500:3000), ],
+    expect_message(r1 <- RDHonest(mortHS ~ povrate, data=headst[2500:3000, ],
                                   kern="uniform", na.action="na.omit"))
     r1 <- capture.output(print(r1, digits=6))
     expect_equal(r1[c(8, 11, 12, 22)],

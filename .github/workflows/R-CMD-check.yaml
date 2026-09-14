@@ -40,14 +40,13 @@ jobs:
 
       # BEGIN ADD
       - uses: r-lib/actions/setup-tinytex@v2
-      - name: Install Ghostscript
-        run: |
-          if [ "${{ runner.os }}" = "Linux" ]; then
-            sudo apt-get update -y && sudo apt-get install -y ghostscript
-          elif [ "${{ runner.os }}" = "macOS" ]; then
-            brew install ghostscript
-          fi
-      # END ADD
+      - name: Install Ghostscript (Linux)
+        if: runner.os == 'Linux'
+        run: sudo apt-get update -y && sudo apt-get install -y ghostscript
+
+      - name: Install Ghostscript (macOS)
+        if: runner.os == 'macOS'
+        run: brew install ghostscript
 
       - uses: r-lib/actions/setup-r-dependencies@v2
         with:
