@@ -23,11 +23,13 @@ CVb <- function(B, alpha=0.05) {
     ## Take care of missing values
     cv <- function(B, alpha) {
         if (is.na(B)) return(NA)
-        stopifnot(B >= 0 && alpha > 0 && alpha < 1)
+        stopifnot(B >= 0)
+        stopifnot(alpha > 0)
+        stopifnot(alpha < 1)
         if (B<10)
-            return(sqrt(stats::qchisq(1-alpha, df = 1, ncp = B^2)))
+            sqrt(stats::qchisq(1-alpha, df = 1, ncp = B^2))
         else
-            return(B+stats::qnorm(1-alpha))
+            B+stats::qnorm(1-alpha)
     }
     vapply(seq_along(B), function(j) cv(B[j], alpha), numeric(1))
 }

@@ -63,13 +63,14 @@ NPReg <- function(d, h, kern="triangular", order=1, se.method="nn", J=3) {
     NN <- function(X) {
         res <- matrix(0, nrow=length(X), ncol=ny^2)
         res[ok] <-
-            if (!inherits(d, "IP"))
+            if (inherits(d, "IP")) {
+                sigmaNN(X[ok], d$Y[ok, ], J, d$w[ok])
+            } else {
                 rbind(as.matrix(sigmaNN(X[d$m & ok], Yadj[d$m & ok, ], J,
                                         d$w[d$m & ok])),
                       as.matrix(sigmaNN(X[d$p & ok], Yadj[d$p & ok, ], J,
                                         d$w[d$p & ok])))
-            else
-                sigmaNN(X[ok], d$Y[ok, ], J, d$w[ok])
+            }
         res
     }
 

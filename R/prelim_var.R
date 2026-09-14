@@ -138,7 +138,7 @@ IKBW <- function(d, kern="triangular", verbose=FALSE) {
     N <- Nm+Np
 
     ## STEP 0: Kernel constant
-    s <- kernC[kernC$order==1 & kernC$boundary==TRUE & kernC$kernel==kern, ]
+    s <- kernC[kernC$order==1 & kernC$boundary & kernC$kernel==kern, ]
     const <- (s$nu0/s$mu2^2)^(1/5)
 
     ## STEP 1: Estimate f(0), sigma^2_(0) and sigma^2_+(0), using Silverman

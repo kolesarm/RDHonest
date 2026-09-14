@@ -127,7 +127,7 @@ RDSmoothnessBound <- function(object, s, separate=FALSE, multiple=TRUE,
     } else {
         ret <- withr::with_seed(42,
                                 data.frame((hatM(cbind(Dm, Dp))[1:2])))
-        rownames(ret) <- c("Pooled")
+        rownames(ret) <- "Pooled"
     }
     ret
 }

@@ -173,7 +173,7 @@ RDTEfficiencyBound <- function(object, opt.criterion="FLCI", beta=0.5) {
                            se.method="supplied.var")
         r2 <- RDTEstimator(d, RDLFFunction(d, C, 2*delta), alpha,
                            se.method="supplied.var")
-        return(r2$omega / (r1$delta*r1$coefficients$std.error+r1$omega))
+        r2$omega / (r1$delta*r1$coefficients$std.error+r1$omega)
     } else {
         ## From proof of Pratt result, it follows that the expected length is
         ## int pnorm(z_{1-alpha}-delta_t) dt, where delta_t is value of inverse
@@ -190,6 +190,6 @@ RDTEfficiencyBound <- function(object, opt.criterion="FLCI", beta=0.5) {
         den <- RDTOpt(d, 2*C, opt.criterion="FLCI", alpha, beta,
                       se.method="supplied.var")$coefficients
         den <- (den$conf.high-den$conf.low)/2
-        return(stats::integrate(integrand, 1e-6, upper)$value / den)
+        stats::integrate(integrand, 1e-6, upper)$value / den
     }
 }

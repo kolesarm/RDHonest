@@ -11,7 +11,7 @@ jobs:
 
     steps:
       - name: Check out repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Install system dependencies
         run: |
@@ -30,14 +30,21 @@ jobs:
             libjpeg-dev \
             libcairo2-dev \
             libtiff-dev \
-            libblas-dev \
-            liblapack-dev \
             libblis-serial-dev \
             texinfo \
             texlive \
             texlive-latex-extra \
             texlive-fonts-recommended \
             pandoc
+
+      - name: Show BLIS installation
+        run: |
+          echo "=== BLIS libraries ==="
+          ldconfig -p | grep -i blis || true
+
+          echo
+          echo "=== BLIS files ==="
+          dpkg -L libblis-serial-dev | grep -E '\.(so|a)$' || true
 
       - name: Download R-devel
         run: |
@@ -51,6 +58,7 @@ jobs:
             --with-blas="-lblis" \
             --with-lapack \
             --with-2025blas \
+            --without-x \
             --without-recommended-packages
 
       - name: Build R
@@ -59,27 +67,74 @@ jobs:
           make -j"$(nproc)"
           make install
 
-      - name: Verify R and BLIS
+      - name: Verify R is using BLIS
+        shell: bash
         run: |
           export PATH="$HOME/R-devel-blis/bin:$PATH"
 
           echo "=== R version ==="
           R --version
 
-          echo "=== BLAS configuration ==="
+          echo
+          echo "=== R configuration ==="
           R RHOME
-          R -q -e 'sessionInfo()'
+          R CMD config BLAS_LIBS
+          R CMD config LAPACK_LIBS
 
-          echo "=== R BLAS library ==="
-          ldd "$HOME/R-devel-blis/lib/R/lib/libRblas.so" || true
+          echo
+          echo "=== R session information ==="
+          R --vanilla -q -e 'sessionInfo()'
 
-          echo "=== BLIS libraries ==="
-          ldconfig -p | grep -i blis || true
+          echo
+          echo "=== La_library() ==="
+          R --vanilla -q -e 'print(La_library())'
 
-          echo "=== Check that R is actually linked to BLIS ==="
-          ldd "$HOME/R-devel-blis/lib/R/lib/libRblas.so" | grep -i blis
+          echo
+          echo "=== libRblas.so ==="
+          ls -l "$HOME/R-devel-blis/lib/R/lib/libRblas.so"
+
+          echo
+          echo "=== Dependencies of libRblas.so ==="
+          ldd "$HOME/R-devel-blis/lib/R/lib/libRblas.so"
+
+          echo
+          echo "=== Verify BLIS ==="
+
+          if ! ldd "$HOME/R-devel-blis/lib/R/lib/libRblas.so" \
+              | grep -qi blis; then
+            echo "ERROR: R's libRblas.so is not linked to BLIS."
+            echo
+            echo "Full ldd output:"
+            ldd "$HOME/R-devel-blis/lib/R/lib/libRblas.so"
+            exit 1
+          fi
+
+          echo "SUCCESS: R's BLAS is linked to BLIS."
+
+      - name: Test BLAS from R
+        shell: bash
+        run: |
+          export PATH="$HOME/R-devel-blis/bin:$PATH"
+
+          R --vanilla --slave <<'EOF'
+          cat("BLAS/LAPACK library:\n")
+          print(La_library())
+
+          cat("\nBLAS test:\n")
+          x <- matrix(rnorm(10000), 100, 100)
+          y <- matrix(rnorm(10000), 100, 100)
+          z <- x %*% y
+
+          stopifnot(
+            is.matrix(z),
+            all(is.finite(z))
+          )
+
+          cat("BLAS matrix multiplication succeeded.\n")
+          EOF
 
       - name: Install R package dependencies
+        shell: bash
         run: |
           export PATH="$HOME/R-devel-blis/bin:$PATH"
 
@@ -98,11 +153,13 @@ jobs:
           '
 
       - name: Build package
+        shell: bash
         run: |
           export PATH="$HOME/R-devel-blis/bin:$PATH"
           R CMD build .
 
       - name: Check package
+        shell: bash
         run: |
           export PATH="$HOME/R-devel-blis/bin:$PATH"
 

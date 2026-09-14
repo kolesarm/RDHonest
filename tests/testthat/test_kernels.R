@@ -45,13 +45,13 @@ test_that("Analytical kernel moments match numerical ones", {
     }
 
     for (j in 0:4) {
-        kernN[[paste("mu", j, sep = "")]] <- NumericalMoment(j, "raw")
-        kernN[[paste("nu", j, sep = "")]] <- NumericalMoment(j, "raw2")
-        kernN[[paste("pi", j, sep = "")]] <- NumericalMoment(j, "absolute")
+        kernN[[paste0("mu", j)]] <- NumericalMoment(j, "raw")
+        kernN[[paste0("nu", j)]] <- NumericalMoment(j, "raw2")
+        kernN[[paste0("pi", j)]] <- NumericalMoment(j, "absolute")
     }
 
     expect_equal(kernN[, 1:8], kernC[, 1:8]) # mu
     expect_equal(kernN[, 9:13], kernC[, 9:13]) # nu
     ## for pi, we allow some numerical imprecision
-    expect_true(max(abs(kernN[, 14:18]- kernC[, 14:18]))<10e-6)
+    expect_lt(max(abs(kernN[, 14:18]- kernC[, 14:18])), 10e-6)
 })
