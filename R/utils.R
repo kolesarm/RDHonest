@@ -24,7 +24,7 @@ NPRData <- function(d, cutoff, class, fo) {
                          clusterid=d$"(clusterid)", w=stats::model.weights(d)),
                     class=class)
     if (ncol(df$Y)!=length(fo)[1])
-        stop(paste0("Single outcome and treatment variable required.", msg))
+        stop("Single outcome and treatment variable required. ", msg)
     if (is.null(df$w)) df$w <- rep(1L, NROW(X))
     if (length(fo)[2] > 1) df$covs <- rhs(2)[, -1, drop=FALSE]
 

@@ -32,7 +32,13 @@ jobs:
       - name: Replace R BLAS with BLIS
         run: |
           R_LIB_DIR="$(Rscript -e 'cat(file.path(R.home("lib")))')"
-          BLIS_SO="$(dpkg -L libblis-dev libblis3-serial | grep -E 'libblis.*\.so' | head -n 1)"
+          BLIS_SO="$(find /usr/lib -name "libblis*.so*" | head -n 1)"
+
+          if [ -z "${BLIS_SO}" ]; then
+            echo "ERROR: Could not locate BLIS shared library file."
+            exit 1
+          fi
+
           echo "Found BLIS at: ${BLIS_SO}"
           echo "Linking to: ${R_LIB_DIR}/libRblas.so"
           sudo ln -sf "${BLIS_SO}" "${R_LIB_DIR}/libRblas.so"
