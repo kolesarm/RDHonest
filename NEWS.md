@@ -1,13 +1,13 @@
 # RDHonest 1.0.2
 
-## Minor improvements and fixes
+## Minor Improvements and Fixes
 
 - Adjust numerical tolerance on some tests so that they don't fail when BLIS
   implementation of BLAS is used.
 
 # RDHonest 1.0.1
 
-## Minor improvements and fixes
+## Minor Improvements and Fixes
 
 - Use covariate-adjusted outcome to compute nearest-neighbor variance estimator
 - Drop collinear covariates automatically instead of throwing an error
