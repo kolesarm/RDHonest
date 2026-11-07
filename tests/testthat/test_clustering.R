@@ -2,7 +2,8 @@ test_that("Test clustering formulas", {
     ## Everyone in their own cluster
     lees <- lee08[(1:1000) * 6, ]
     lees$cluster_id <- seq_len(nrow(lees))
-    expect_message(s0 <- RDHonest(voteshare ~ margin, data = lees, se.method = "EHW"))
+    expect_message(s0 <- RDHonest(voteshare ~ margin, data = lees,
+                                  se.method = "EHW"))
     h0 <- s0$coefficients$bandwidth
     expect_message(s0h <- RDHonest(voteshare ~ margin, data = lees, h = h0,
                                    se.method = "EHW"))
@@ -11,12 +12,14 @@ test_that("Test clustering formulas", {
     expect_equal(s0h$coefficients, s0c$coefficients)
 
     rr <- rcp[1:1000, ]
-    expect_message(f0 <- RDHonest(c | retired ~ elig_year, data = rr, se.method = "EHW"))
+    expect_message(f0 <- RDHonest(c | retired ~ elig_year, data = rr,
+                                  se.method = "EHW"))
     h0 <- f0$coefficients$bandwidth
     expect_message(f0h <- RDHonest(c | retired ~ elig_year, data = rr, h = h0,
-                               se.method = "EHW"))
+                                   se.method = "EHW"))
     expect_message(f0c <- RDHonest(c | retired ~ elig_year, data = rr, h = h0,
-                               clusterid = seq_along(rr$c), se.method = "EHW"))
+                                   clusterid = seq_along(rr$c),
+                                   se.method = "EHW"))
     expect_equal(f0h$coefficients, f0c$coefficients)
 
     expect_message(p0 <- RDHonest(c ~ elig_year, data = rr[1:100, ], h = 10,
