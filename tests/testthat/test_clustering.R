@@ -1,25 +1,29 @@
 test_that("Test clustering formulas", {
     ## Everyone in their own cluster
-    lees <- lee08[(1:1000)*6, ]
+    lees <- lee08[(1:1000) * 6, ]
     lees$cluster_id <- seq_len(nrow(lees))
-    expect_message(s0 <- RDHonest(voteshare ~ margin, data = lees,
-                                  se.method = "EHW"))
-    expect_message(s0c <-  RDHonest(voteshare ~ margin, data = lees,
-                                    se.method = "EHW", clusterid = cluster_id))
-    expect_equal(s0$coefficients, s0c$coefficients)
+    expect_message(s0 <- RDHonest(voteshare ~ margin, data = lees, se.method = "EHW"))
+    h0 <- s0$coefficients$bandwidth
+    expect_message(s0h <- RDHonest(voteshare ~ margin, data = lees, h = h0,
+                                   se.method = "EHW"))
+    expect_message(s0c <- RDHonest(voteshare ~ margin, data = lees, h = h0,
+                                   se.method = "EHW", clusterid = cluster_id))
+    expect_equal(s0h$coefficients, s0c$coefficients)
 
     rr <- rcp[1:1000, ]
-    expect_message(f0 <- RDHonest(c|retired ~ elig_year, data=rr,
-                                  se.method="EHW"))
-    expect_message(f0c <- RDHonest(c|retired ~ elig_year, data=rr,
-                                   clusterid=seq_along(rr$c), se.method="EHW"))
-    expect_equal(f0$coefficients, f0c$coefficients)
+    expect_message(f0 <- RDHonest(c | retired ~ elig_year, data = rr, se.method = "EHW"))
+    h0 <- f0$coefficients$bandwidth
+    expect_message(f0h <- RDHonest(c | retired ~ elig_year, data = rr, h = h0,
+                               se.method = "EHW"))
+    expect_message(f0c <- RDHonest(c | retired ~ elig_year, data = rr, h = h0,
+                               clusterid = seq_along(rr$c), se.method = "EHW"))
+    expect_equal(f0h$coefficients, f0c$coefficients)
 
-    expect_message(p0 <- RDHonest(c~elig_year, data=rr[1:100, ], h=10,
-                                  se.method="EHW", point.inference=TRUE))
-    expect_message(p0c <- RDHonest(c~elig_year, data=rr[1:100, ], h=10,
-                                   clusterid=seq_along(rr$c[1:100]),
-                                   se.method="EHW", point.inference=TRUE))
+    expect_message(p0 <- RDHonest(c ~ elig_year, data = rr[1:100, ], h = 10,
+                                  se.method = "EHW", point.inference = TRUE))
+    expect_message(p0c <- RDHonest(c ~ elig_year, data = rr[1:100, ], h = 10,
+                                   clusterid = seq_len(100),
+                                   se.method = "EHW", point.inference = TRUE))
     expect_equal(p0$coefficients, p0c$coefficients)
 
     ## Check we match sandwich::vcovCL: uniform + triangular
@@ -46,11 +50,20 @@ test_that("Test clustering formulas", {
     m2 <- lm(clusterid~margin*I(margin>0), data=lees,
              subset=abs(margin)<=h,
              weights = (1 - abs(margin/h)))
+    ## Cluster-robust HC0 standard error without small-sample adjustment,
+    ## computed at s2c's own (optimized) bandwidth so the comparison doesn't
+    ## depend on optimizer precision. Equals
     ## sqrt(sandwich::vcovCL(m2, type="HC0",
     ##                       cluster=clusterid[abs(lees$margin)<=h],
-    ##                       cadjust=FALSE)[3, 3])
+    ##                       cadjust=FALSE)[3, 3]),
+    ## 3.849691688 with reference BLAS.
+    X <- model.matrix(m2)
+    psi <- rowsum(weights(m2) * residuals(m2) * X,
+                  clusterid[abs(lees$margin) <= h])
+    bread <- solve(crossprod(X, weights(m2) * X))
+    se2 <- sqrt((bread %*% crossprod(psi) %*% bread)[3, 3])
     expect_equal(as.numeric(s2c$coefficients[2:3]),
-                 c(unname(m2$coefficients[3]), 3.849691688))
+                 c(unname(m2$coefficients[3]), se2))
 
     set.seed(42)
     clusterid <- sample(1:20, NROW(rr), replace=TRUE)

@@ -9,8 +9,8 @@ test_that("Inference at point agrees with RD", {
                  rde$coefficients$estimate)
     expect_equal(pp$coefficients$std.error^2+mm$coefficients$std.error^2,
                  rde$coefficients$std.error^2)
-    expect_equal(pp$coefficients[, 4]+mm$coefficients[, 4],
-                 rde$coefficients[, 4])
+    expect_equal(pp$coefficients$maximum.bias+mm$coefficients$maximum.bias,
+                 rde$coefficients$maximum.bias)
 
     r <- NPRHonest(rde$d, h=7, M=2)$coefficients
     rm <- NPRHonest(mm$d, h=7, M=2)$coefficients
@@ -98,8 +98,9 @@ test_that("Optimal bandwidth calculations", {
 
     re$d$sigma2 <- NULL
     r2 <- OptBW(re$d, M=2*Mh, opt.criterion="MSE")
-    expect_identical(r2,  r1$coefficients$bandwidth)
-    expect_lt(abs(r2- 13.4109133), 1e-6)
+    ## Optimal bandwidths are determined only to optimizer precision
+    expect_equal(r2, r1$coefficients$bandwidth, tolerance = tol_opt)
+    expect_equal(r2, 13.4109135, tolerance = tol_opt)
 
     ## Make sure we're getting positive worst-case bias
     expect_message(r <- RDHonest(voteshare ~ margin, data=lee08,
