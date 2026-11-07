@@ -48,9 +48,18 @@ jobs:
             | sudo tee /etc/apt/sources.list.d/oneAPI.list
           sudo apt-get update
           # Show which versioned MKL packages exist, in case the name below needs adjusting
-          apt-cache search --names-only '^intel-oneapi-mkl-2026' || true
+          apt-cache search --names-only '^intel-oneapi-mkl' | grep 2026 || true
           sudo apt-get install -y intel-oneapi-mkl-2026.2
-          MKLRT=$(find /opt/intel/oneapi/mkl -name 'libmkl_rt.so.2' | head -n 1)
+          # Show what was installed and where; the directory layout and the
+          # library's soname have changed between oneAPI releases
+          dpkg -l | grep -i 'intel-oneapi-mkl' || true
+          find -L /opt/intel -name 'libmkl_rt.so*' 2>/dev/null | sort -u || true
+          MKLRT=$( (find -L /opt/intel -name 'libmkl_rt.so.*' 2>/dev/null || true) | sort -V | tail -n 1)
+          if [ -z "$MKLRT" ]; then
+            echo "::error::libmkl_rt.so.* not found under /opt/intel; see the listings above"
+            exit 1
+          fi
+          MKLRT=$(realpath "$MKLRT")
           echo "Using $MKLRT"
           for lib in libblas.so.3 liblapack.so.3; do
             sudo update-alternatives --install /usr/lib/x86_64-linux-gnu/$lib \
