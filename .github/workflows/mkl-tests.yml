@@ -1,0 +1,71 @@
+# Run the package tests against Intel MKL 2026.2, the version CRAN's MKL
+# check uses. Save as .github/workflows/mkl-tests.yml and start it from the
+# Actions tab ("Run workflow"). Set `ref` to the commit or tag released as
+# 1.0.2 for a positive control: that run should fail the way CRAN's log does.
+name: mkl-tests
+
+on:
+  workflow_dispatch:
+    inputs:
+      ref:
+        description: "Git ref to test (empty = the branch you run from)"
+        required: false
+        default: ""
+
+jobs:
+  mkl:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        # MKL picks kernels by CPU instruction set; MKL_CBWR forces a code
+        # path. Branches the runner's CPU doesn't support fall back.
+        cbwr: [AUTO, COMPATIBLE, AVX2, AVX512]
+    name: MKL_CBWR=${{ matrix.cbwr }}
+    env:
+      MKL_INTERFACE_LAYER: GNU,LP64     # gfortran calling convention (mkl_gf_lp64)
+      MKL_THREADING_LAYER: SEQUENTIAL   # serial MKL, as on CRAN
+      MKL_CBWR: ${{ matrix.cbwr }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.ref }}
+
+      - uses: r-lib/actions/setup-r@v2
+        with:
+          r-version: release
+          use-public-rspm: true
+
+      - uses: r-lib/actions/setup-r-dependencies@v2
+        with:
+          extra-packages: any::testthat, any::pkgload
+
+      - name: Install Intel MKL 2026.2 as the system BLAS/LAPACK
+        run: |
+          wget -qO- https://apt.repos.intel.com/intel-gpg-keys/GPG-PUB-KEY-INTEL-SW-PRODUCTS.PUB \
+            | gpg --dearmor | sudo tee /usr/share/keyrings/oneapi-archive-keyring.gpg > /dev/null
+          echo "deb [signed-by=/usr/share/keyrings/oneapi-archive-keyring.gpg] https://apt.repos.intel.com/oneapi all main" \
+            | sudo tee /etc/apt/sources.list.d/oneAPI.list
+          sudo apt-get update
+          # Show which versioned MKL packages exist, in case the name below needs adjusting
+          apt-cache search --names-only '^intel-oneapi-mkl-2026' || true
+          sudo apt-get install -y intel-oneapi-mkl-2026.2
+          MKLRT=$(find /opt/intel/oneapi/mkl -name 'libmkl_rt.so.2' | head -n 1)
+          echo "Using $MKLRT"
+          for lib in libblas.so.3 liblapack.so.3; do
+            sudo update-alternatives --install /usr/lib/x86_64-linux-gnu/$lib \
+              $lib-x86_64-linux-gnu "$MKLRT" 1000
+            sudo update-alternatives --set $lib-x86_64-linux-gnu "$MKLRT"
+          done
+          lscpu | grep -E 'Model name|Vendor ID'
+
+      - name: Confirm R is actually using MKL
+        run: |
+          Rscript -e 'invisible(solve(matrix(rnorm(4), 2)))
+                      m <- grep("libmkl", readLines("/proc/self/maps"), value = TRUE)
+                      if (!length(m)) stop("MKL is not loaded; R is not using the system BLAS")
+                      writeLines(unique(sub(".* ", "", m)))
+                      print(La_version())'
+
+      - name: Run tests
+        run: Rscript -e 'testthat::test_local(stop_on_failure = TRUE)'
