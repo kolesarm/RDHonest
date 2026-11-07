@@ -1,3 +1,10 @@
+# RDHonest 1.0.3
+
+## Minor Improvements and Fixes
+
+- Rewrite tests so they do not fail due to numerical tolerance issues when MKL
+  implementation of BLAS is used.
+
 # RDHonest 1.0.2
 
 ## Minor Improvements and Fixes
