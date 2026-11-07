@@ -61,6 +61,12 @@ jobs:
           fi
           MKLRT=$(realpath "$MKLRT")
           echo "Using $MKLRT"
+          # libmkl_rt is reached through the libblas/liblapack symlinks and
+          # looks for its other components (libmkl_core, kernels, ...) in the
+          # symlink's directory, so make them all visible there, as Debian's
+          # own intel-mkl package does
+          sudo ln -sf "$(dirname "$MKLRT")"/libmkl_*.so* /usr/lib/x86_64-linux-gnu/
+          sudo ldconfig
           for lib in libblas.so.3 liblapack.so.3; do
             sudo update-alternatives --install /usr/lib/x86_64-linux-gnu/$lib \
               $lib-x86_64-linux-gnu "$MKLRT" 1000
